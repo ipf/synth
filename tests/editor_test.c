@@ -170,25 +170,28 @@ static int preferences(void)
     uint8_t a[4] = {0, 7, 0, 0};
     reset();
     uint32_t n = request(ED_INFO, a, 0);
+    uint32_t e = n - 3u;                                  /* (1.5.5: 4B 01 NCOND last, below) */
     bad += check("INFO explicitly tags display capabilities after SONG without changing command 33",
         ED_SONG == 33 && ED_UI_STATE == 34 && ED_FAV_SET == 38 &&
-        host_wire[n - 47] == CHAIN_ROWS && host_wire[n - 46] == 0x55 &&
-        host_wire[n - 45] == 1 && host_wire[n - 44] == 9 &&
-        host_wire[n - 43] == 0x4d && host_wire[n - 42] == 1 &&
-        host_wire[n - 41] == 64u && host_wire[n - 40] == 1 &&   /* (64 kept: 41 01 says 128) */
-        host_wire[n - 39] == 0x42 && host_wire[n - 38] == 1 && host_wire[n - 37] == 3 &&
-        host_wire[n - 36] == 0x46 && host_wire[n - 35] == 1 && host_wire[n - 34] == FM6_NFACTORY &&
-        host_wire[n - 33] == 0 &&                        /* (no bank since 1.0.3) */
-        host_wire[n - 32] == 0x53 && host_wire[n - 31] == 1 && host_wire[n - 30] == 3 &&
-        host_wire[n - 29] == 0x50 && host_wire[n - 28] == 1 && host_wire[n - 27] == 3 &&   /* FM6 v2: no bank, preset patches */
-        host_wire[n - 26] == 0x4E && host_wire[n - 25] == 1 && host_wire[n - 24] == 25 &&   /* MENU settings: 25 items (1.5) */
-        host_wire[n - 23] == 0x52 && host_wire[n - 22] == 1 && host_wire[n - 21] == 4 &&   /* RATCH */
-        host_wire[n - 20] == 0x4C && host_wire[n - 19] == 1 && host_wire[n - 18] == 1 &&   /* 1.1 parameter locks */
-        host_wire[n - 17] == 0x41 && host_wire[n - 16] == 1 && host_wire[n - 15] == 0 && host_wire[n - 14] == 1 &&   /* 1.2: 128 */
-        host_wire[n - 13] == 0x54 && host_wire[n - 12] == 1 && host_wire[n - 11] == NUDGE_DIV &&   /* 1.2: NUDGE */
-        host_wire[n - 10] == 0x57 && host_wire[n - 9] == 1 && host_wire[n - 8] == NTRK &&   /* 1.2: SONG lanes */
-        host_wire[n - 7] == 0x56 && host_wire[n - 6] == 1 && host_wire[n - 5] == 32 &&   /* 1.4.1: FM6 voice bank */
-        host_wire[n - 4] == 0x43 && host_wire[n - 3] == 1 && host_wire[n - 2] == ML_N);   /* 1.5: MIDI LEARN */
+        host_wire[e - 47] == CHAIN_ROWS && host_wire[e - 46] == 0x55 &&
+        host_wire[e - 45] == 1 && host_wire[e - 44] == 9 &&
+        host_wire[e - 43] == 0x4d && host_wire[e - 42] == 1 &&
+        host_wire[e - 41] == 64u && host_wire[e - 40] == 1 &&   /* (64 kept: 41 01 says 128) */
+        host_wire[e - 39] == 0x42 && host_wire[e - 38] == 1 && host_wire[e - 37] == 3 &&
+        host_wire[e - 36] == 0x46 && host_wire[e - 35] == 1 && host_wire[e - 34] == FM6_NFACTORY &&
+        host_wire[e - 33] == 0 &&                        /* (no bank since 1.0.3) */
+        host_wire[e - 32] == 0x53 && host_wire[e - 31] == 1 && host_wire[e - 30] == 3 &&
+        host_wire[e - 29] == 0x50 && host_wire[e - 28] == 1 && host_wire[e - 27] == 3 &&   /* FM6 v2: no bank, preset patches */
+        host_wire[e - 26] == 0x4E && host_wire[e - 25] == 1 && host_wire[e - 24] == 32 &&   /* MENU settings: 32 items (1.5.5) */
+        host_wire[e - 23] == 0x52 && host_wire[e - 22] == 1 && host_wire[e - 21] == 4 &&   /* RATCH */
+        host_wire[e - 20] == 0x4C && host_wire[e - 19] == 1 && host_wire[e - 18] == 1 &&   /* 1.1 parameter locks */
+        host_wire[e - 17] == 0x41 && host_wire[e - 16] == 1 && host_wire[e - 15] == 0 && host_wire[e - 14] == 1 &&   /* 1.2: 128 */
+        host_wire[e - 13] == 0x54 && host_wire[e - 12] == 1 && host_wire[e - 11] == NUDGE_DIV &&   /* 1.2: NUDGE */
+        host_wire[e - 10] == 0x57 && host_wire[e - 9] == 1 && host_wire[e - 8] == NTRK &&   /* 1.2: SONG lanes */
+        host_wire[e - 7] == 0x56 && host_wire[e - 6] == 1 && host_wire[e - 5] == 32 &&   /* 1.4.1: FM6 voice bank */
+        host_wire[e - 4] == 0x43 && host_wire[e - 3] == 1 && host_wire[e - 2] == ML_N);   /* 1.5: MIDI LEARN */
+    bad += check("INFO 1.5.5: 4B 01 11, a step's condition after its nudge",
+        host_wire[n - 4] == 0x4B && host_wire[n - 3] == 1 && host_wire[n - 2] == NCOND);
     request(ED_UI_SET, a, 2);
     bad += check("UI_SET updates the actual palette and reports RAM-only saving",
         host_wire[5] == 3 && settings.palette == 7 && T_BG == UI_PALETTES[7].bg);
@@ -302,10 +305,10 @@ static int steps(void)
     reset();
     TSEL->step[0].hit = TSEL->step[0].acc = 0x80;
     bad += check("legacy 8-byte step writes preserve lane data",
-                 request(ED_STEP_SET, a, 9) == 21u && TSEL->step[0].note[0] == 60 &&
+                 request(ED_STEP_SET, a, 9) == 22u && TSEL->step[0].note[0] == 60 &&
                  TSEL->step[0].hit == 0x80 && TSEL->step[0].acc == 0x80);
     bad += check("full grid step writes preserve high lane bits and constrain accents",
-                 request(ED_STEP_SET, a, 12) == 21u && TSEL->step[0].hit == 0x92 && TSEL->step[0].acc == 2);
+                 request(ED_STEP_SET, a, 12) == 22u && TSEL->step[0].hit == 0x92 && TSEL->step[0].acc == 2);
     before = TSEL->step[0]; a[2] = 71;
     for (n = 2; n <= sizeof a; n++) {
         if (n == 9u || n == 12u || n == 13u) continue;   /* (14: a[13], the ratchet, 0 is refused) */
@@ -314,7 +317,7 @@ static int steps(void)
     bad += check("partial or oversized step payloads never mutate a valid step", ok);
     a[0] = 1; a[1] = 0; memcpy(a + 2, (const uint8_t[]){1,64,0,0,0,ST_NOTE,0,99}, 8);
     bad += check("TRACK_STEP accepts its legacy payload on an unselected track",
-                 request(ED_TRACK_STEP, a, 10) == 22u && trk[1].step[0].note[0] == 64 && song.sel == 0);
+                 request(ED_TRACK_STEP, a, 10) == 23u && trk[1].step[0].note[0] == 64 && song.sel == 0);
     before = trk[1].step[0]; a[3] = 65;
     bad += check("TRACK_STEP rejects an incomplete grid extension",
                  !request(ED_TRACK_STEP, a, 11) && !memcmp(&before, &trk[1].step[0], sizeof before));
@@ -322,13 +325,13 @@ static int steps(void)
     memcpy(a, (const uint8_t[]){0, 1, 60, 0, 0, 0, ST_NOTE, SF_ACCENT, 100, 0, 0, 0, 80, 3}, 14);
     n = request(ED_STEP_SET, a, 14);
     bad += check("STEP_SET with the ratchet: x3 kept, replied after the chance, flags without it",
-                 n == 21u && step_ratchet(&TSEL->step[0]) == 3u && step_chance(&TSEL->step[0]) == 80u &&
-                 host_wire[n - 3] == 3 && host_wire[n - 4] == 80 && host_wire[n - 2] == 8 && host_wire[12] == SF_ACCENT);
+                 n == 22u && step_ratchet(&TSEL->step[0]) == 3u && step_chance(&TSEL->step[0]) == 80u &&
+                 host_wire[n - 4] == 3 && host_wire[n - 5] == 80 && host_wire[n - 3] == 8 && host_wire[12] == SF_ACCENT);
     a[7] = SF_SLIDE; n = request(ED_STEP_SET, a, 13);
-    ok = n == 21u && step_ratchet(&TSEL->step[0]) == 3u && TSEL->step[0].flags == (SF_SLIDE | 2u << SF_RATCH_SH);
+    ok = n == 22u && step_ratchet(&TSEL->step[0]) == 3u && TSEL->step[0].flags == (SF_SLIDE | 2u << SF_RATCH_SH);
     n = request(ED_STEP_SET, a, 9);
     bad += check("STEP_SET without the ratchet (an older editor) keeps the step's own",
-                 ok && n == 21u && step_ratchet(&TSEL->step[0]) == 3u);
+                 ok && n == 22u && step_ratchet(&TSEL->step[0]) == 3u);
     before = TSEL->step[0]; ok = 1;
     for (n = 0; n < 8u; n++) {
         a[13] = (uint8_t)(n < 4u ? 0u : 5u + n);
@@ -337,17 +340,17 @@ static int steps(void)
     bad += check("STEP_SET refuses a ratchet outside 1..4 and leaves the step", ok);
     memcpy(a, (const uint8_t[]){1, 2, 1, 64, 0, 0, 0, ST_NOTE, 0, 99, 0, 0, 0, 100, 4}, 15);
     n = request(ED_TRACK_STEP, a, 15);
-    ok = n == 22u && step_ratchet(&trk[1].step[2]) == 4u && host_wire[n - 3] == 4;
+    ok = n == 23u && step_ratchet(&trk[1].step[2]) == 4u && host_wire[n - 4] == 4;
     a[14] = 1; n = request(ED_TRACK_STEP, a, 15);
     bad += check("TRACK_STEP sets the ratchet of any track (x4, then back to x1)",
-                 ok && n == 22u && step_ratchet(&trk[1].step[2]) == 1u && !(trk[1].step[2].flags & SF_RATCH));
+                 ok && n == 23u && step_ratchet(&trk[1].step[2]) == 1u && !(trk[1].step[2].flags & SF_RATCH));
     /* NUDGE (1.2, INFO 54 01 16): the nudge + 8 after the ratchet, both ways; a write without it keeps the step's */
     memcpy(a, (const uint8_t[]){0, 1, 60, 0, 0, 0, ST_NOTE, SF_ACCENT, 100, 0, 0, 0, 80, 1, 8 - 5}, 15);
     n = request(ED_STEP_SET, a, 15);
-    ok = n == 21u && step_nudge(&TSEL->step[0]) == -5 && host_wire[n - 2] == 3 && host_wire[12] == SF_ACCENT &&
+    ok = n == 22u && step_nudge(&TSEL->step[0]) == -5 && host_wire[n - 3] == 3 && host_wire[12] == SF_ACCENT &&
          (TSEL->step[0].flags & (SF_ACCENT | SF_SLIDE)) == SF_ACCENT;
     a[7] = SF_SLIDE; n = request(ED_STEP_SET, a, 14);
-    ok &= n == 21u && step_nudge(&TSEL->step[0]) == -5 && host_wire[12] == SF_SLIDE;
+    ok &= n == 22u && step_nudge(&TSEL->step[0]) == -5 && host_wire[12] == SF_SLIDE;
     n = request(ED_STEP_SET, a, 9);
     ok &= step_nudge(&TSEL->step[0]) == -5;
     bad += check("STEP_SET with the nudge (-5): kept, replied + 8 after the ratchet; a write without it keeps it", ok);
@@ -357,8 +360,31 @@ static int steps(void)
                  !request(ED_STEP_SET, a, 15) && !memcmp(&before, &TSEL->step[0], sizeof before));
     memcpy(a, (const uint8_t[]){2, 7, 1, 64, 0, 0, 0, ST_NOTE, 0, 99, 0, 0, 0, 100, 1, 15}, 16);
     n = request(ED_TRACK_STEP, a, 16);
-    bad += check("TRACK_STEP sets the nudge of any track (+7)", n == 22u && step_nudge(&trk[2].step[7]) == 7 &&
-                 host_wire[n - 2] == 15);
+    bad += check("TRACK_STEP sets the nudge of any track (+7)", n == 23u && step_nudge(&trk[2].step[7]) == 7 &&
+                 host_wire[n - 3] == 15);
+    /* 1.5.5 (#209, INFO 4B 01 11): the condition after the nudge (0 none, 1..11), replied with the chance 100 before
+     * it; a write without it and a chance of 100 keeps the condition (an editor that does not know them), another
+     * chance replaces it */
+    memcpy(a, (const uint8_t[]){0, 1, 60, 0, 0, 0, ST_NOTE, 0, 100, 0, 0, 0, 100, 1, 8, 6}, 16);
+    n = request(ED_STEP_SET, a, 16);
+    ok = n == 22u && step_cond(&TSEL->step[0]) == 6u && host_wire[n - 2] == 6 && host_wire[n - 5] == 100;
+    n = request(ED_STEP_SET, a, 13);                  /* (chance 100, no condition byte) */
+    ok &= n == 22u && step_cond(&TSEL->step[0]) == 6u;
+    a[12] = 40; n = request(ED_STEP_SET, a, 13);
+    ok &= step_chance(&TSEL->step[0]) == 40u && !step_cond(&TSEL->step[0]) && host_wire[n - 2] == 0;
+    a[12] = 100; a[15] = 10; n = request(ED_STEP_SET, a, 16);
+    ok &= step_cond(&TSEL->step[0]) == COND_FILL;
+    a[15] = 0; n = request(ED_STEP_SET, a, 16);
+    ok &= !TSEL->step[0].probability;
+    bad += check("STEP_SET with the condition (1:4, FILL, none); without it a chance of 100 keeps it, 40 % replaces it", ok);
+    before = TSEL->step[0];
+    a[15] = NCOND + 1u;
+    bad += check("STEP_SET refuses a condition byte above 11 and leaves the step",
+                 !request(ED_STEP_SET, a, 16) && !memcmp(&before, &TSEL->step[0], sizeof before));
+    memcpy(a, (const uint8_t[]){3, 9, 1, 64, 0, 0, 0, ST_NOTE, 0, 99, 0, 0, 0, 100, 1, 8, 11}, 17);
+    n = request(ED_TRACK_STEP, a, 17);
+    bad += check("TRACK_STEP sets the condition of any track (!FILL)", n == 23u && step_cond(&trk[3].step[9]) == COND_NFILL &&
+                 host_wire[n - 2] == 11);
     return bad;
 }
 
@@ -829,7 +855,7 @@ static int usb_burst(void)
 }
 
 /* ---- MENU_DESC / MENU_SET (72, 73): the menu's settings over the editor ---- */
-typedef struct { uint32_t index, id, kind, nnames, tab, rest; int32_t value, min, max; char name[16], names[12][12], tabname[16], unit[16]; } menu_item_t;
+typedef struct { uint32_t index, id, kind, nnames, tab, rest; int32_t value, min, max; char name[16], names[20][12], tabname[16], unit[16]; } menu_item_t;
 static uint32_t menu_desc(uint32_t index, menu_item_t *it)   /* the reply's payload length; it parsed */
 {
     uint8_t a[1] = {(uint8_t)index};
@@ -846,7 +872,7 @@ static uint32_t menu_desc(uint32_t index, menu_item_t *it)   /* the reply's payl
         for (k = 0; p < n - 1u && host_wire[p] && k < 15u; ) it->unit[k++] = (char)host_wire[p++];
         p++;
     }
-    while (it->kind == 0u && p < n - 1u && it->nnames < 12u && (int32_t)it->nnames < it->max - it->min + 1) {   /* (kind 0: max - min + 1) */
+    while (it->kind == 0u && p < n - 1u && it->nnames < 20u && (int32_t)it->nnames < it->max - it->min + 1) {   /* (kind 0: max - min + 1) */
         for (k = 0; p < n - 1u && host_wire[p] && k < 11u; ) it->names[it->nnames][k++] = (char)host_wire[p++];
         p++; it->nnames++;
     }
@@ -865,32 +891,36 @@ static uint32_t menu_set(uint32_t id, int32_t v)            /* -> rc; host_wire[
     uint32_t n = request(ED_MENU_SET, a, 3);
     return n == 10u && host_wire[4] == ED_MENU_SET ? host_wire[5] : 99u;
 }
+#define TCH_NAMES "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,OMNI,OFF"
 static int menu_protocol(void)
 {
-    static const char *const WANT[25][2] = {
-        {"COLOR", 0}, {"STYLE", "FLAT,LINE"}, {"LARGE", "OFF,ON"}, {"ANIM", "ON,OFF,IDLE"}, {"LEDS", "OFF,DIM LO,DIM HI,INV"},
+    static const char *const WANT[32][2] = {
+        {"COLOR", 0}, {"STYLE", "FLAT,LINE"}, {"LARGE", "OFF,ON"}, {"ANIM", "ON,OFF,IDLE"}, {"LEDS", "OFF,DIM LO,DIM HI,INV,INV LO,INV HI"},
         {"HOLD", "0.3 s,0.4 s,0.5 s,0.6 s"}, {"KNOB ACCEL", "OFF,ON"}, {"FX LATCH", "OFF,ON"}, {"BPM LOCK", "OFF,ON"},
         {"SPEAKER EQ", "FLAT,LOWCUT,BASS+"}, {"USB LEVEL", "MASTER,FIXED"}, {"USB SERIAL", "ON,OFF"},
         {"CLICK", "OFF,REC,ON"}, {"CLICK LEVEL", "LOW,MID,HIGH"}, {"COUNT-IN", "OFF,1 BAR,2 BARS"},   /* (1.1: appended) */
         {"RESTORE LAST", "ON,OFF"}, {"SCALE LEDS", "OFF,ON"},                                        /* (1.2) */
         {"SCREEN OFF", "NEVER,5 MIN,15 MIN,30 MIN,60 MIN"},
         {"SCOPE", "OUT,MIX"}, {"STEP PREVIEW", "OFF,ON"}, {"CHORD ENTRY", "HOLD,ADD"},                  /* (1.2) */
-        {"MIDI IN", "CH1-4,SEL,CH5-8,CH9-12,CH13-16"}, {"TUNE", 0},   /* (1.2: the project's ROUT and TUNE; TUNE a number) */
+        {"MIDI IN", "CH1-4,SEL,CH5-8,CH9-12,CH13-16,TRACK"}, {"TUNE", 0},   /* (1.2: the project's ROUT and TUNE; TUNE a number) */
         {"HOME", "SCOPE,TRACKS,LEVELS"},                                                       /* (1.3; 1.5: LEVELS) */
-        {"HELP", "OFF,ON"}};                                                                         /* (1.5) */
-    static const int32_t DEF[25] = {-1, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};   /* (COLOR: the default palette) */
-    static const uint8_t TAB[25] = {0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 4, 2, 2, 2, 4, 1, 0, 0, 1, 1, 3, 2, 0, 4};   /* DISPLAY CONTROL AUDIO
+        {"HELP", "OFF,ON"},                                                                          /* (1.5) */
+        {"SELECT", "BPM,PAGE,MODW,VEL"},                                                             /* (1.5.5; 1.5.6 MODW VEL) */
+        {"T1 CHANNEL", TCH_NAMES}, {"T2 CHANNEL", TCH_NAMES}, {"T3 CHANNEL", TCH_NAMES}, {"T4 CHANNEL", TCH_NAMES},   /* (1.5.5) */
+        {"AUTO SELECT", "OFF,ON"}, {"SCREEN WAKE", "+MIDI,PANEL"}};                                  /* (1.5.5) */
+    static const int32_t DEF[32] = {-1, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 0, 0};   /* (COLOR: the default palette) */
+    static const uint8_t TAB[32] = {0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 4, 2, 2, 2, 4, 1, 0, 0, 1, 1, 3, 2, 0, 4, 1, 3, 3, 3, 3, 3, 3};   /* DISPLAY CONTROL AUDIO
                                                                                                          * MIDI SYSTEM (1.2) */
     static const char *const TABN[5] = {"DISPLAY", "CONTROL", "AUDIO", "MIDI", "SYSTEM"};
     int bad = 0, ok = 1;
     uint32_t i, k, n;
     menu_item_t it;
-    char joined[96];
+    char joined[128];
     const char *json = getenv("MENU_JSON");
     FILE *jf = json ? fopen(json, "w") : 0;
     reset();
     if (jf) fprintf(jf, "[");
-    for (i = 0; i < 25u; i++) {
+    for (i = 0; i < 32u; i++) {
         n = menu_desc(i, &it);
         joined[0] = 0;
         for (k = 0; k < it.nnames; k++) { if (k) strcat(joined, ","); strcat(joined, it.names[k]); }
@@ -912,7 +942,7 @@ static int menu_protocol(void)
         }
     }
     if (jf) { fprintf(jf, "]\n"); fclose(jf); }
-    bad += check("MENU_DESC: 25 items (1.0.4's 12 in the menu's order, then 1.1's CLICK, CLICK LEVEL, COUNT-IN, 1.2's RESTORE LAST, SCALE LEDS, SCREEN OFF, 1.2's SCOPE, STEP PREVIEW, CHORD ENTRY, MIDI IN, TUNE, 1.3's HOME, 1.5's HELP), ids 0..24, names, defaults; TUNE a number -50..50 ct", ok);
+    bad += check("MENU_DESC: 32 items (1.0.4's 12 in the menu's order, then 1.1's CLICK, CLICK LEVEL, COUNT-IN, 1.2's RESTORE LAST, SCALE LEDS, SCREEN OFF, 1.2's SCOPE, STEP PREVIEW, CHORD ENTRY, MIDI IN, TUNE, 1.3's HOME, 1.5's HELP, 1.5.5's SELECT, T1..T4 CHANNEL, AUTO SELECT, SCREEN WAKE), ids 0..31, names, defaults; TUNE a number -50..50 ct", ok);
     bad += check("MENU_DESC (1.0.5): after the names (TUNE: the unit) each item's tab, index and name (DISPLAY CONTROL AUDIO MIDI SYSTEM)", ok);
     {   /* an older editor reads the names and stops: the tab is past them, nothing it reads moved */
         uint32_t m = menu_desc(4, &it), p = 14, q;
@@ -922,12 +952,12 @@ static int menu_protocol(void)
         bad += check("MENU_DESC: the tab comes after every byte of the 1.0.4 reply (older editors ignore it)", ok);
     }
     ok = 1;
-    for (i = 0; i < 25u; i++) {
+    for (i = 0; i < 32u; i++) {
         menu_desc(i, &it);
         ok &= strcmp(it.name, "CALIBRATION") && strcmp(it.name, "ABOUT") && strcmp(it.name, "INFO");
     }
-    n = menu_desc(25, &it);
-    ok &= n == 2u && it.index == 25 && it.id == 127;
+    n = menu_desc(32, &it);
+    ok &= n == 2u && it.index == 32 && it.id == 127;
     n = menu_desc(127, &it);
     bad += check("MENU_DESC: no CALIBRATION / INFO / ABOUT; an index past the list answers index, 127 (no item)",
                  ok && n == 2u && it.index == 127 && it.id == 127);
@@ -966,12 +996,21 @@ static int menu_protocol(void)
                                                          * project's, rc 0: in the music, no settings record) */
     ok &= menu_set(23, 1) == 3 && ui_home_view == HV_TRACKS && ui_prefs2 == 7u && ui_scr == 1u;   /* (1.3: its own byte) */
     ok &= menu_set(24, 1) == 3 && ui_prefs2 == 15u && help_on();                                  /* (1.5: HELP, bit 3) */
-    for (i = 0; i < 25u; i++) {                         /* MENU_DESC reads them back */
-        static const int32_t SET[25] = {2, 1, 1, 1, 1, 3, 1, 1, 1, 2, 1, 0, 2, 0, 2, 1, 1, 2, 1, 1, 1, 2, -13, 1, 1};
+    ok &= menu_set(25, 1) == 3 && ui_prefs2 == 31u;                                               /* (1.5.5: SELECT, bit 4) */
+    ok &= menu_set(26, 9) == 0 && mch_get(0) == 9u && song.mch[0] == 9u && menu_set(27, MCH_OMNI) == 0 &&   /* (1.5.5: */
+          mch_get(1) == MCH_OMNI && menu_set(28, MCH_OFF) == 0 && mch_get(2) == MCH_OFF && menu_set(29, 0) == 0 &&   /* the */
+          mch_get(3) == 0u && song.mch[3] == 13u;           /* project's T1..T4 CHANNEL, rc 0, as MIDI IN) */
+    ok &= menu_set(30, 1) == 3 && (ui_rec_prefs & 0x80u) && (ui_rec_prefs & 0x40u) && click_mode == CLICK_ON &&   /* (1.5.5:
+                                                         * AUTO SELECT, a setting: bit 7 of ui_rec_prefs) */
+          ui_prefs2 == 31u;                             /* (its own byte: SELECT's bit 4 untouched) */
+    ok &= menu_set(31, 1) == 3 && ui_prefs2 == 63u && (ui_rec_prefs & 0x80u) && ui_scr == 1u;   /* (1.5.5: SCREEN WAKE
+                                                         * PANEL, bit 5 of ui_prefs2; SCREEN OFF's byte untouched) */
+    for (i = 0; i < 32u; i++) {                         /* MENU_DESC reads them back */
+        static const int32_t SET[32] = {2, 1, 1, 1, 1, 3, 1, 1, 1, 2, 1, 0, 2, 0, 2, 1, 1, 2, 1, 1, 1, 2, -13, 1, 1, 1, 9, 16, 17, 0, 1, 1};
         menu_desc(i, &it);
         ok &= it.value == SET[i];
     }
-    bad += check("MENU_SET: every setting applied as the menu does (palette, EQ, USB LEVEL, CLICK, COUNT-IN at once, RESTORE LAST, SCALE LEDS, SCREEN OFF, SCOPE, STEP PREVIEW, CHORD ENTRY, HOME), read back", ok);
+    bad += check("MENU_SET: every setting applied as the menu does (palette, EQ, USB LEVEL, CLICK, COUNT-IN at once, RESTORE LAST, SCALE LEDS, SCREEN OFF, SCOPE, STEP PREVIEW, CHORD ENTRY, HOME, HELP, SELECT, T1..T4 CHANNEL, AUTO SELECT, SCREEN WAKE), read back", ok);
     ok = menu_set(3, 0) == 3 && !(ui_prefs & PREF_ANIM_OFF) && (ui_prefs & PREF_LARGE) && menu_set(10, 0) == 3 &&
          !fx_usb_fixed && menu_set(1, 0) == 3 && ui_style == ST_FLAT;
     bad += check("MENU_SET: a flag back to its default leaves the other flags", ok);
@@ -979,12 +1018,13 @@ static int menu_protocol(void)
     /* clamping: the reply carries the device's value */
     ok = menu_set(0, 50) == 3 && ed_rv(host_wire + 7) == (int32_t)NPALETTES - 1 && settings.palette == NPALETTES - 1u;
     ok &= menu_set(0, -5) == 3 && ed_rv(host_wire + 7) == 0 && settings.palette == 0u;
-    ok &= menu_set(4, 99) == 3 && ed_rv(host_wire + 7) == 3 && settings_leds == LEDS_INV;
+    ok &= menu_set(4, 99) == 3 && ed_rv(host_wire + 7) == 5 && settings_leds == LEDS_INV && leds_inv() == 2u;   /* (1.5.6: INV HI last) */
     ok &= menu_set(5, 8191) == 3 && ed_rv(host_wire + 7) == 3 && settings_hold == 3u;
     ok &= menu_set(2, 7) == 3 && ed_rv(host_wire + 7) == 1 && (ui_prefs & PREF_LARGE);
     ok &= menu_set(14, 9) == 3 && ed_rv(host_wire + 7) == 2 && cin_bars == 2u;
     ok &= menu_set(12, -1) == 3 && ed_rv(host_wire + 7) == 0 && click_mode == CLICK_OFF;
-    ok &= menu_set(21, 9) == 0 && ed_rv(host_wire + 7) == 4 && song.g[G_ROUTE] == 4;
+    ok &= menu_set(21, 9) == 0 && ed_rv(host_wire + 7) == 5 && song.g[G_ROUTE] == 5;   /* (1.5.5: TRACK the last) */
+    ok &= menu_set(26, 40) == 0 && ed_rv(host_wire + 7) == 17 && mch_get(0) == MCH_OFF;   /* (T1 CHANNEL) */
     ok &= menu_set(22, -99) == 0 && ed_rv(host_wire + 7) == -50 && song.g[G_TUNE] == -50;
     ok &= menu_set(22, 51) == 0 && ed_rv(host_wire + 7) == 50 && song.g[G_TUNE] == 50;
     bad += check("MENU_SET: out-of-range values clamped, the reply says the value the device took (TUNE -50..50)", ok);
@@ -994,7 +1034,7 @@ static int menu_protocol(void)
         static uint8_t fav0[sizeof favorites], set0[sizeof settings];
         uint8_t hold0 = settings_hold, leds0 = settings_leds;
         memcpy(fav0, &favorites, sizeof favorites); memcpy(set0, &settings, sizeof settings);
-        ok = menu_set(25, 1) == 1 && host_wire[6] == 25 && ed_rv(host_wire + 7) == 1;
+        ok = menu_set(32, 1) == 1 && host_wire[6] == 32 && ed_rv(host_wire + 7) == 1;
         ok &= menu_set(126, -3) == 1 && host_wire[6] == 126 && ed_rv(host_wire + 7) == -3;
         ok &= menu_set(127, 0) == 1 && host_wire[6] == 127;
         ok &= !memcmp(fav0, &favorites, sizeof favorites) && !memcmp(set0, &settings, sizeof settings) &&

@@ -4,12 +4,13 @@
 
 ![Felucca 1.0](docs/felucca-1.0.png)
 
-**TL;DR:** Felucca 1.5.1 — SEQ > DETAIL for a step's chance, ratchet, nudge and velocity, MIDI Program Change, dotted delay times, REV / ECHO THROW, on top of 1.5's INSERT effects, MIDI LEARN, ANALOG's band-pass and high-pass, ENV SYNC, note lengths and per-step velocity. Connect your FM-1 to a computer by USB,
+**TL;DR:** Felucca 1.5.6 — conditional steps (1:2 … 4:4, FILL), EUCLID, DOUBLE / HALF, a MIDI channel per track, PHASE FOLD, three more drum kits and humanize in the MOD matrix, on top of 1.5.1's SEQ > DETAIL, MIDI Program Change, dotted delay times and REV / ECHO THROW, and 1.5's INSERT effects and MIDI LEARN. Connect your FM-1 to a computer by USB,
 open the [web installer](https://hugelton.github.io/Felucca/) in Chrome or Edge, and press Install;
 no extra hardware is needed. Installing is at your own risk: M-VAVE's updater or the installer's
 **Return to official V15** takes you back. Coming from 1.1.5.x? Read [⚠ Coming from 1.1.5](#-coming-from-115) first:
-projects saved by 1.4 or later do not open on 1.1.5.x. Going back from 1.5.x to 1.4.1? Read
-[⚠ New in 1.5](#new-in-15) first: projects saved by 1.5 do not open on 1.2 to 1.4.1. Want to look around first?
+projects saved by 1.4 or later do not open on 1.1.5.x. Going back from 1.5.6 to 1.5 or 1.5.1? Read
+[⚠ New in 1.5.6](#new-in-156) first: a project with conditional steps does not open there. Going back from 1.5.x to
+1.4.1? Read [⚠ New in 1.5](#new-in-15) first: projects saved by 1.5 do not open on 1.2 to 1.4.1. Want to look around first?
 [Try it in your browser](https://hugelton.github.io/Felucca/webapp/try/), no FM-1 needed.
 
 Multi-engine synthesizer firmware for the M-VAVE FM-1. Please report what you find in
@@ -31,7 +32,8 @@ Multi-engine synthesizer firmware for the M-VAVE FM-1. Please report what you fi
 - **Four tracks**, one synth part each with its own engine and sound (drums are the DRUM engine);
   8 voices shared between them. ALGORITHM selects the track on every page
 - **Sequencer:** 64 steps per track with chords, ties, accent, slide, per-step chance, velocity and ratchets
-  (a step played 2, 3 or 4 times in its length); a piano roll of the steps, where KNOB 3 sets a note's length; a drum grid (white keys =
+  (a step played 2, 3 or 4 times in its length); **conditions** (a step that plays on loop 1 of 2, 4 of 4 …, or only
+  with **FILL** held, GLO + E4); a piano roll of the steps, where KNOB 3 sets a note's length; a drum grid (white keys =
   steps, black keys = lanes); **SEQ > DETAIL**: the cursor step's chance, ratchet, nudge and velocity on the four
   knobs, drawn as lanes over the steps; automation: recording of knob moves per step (an automation icon marks the cards it
   drives); live loop recording with overdub; step recording at the cursor (REC on SEQ > STEP while stopped), one
@@ -47,7 +49,8 @@ Multi-engine synthesizer firmware for the M-VAVE FM-1. Please report what you fi
   delete one. 128 records shared by the four tracks. SAVE held undoes every edit
 - **SEQ TOOLS:** hold SEQ on any page for tools on the keys: CLEAR, REVERSE, SHIFT < / >, **RANDOM** (a new beat,
   or new notes in the scale on the same rhythm) and **COOK** (changes the pattern a little each press); on a DRUM
-  track also BEAT and each lane's CLEAR, REVERSE, FILL and RANDOM; KNOB 1–4 are LEN, DIV, SWING and GATE. Each tool
+  track also BEAT and each lane's CLEAR, REVERSE, FILL and RANDOM; **EUCLID** (a Euclidean rhythm: HITS, STEPS,
+  ROT), **DOUBLE** and **HALF** (the pattern twice, or its first half); KNOB 1–4 are LEN, DIV, SWING and GATE. Each tool
   is one undo (SAVE held); OCT− puts the track back as the layer found it
 - **Metronome and count-in:** CLICK (OFF, while recording, or always) with three levels, and a count-in
   of 1 or 2 bars before recording from stop; the click goes to the headphones and speaker only, never to
@@ -62,7 +65,8 @@ Multi-engine synthesizer firmware for the M-VAVE FM-1. Please report what you fi
 - **LFO:** RATE or **SYNC** to a note value (4 bars to 1/32, following the tempo or an external clock), **TRIG** NOTE
   or FREE, **POL** bipolar or unipolar (LFO > LFO 2)
 - **Modulation matrix:** 4 slots per track, MIDI controllers as sources, **S&H** and **SLEW** (a random value per
-  LFO cycle, held or gliding), and **DEPTH** as a destination, so the matrix can modulate the LFO itself
+  LFO cycle, held or gliding), **DEPTH** as a destination, so the matrix can modulate the LFO itself, and **VEL** and
+  **TIME** to humanize (each note's velocity, a step played a little late)
 - **SPREAD** (EDIT > VOICE 3): the voices of a POLY or UNISON track alternate left and right of its PAN
 - **ENV SYNC** (ENV > ENV DEST): the envelope's attack, decay and release as note values of the tempo
 - **Effects:** distortion, an **INSERT** (drives, CRUSH, phaser, flanger, chorus, with a dry / wet MIX) and the
@@ -80,7 +84,8 @@ Multi-engine synthesizer firmware for the M-VAVE FM-1. Please report what you fi
   pressed breathes softly instead of blinking
 - **Presets:** factory presets, 32 user preset slots and 4 projects, named on the device (an FM6
   sound keeps its own patch in both); user presets get a category, and a project can get a random name; projects
-  from every earlier version load. The PRESETS knob changes the sound from every page that is not a list.
+  from every earlier version load. The PRESETS knob changes the sound from every page that is not a list. INIT loads
+  the engine's first preset, **CLEAN INIT** its basic sound with nothing added; SAVE > PROJECT can **ERASE** a project.
   Turn the FM-1 off and on and the music is as you left it (MENU > RESTORE LAST, an autosave of its own,
   written only when stopped and idle)
 - **Screen:** flat UI with Inter Tight and Fukiai icons, FLAT or LINE style, 10 palettes including
@@ -89,9 +94,10 @@ Multi-engine synthesizer firmware for the M-VAVE FM-1. Please report what you fi
   five tabs. The header shows the track and the **project slot of its pattern** ("1 A", "1 A*" once edited), the
   play state and the tempo. HOME shows the oscilloscope or, with MENU > HOME TRACKS, **the four tracks** with their
   steps playing (LEVELS: with the four tracks' levels on the knobs); the screen can go dark when the panel is left
-  alone (MENU > SCREEN OFF); MENU > HELP shows a short hint when a page or a layer opens
+  alone (MENU > SCREEN OFF; MIDI notes keep it on and wake it); MENU > HELP shows a short hint when a page or a layer
+  opens; MENU > CONTROL > SELECT makes the SELECT knob step the pages, or play the mod wheel or the keys' velocity
 - **LEDs:** idle buttons and keys glow dim so the panel can be found in the dark (MENU > LEDS: OFF,
-  DIM LO, DIM HI or INV, the official firmware's look); PLAY turns green while playing; the keys show
+  DIM LO, DIM HI or INV, the official firmware's look, also dimmed as INV LO and INV HI); PLAY turns green while playing; the keys show
   the notes the sequencer and MIDI IN play, and on SEQ > STEP (stopped) the notes of the step under the cursor;
   the drum grid marks the beats (steps 1, 5, 9, 13); MENU > SCALE LEDS shows the track's scale on the keys;
   a soft light sweeps over the keys at power-on, and with MENU > ANIM IDLE drifts over them while the FM-1 waits
@@ -99,16 +105,87 @@ Multi-engine synthesizer firmware for the M-VAVE FM-1. Please report what you fi
   (the computer picks) that records the master output on the computer, no driver needed (at a fixed level with MENU > USB LEVEL FIXED;
   on macOS 13–15, set MENU > USB SERIAL to OFF so the audio input appears)
 - **MIDI:** USB and TRS MIDI in; MENU > MIDI > MIDI IN: CH1-4 (channels 1–4 play tracks 1–4), CH5-8, CH9-12 or
-  CH13-16 (another block of four, e.g. for two FM-1s on one cable), or SEL (every channel plays the selected track);
-  the keys send on the track's channel; pitch bend, sustain, panic; clock from internal, USB or TRS. MIDI CCs set
+  CH13-16 (another block of four, e.g. for two FM-1s on one cable), SEL (every channel plays the selected track) or
+  **TRACK** (each track its own channel, 1–16, OMNI or OFF: MENU > MIDI > T1–T4 CHANNEL); a MIDI note lights its
+  track's number, and **AUTO SELECT** makes that track the selected one; the keys send on the track's channel; pitch bend, sustain, panic; clock from internal, USB or TRS. MIDI CCs set
   track parameters: 5 GLIDE, 7 LEVEL, 10 PAN, 71 resonance, 72 / 73 / 75 release / attack / decay, 74 brightness,
   91 / 93 / 94 the reverb, chorus and delay sends. **MIDI LEARN** (GLO + D4) sets up to 16 more CCs of your
   controller to any knob's parameter of any track, on the device; **Program Change** loads a track's sound by its
   number in PRESETS
 - **Web:** editor for every parameter (with a 6-operator FM patch editor that also sends a whole 32-voice bank),
-  step grid, mixer, preset library, sample upload and recording with trim, the MENU settings; full backup and restore
+  step grid, mixer, preset library, sample upload (with a slot's sample rate and bit depth) and recording with trim,
+  the MENU settings; full backup and restore
   (everything but the FM6 voice bank: keep its .syx file);
   return to the official firmware; Felucca itself running in the browser
+
+## New in 1.5.6
+
+1.5.6 is the release after 1.5.1 (1.5.5 was never released): everything below is new since 1.5.1. "OCT− held +
+a knob: that value back to its default" (#205) was tried and left out, so OCT− shifts the octave when pressed, as in
+1.5.1.
+
+- **Conditions on steps, and FILL** (#209): on **SEQ > DETAIL**, KNOB 1 (CHANCE) goes on past 100 % into the
+  conditions **1:2 2:2 1:3 2:3 3:3 1:4 2:4 3:4 4:4 FILL !FILL**. `a:b` plays the step on loop a of every b loops of its
+  track (1:2 every other loop, 4:4 only on the 4th; the count starts on PLAY and at each SONG section), so one pattern
+  changes over two, three or four bars. **FILL** steps play only while **GLO + E4** (FILL) is held, **!FILL** steps only
+  while it is not. A step has a CHANCE or a condition; EDIT on DETAIL puts it back to 100 %. AUTOMATION lists them as
+  COND rows, and STEP marks the step.
+- **EUCLID in SEQ TOOLS** (#186): SEQ held + **F4**: a Euclidean rhythm on the selected track, written at once (you
+  hear it while playing). KNOB 1 **HITS**, 2 **STEPS** (the cycle, repeated through LEN), 3 **ROT**; OCT+ applies, OCT−
+  cancels. DRUM: the selected lane; other engines: the hits keep the step's own note (or take the root). One undo.
+- **DOUBLE and HALF in SEQ TOOLS** (#85): SEQ held + **D5** doubles the pattern (steps 1..LEN once more after them, LEN
+  x2, up to 64 steps), **E5** halves it (the first half kept). The steps go whole, with their CHANCE or condition,
+  RATCH, NUDGE, VEL, locks and automation. One undo each.
+- **A MIDI channel per track** (Discussions #202, #143): MENU > MIDI > MIDI IN has **TRACK**, and the MIDI tab has
+  **T1 CHANNEL … T4 CHANNEL**: 1–16, **OMNI** (any channel no other track has) or **OFF**. Drums on 10, bass on 2, a pad
+  on 8 and a lead on 11, for example. Notes, pitch bend, the CC map, CC1 / CC11, aftertouch and Program Change follow
+  the track's channel; a channel two tracks have plays the first of them. The channels are 1–4 until you change them,
+  so TRACK starts out as CH1-4. Saved with the project, like MIDI IN.
+- **MIDI shows the track it plays** (Discussion #208): a MIDI note lights its track's number for a moment (the header,
+  HOME TRACKS / LEVELS, the MIXER). **MENU > MIDI > AUTO SELECT** (OFF by default) makes the track the notes play the
+  selected one, so the knobs edit what you are playing; it waits while the selected track is playing too, so a chord
+  across tracks does not flicker. Not with MIDI IN SEL.
+- **MIDI notes wake the screen:** with SCREEN OFF on, a MIDI note turns the screen back on and keeps it on, and still
+  plays. Clock, CCs and SysEx do not count. **MENU > MIDI > SCREEN WAKE**: **+MIDI** (the default) or **PANEL** (the
+  panel only, as before).
+- **SELECT can step the pages** (Discussion #188): MENU > CONTROL > **SELECT**: BPM (the default, the tempo as before)
+  or **PAGE**: turning SELECT steps the pages of the page family shown, as a tap of its button does (left goes back).
+  The tempo is then GLO + SELECT, CLOCK's KNOB 1 or GLO's TAP.
+- **SELECT can play: MODW and VEL** (Discussion #84): two more SELECT values. **MODW**: SELECT moves the selected
+  track's mod wheel 0–127, as MIDI CC1 does (so MODW in the MOD matrix follows it), and sends it as CC1. **VEL**:
+  SELECT sets the velocity the panel keys play at, 1–127 (100 from power-on), heard, sent and recorded. The value shows
+  in the header; neither is saved (the setting is).
+- **QNT SEQ+T** (#218): a fifth QNT value on the SCL page, after SEQ: SEQ, and the sequence follows **TRN** too (each
+  step's notes move by TRN, then snap onto the scale, as they play; the steps keep what was written), so turning TRN
+  transposes the pattern and the keys together. Notes recorded with TRN at +3 already sound 3 up and move again under
+  SEQ+T: record at TRN 0, then turn it.
+- **LEDS: INV LO and INV HI** (Discussion #212): MENU > DISPLAY > LEDS has two more values after INV, INV with the lit
+  LEDs dimmed to a steady low level (HI about 1/8 of full, LO about 1/12), so INV no longer glares in a dark room.
+- **The header** centres its play state, metronome and tempo as one group.
+- **CLEAN INIT** (#190): the engine's basic sound with nothing added (E1–E8 at the engine's defaults, no FX sends,
+  INSERT OFF, no LFO / ENV / MOD amounts; FM6 a single sine). SAVE > TOOLS: KNOB 2 a click past INIT; in the EDIT layer
+  F5. INIT is as it was (the engine's first preset).
+- **SAVE > PROJECT: ERASE** (#199): KNOB 2 picks ERASE, OCT+ asks "ERASE PROJECT B?", OCT+ again erases the slot.
+  Only while stopped.
+- **PHASE has FOLD** (Discussion #104): EDIT 2's fourth value (E8, empty until now) is **FOLD**, a wavefolder on each
+  voice: first a soft saturation, then up to four folds, brighter and more metallic; above A4 it folds less the
+  higher the note, so the top keys stay clean. 0 is off, the default: every PHASE sound plays as before. ⚠ A MOD
+  route or a MIDI LEARN CC set to a PHASE track's E8 now moves FOLD (it did nothing before).
+- **Humanize: VEL and TIME in the MOD matrix** (Discussion #213): two destinations after DEPTH. **VEL** moves each
+  note's velocity (RAND -> VEL: every note, and every note of a chord, its own); **TIME** plays a sequencer step up to
+  30 ms late (RAND -> TIME: a loose timing; S&H or an LFO for a drift). Set on LFO > LFO DEST > MOD, saved with the
+  sound; no cost while a sound plays.
+- **Three more drum kits** (Discussion #216): DRUM's KIT has **DEEP**, **TIGHT** and **PERC** after 77, from the five
+  kits' own pieces (the same CPU), and PRESETS lists them as DEEP KIT, TIGHT KIT and PERC KIT. Program Change 6–8 picks
+  them on a DRUM track.
+- Fixed (#199): PAN (and every other bipolar value) reads −100 … +100 %, its top no longer +98 (the sound is
+  unchanged). SEQ > AUTOMATION: KNOB 3 no longer jumps the selection a row while it changes a record's parameter.
+- ⚠ **Going back to 1.5 or 1.5.1:** a project with a conditional step does not open there (its slot reads empty
+  until something is saved over it; the web editor warns before restoring such a backup there). Clear the conditions
+  first, or keep a backup. A project saved with MIDI IN TRACK plays there as CH5-8, CH9-12 or CH13-16 when its four
+  channels are such a block in order, else as CH1-4, and saving it there drops the channels. FOLD is ignored there.
+  A MOD slot set to VEL or TIME reads as DEPTH there; DEEP, TIGHT and PERC play the 77 kit; QNT SEQ+T reads as SEQ;
+  LEDS INV LO / HI read as INV; SELECT MODW / VEL read as BPM. Otherwise 1.5.6 keeps 1.5.1's formats.
 
 ## New in 1.5.1
 
@@ -229,7 +306,7 @@ The pages by button:
 |---|---|---|
 | HOME | HOME, MIXER, CLOCK (BPM, swing, clock source) | the menu |
 | SEQ | STEP (the piano roll, or the drum grid), DETAIL, AUTOMATION | SEQ TOOLS, on every page |
-| GLO | SONG | the GLO layer (mutes, solos, levels, TAP tempo, D4: MIDI LEARN) |
+| GLO | SONG | the GLO layer (mutes, solos, levels, TAP tempo, D4: MIDI LEARN, E4: FILL) |
 | SAVE | USER, PRESETS, PHRASES (the pattern loader), PROJECT, TOOLS | UNDO |
 | LFO | LFO, LFO 2, LFO DEST, MOD | MOMENTARY (with a knob) |
 | EDIT | EDIT 1, EDIT 2, VOICE, VOICE 2, VOICE 3 (FM6 adds OPERATOR, OP ENV, OPERATOR 2; DRUM LANES; SLICE SLICES; ANALOG FILTER) | the EDIT layer (the engines; on DRUM the black keys mute lanes) |
@@ -239,8 +316,9 @@ The pages by button:
 ## Menu
 
 Hold **HOME** for the menu, in five tabs: **DISPLAY** (COLOR, STYLE, LARGE, ANIM, LEDS, SCREEN OFF, SCOPE, HOME),
-**CONTROL** (HOLD, KNOB ACCEL, FX LATCH, BPM LOCK, SCALE LEDS, STEP PREVIEW, CHORD ENTRY), **AUDIO** (SPEAKER EQ,
-USB LEVEL, CLICK, CLICK LEVEL, COUNT-IN, TUNE), **MIDI** (MIDI IN, LEARN CLEAR) and **SYSTEM** (USB SERIAL,
+**CONTROL** (HOLD, KNOB ACCEL, FX LATCH, BPM LOCK, SCALE LEDS, STEP PREVIEW, CHORD ENTRY, SELECT), **AUDIO** (SPEAKER EQ,
+USB LEVEL, CLICK, CLICK LEVEL, COUNT-IN, TUNE), **MIDI** (MIDI IN, T1–T4 CHANNEL, AUTO SELECT, SCREEN WAKE, LEARN CLEAR)
+and **SYSTEM** (USB SERIAL,
 RESTORE LAST, HELP, HARDWARE CALIBRATION, INFO, ABOUT).
 ALGORITHM moves between the tabs and PRESETS through the rows of one; any of KNOB 1–4, or OCT+ / OCT−,
 changes the value (OCT+ opens HARDWARE CALIBRATION, INFO and ABOUT); press HOME to close the menu. Every new
@@ -258,11 +336,13 @@ way as from the menu, in the same tabs.
   the LED sweep at power-on. IDLE is ON plus a gentle LED animation after a minute without input: a soft light drifts
   over the keys and the buttons breathe; any key, button or knob ends it and does what it always does. It never runs
   while playing, with a track armed, in a layer, the menu or a dialog
-- **LEDS:** OFF (no glow), DIM LO, DIM HI (default) or INV (the idle LEDs lit, the active ones dark).
+- **LEDS:** OFF (no glow), DIM LO, DIM HI (default), INV (the idle LEDs lit, the active ones dark), INV LO or INV HI
+  (INV with the lit LEDs at a steady low level, about 1/12 or 1/8 of full, for a dark room).
   What can be pressed breathes up to about 60 % of a lit LED, about 30 % with DIM LO
 - **SCREEN OFF:** NEVER (default), 5 MIN, 15 MIN, 30 MIN or 60 MIN: after that long with no button, key or knob
   touched, the screen goes dark; the sound, the sequencer, MIDI and USB go on. The backlight stays on (on the FM-1
-  its line also enables the buttons and keys). The next button, key or knob only turns the screen back on
+  its line also enables the buttons and keys). The next button, key or knob only turns the screen back on; a MIDI
+  note turns it on too and plays (SCREEN WAKE)
 - **SCOPE:** OUT (default) or MIX: what HOME's oscilloscope shows. OUT the sound after MASTER (the picture shrinks
   with the volume), MIX the mix before MASTER, the same size at any volume
 - **HOME:** SCOPE (default), TRACKS or LEVELS: under HOME's four cards, the oscilloscope or the four tracks, a row
@@ -283,6 +363,10 @@ way as from the menu, in the same tabs.
 - **CHORD ENTRY:** HOLD (default) or ADD: how step recording writes. HOLD: the keys held together become the step,
   letting go moves on. ADD: each key adds its note to the step, up to 4 (a key whose note is there takes it out),
   and KNOB 1 moves on, so a chord goes in one finger at a time
+- **SELECT:** BPM (default), PAGE, MODW or VEL. PAGE: turning SELECT steps the pages of the family shown, as a tap
+  of its button does (left goes back). MODW: SELECT is the selected track's mod wheel (as MIDI CC1, sent out too).
+  VEL: SELECT sets the velocity the keys play at (1–127). With any but BPM the tempo is GLO + SELECT, HOME > CLOCK or
+  GLO's TAP
 - **SPEAKER EQ:** FLAT, LOWCUT or BASS+, a tone setting for the built-in speaker (not a switch). It also
   shapes the headphone out and USB audio, so keep it on FLAT when recording. The firmware cannot turn
   the speaker off, but headphones in the jack do
@@ -293,7 +377,11 @@ way as from the menu, in the same tabs.
 - **COUNT-IN:** OFF (default), 1 BAR or 2 BARS: with a track armed, PLAY counts in first (clicking even with
   CLICK OFF), and a note played in the last half beat lands on step 1. Not with an external clock
 - **TUNE:** the global tuning, −50 to +50 cents. It is the project's, saved and loaded with it
-- **MIDI IN:** CH1-4 (default), SEL, CH5-8, CH9-12 or CH13-16 (see MIDI above). The project's too
+- **MIDI IN:** CH1-4 (default), SEL, CH5-8, CH9-12, CH13-16 or TRACK (see MIDI above). The project's too
+- **T1–T4 CHANNEL:** with MIDI IN TRACK, each track's channel: 1–16, OMNI (any channel no other track has) or OFF;
+  1–4 until changed (dim while MIDI IN is something else). The project's too
+- **AUTO SELECT:** OFF (default) or ON: a MIDI note into another track makes it the selected one
+- **SCREEN WAKE:** +MIDI (default) or PANEL: whether MIDI notes keep the screen on and wake it (SCREEN OFF)
 - **LEARN CLEAR:** how many CCs MIDI LEARN has set (NONE, 1 CC … 16 CC); OCT+ clears them all
 - **USB SERIAL:** ON or OFF, applied when the menu closes (the FM-1 reconnects). OFF leaves out the
   serial console, a developer tool, so the FM-1 is a plain audio + MIDI device; this lets macOS 13–15
@@ -316,7 +404,7 @@ In the order the device lists them:
   web editor (which imports .syx files) or on the device: EDIT > OPERATOR (ratio or fixed frequency, fine, level),
   OP ENV (each stage's rate and level, drawn as the envelope) and OPERATOR 2 (mode, detune, velocity), one
   operator at a time on the algorithm chart; macros on top; SLOT picks a factory patch (F1–F8), the track's own (OWN) or a voice of the bank the web editor sent (B1–B32)
-- **PHASE**: phase distortion (ported from CrispyZebra)
+- **PHASE**: phase distortion (ported from CrispyZebra), with a wavefolder (FOLD, EDIT 2)
 - **LOFI**: chiptune; pulse, triangle, saw, noise and a 4-bit wave RAM, stepped envelope, sweep, arpeggio
 - **SAMPLE**: multisampled instruments (PIANO, FLUTE, SAX) and 3 user sample slots
 - **VOICE**: formant oscillator, sung vowels
@@ -328,11 +416,12 @@ In the order the device lists them:
 - **SLICE**: a drum break, a piano note (both built in) or your own sample cut into slices, one per key;
   set the slices by hand on the SLICES page
 - **DRUM**: an 8-lane kit of Felucca's own drum voices on the General MIDI key map. KIT picks the
-  standard kit or one of five virtual-analog (VA) kits in the manner of
+  standard kit, one of five virtual-analog (VA) kits in the manner of
   classic analog drum machines (the numbers are a hint), every lane its own voice: **80** (deep sine kick with a long decay, noisy snare,
   six-square hats), **10** (swept kick, white-noise snare, long-tailed claps, a cymbal), **66** (soft
   round kick, bright snare, noise hats, a conga), **55** (dropping kick, high metal hats, a metal bell)
-  and **77** (swelling kick, multi-burst claps, claves, a cymbal). All of them are synthesized by
+  and **77** (swelling kick, multi-burst claps, claves, a cymbal), or one of three put together from their pieces:
+  **DEEP** (a low swelling kick, a long cymbal), **TIGHT** (short and dry) and **PERC** (conga, claves, a bell). All of them are synthesized by
   Felucca, no samples. EDIT > LANES and LANES 2 set each lane's level
 
 The DIGITAL engine of 0.9 has been replaced by FM6: projects and presets with DIGITAL sounds load
@@ -361,7 +450,8 @@ above and below it. Black keys are silent, including during live recording and
 step entry. **TRN** transposes the resulting notes; the octave buttons shift them
 by full octaves. Set QNT to OFF for the normal chromatic keyboard. QNT SEQ snaps the keys like SNAP and
 also maps the sequenced notes onto the current ROOT / SCALE as they play (the steps are not changed; drum
-kits are never quantized).
+kits are never quantized). QNT SEQ+T is SEQ with the sequence following TRN too: turning TRN transposes the pattern
+and the keys together (record at TRN 0, then turn it).
 
 Available scales: chromatic (CHR), major (MAJ), natural minor (MIN), Dorian (DOR),
 Mixolydian (MIX), major pentatonic (PEN), minor pentatonic (MPEN), harmonic minor
