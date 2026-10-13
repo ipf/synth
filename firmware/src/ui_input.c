@@ -629,6 +629,7 @@ static void confirm_open(uint32_t kind, uint32_t trk)
 static void cursor_move(int32_t c)
 {
     cursor_set(c);
+    follow_hold();                                      /* (1.6, #242: the roll stays where the cursor is) */
     if ((ui_prefs2 & (PREF_PREVIEW >> 16)) && !song.playing && !seq_counting() && transport_req != 1u && !chain_busy() &&
         !ui.home && song.seq_mode && cur_page()->graph == GR_ROLL)
         aud_req = (uint16_t)((uint32_t)ui.cursor << 8 | (song.sel + 1u));
@@ -890,6 +891,7 @@ static void step_edit(uint32_t slot, int32_t steps)
     step_t *st = &TSEL->step[ui.cursor];
     uint32_t i;
     if (detail_on()) {                                    /* DETAIL (1.5.1): CHANCE RATCH NUDGE VEL */
+        follow_hold();
         sd_turn(slot, steps);
         return;
     }
@@ -897,6 +899,8 @@ static void step_edit(uint32_t slot, int32_t steps)
         grid_edit(slot, steps);
         return;
     }
+    if (slot)
+        follow_hold();                                    /* (1.6, #242: editing the cursor's step: it stays on the screen) */
     switch (slot) {
     case 0:                                               /* STEP: the cursor */
         cursor_move(ui.cursor + steps);
@@ -1223,6 +1227,7 @@ static void seq_entry(uint32_t pressed)
             continue;
         if (!ui.entry_open) {
             ui.entry_open = 1;
+            follow_hold();                                /* (1.6, #242) */
             if (!add) {
                 st->n = 0;
                 st->time = ST_NOTE;
@@ -1488,6 +1493,7 @@ static void ui_input(void)
     if (!ui.menu)
         usb_serial_apply();                             /* (MENU > USB SERIAL: when the menu has closed) */
     settings_later_poll();                              /* (#197: LIST / FAV written once the view is left or idle) */
+    follow_poll();                                      /* (1.6, #242: SEQ's roll follows the play position) */
     if (scr_input(pressed, notes))                      /* MENU > SCREEN OFF: dark, or the wake gesture: swallowed */
         return;                                         /* (before the buttons' timers: no tap or hold after it) */
     if (mom.n && !mom_down()) {                         /* MOMENTARY: LFO let go (or the menu, a layer ..): back */

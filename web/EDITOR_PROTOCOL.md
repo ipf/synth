@@ -185,7 +185,7 @@ at 1..3 and hides 6 5 8: what it sets still plays the right kit, and the device 
 
 | cmd | Request args | Reply args |
 | --- | --- | --- |
-| 1 INFO | — | version string, NENGINES, P_COUNT, G_COUNT, NSTEP, P_E0, then NENGINES engine-name strings, then (v3) NTRK (4), then (v6) CHAIN_ROWS (16), then the tagged blocks `55 01 uiCaps`, `4D 01 64 01`, `42 01 3`, `46 01 nfactory nbank`, `53 01 3`, (1.0.3) `50 01 3` and (1.0.4) `4E 01 count` (MENU settings; 12, 1.1: 15, 1.2: 17, 1.1.5: 18, 1.2: 23, 1.3: 24, 1.5: 25, 1.5.5: 32) and (1.0.5) `52 01 4` (ratchet) and (1.1) `4C 01 1` (parameter locks) and (1.2) `41 01 00 01` (128 motion records: two 7-bit bytes, LSB first; `4D 01 64 01` keeps saying 64) and `54 01 16` (a step's nudge, 1/16 of a step) and `57 01 4` (song sections: a slot per track, SONG ops 4..7) and (1.4.1) `56 01 32` (FM6's voice bank: cmds 74..77, SLOT 9..40) and (1.5) `43 01 16` (MIDI LEARN's map: cmds 78, 79) (below); older firmware ends earlier |
+| 1 INFO | — | version string, NENGINES, P_COUNT, G_COUNT, NSTEP, P_E0, then NENGINES engine-name strings, then (v3) NTRK (4), then (v6) CHAIN_ROWS (16), then the tagged blocks `55 01 uiCaps`, `4D 01 64 01`, `42 01 3`, `46 01 nfactory nbank`, `53 01 3`, (1.0.3) `50 01 3` and (1.0.4) `4E 01 count` (MENU settings; 12, 1.1: 15, 1.2: 17, 1.1.5: 18, 1.2: 23, 1.3: 24, 1.5: 25, 1.5.5: 32) and (1.0.5) `52 01 4` (ratchet) and (1.1) `4C 01 1` (parameter locks) and (1.2) `41 01 00 01` (128 motion records: two 7-bit bytes, LSB first; `4D 01 64 01` keeps saying 64) and `54 01 16` (a step's nudge, 1/16 of a step) and `57 01 4` (song sections: a slot per track, SONG ops 4..7) and (1.4.1) `56 01 32` (FM6's voice bank: cmds 74..77, SLOT 9..40) and (1.5) `43 01 16` (MIDI LEARN's map: cmds 78, 79) and (1.5.5) `4B 01 NCOND` (a step's condition) and (1.6) `45 01 5` (CUSTOM palette: cmds 80, 81) (below); older firmware ends earlier |
 | 2 GET | scope, id | scope, id, v14 |
 | 3 SET | scope, id, v14 | scope, id, v14 (the value after clamping). Setting global `G_ENGSEL` (id from DESC label "ENG") changes the engine: its defaults, then its first preset (as on the device) |
 | 4 DUMP | — | engine, preset, then P_COUNT × v14 (the selected track), then G_COUNT × v14 (globals) |
@@ -973,6 +973,39 @@ again (LEARN_GET) when it matters (e.g. with the settings, or after the user say
 03 62 F7` (op 0: CC74, T4, id 98: P_E0 + 2, DRUM's TONE, where P_E0 is 96 as in 1.2 .. 1.4.1) answers `F0 7D 46 4C 4F 00 10 01 4A 03 62 ...
 F7` (rc 0, 16 entries, the first CC74 on T4 id 98).
 
+## CUSTOM palette (80-81; 1.6)
+
+COLOR (MENU > DISPLAY, Discussion #239, #244) has a palette of the user's as its 11th value, CUSTOM. A palette is five
+stored colours, BG SURF TEXT THEME ACCENT; the device derives the other tokens (MID, DIM, LINE, SEL, TINT, INK, RAISE, KEY,
+LANE, GRID, REC) from them with fixed blends, as for the built-in palettes (`firmware/src/gfx.c palette_set`,
+`tools/gen_ui_palettes.py`), CUSTOM is not GREY and not MONO (the channels blend as they are). The colours are RGB565,
+sent as three 7-bit bytes each: red 0..31, green 0..63, blue 0..31. CUSTOM is part of the settings (kept across
+power-off, not in projects or user presets; a full backup carries it with the settings object, id 1: bytes 0..9 and 12 of
+the favorites' 16th row). Firmware before 1.6 keeps the bytes (a round trip through it does not lose the palette) and shows
+the built-in palette that was in use before CUSTOM was chosen (the settings' palette field is never CUSTOM). INFO
+advertises `45 01 5` (five colours) after `4B 01 NCOND`; firmware without the tag answers neither command.
+
+While one is stored, CUSTOM is the 11th name of `UI_PALETTES` (cmd 36: count 11, the last "CUSTOM"), `UI_SET` id 0 takes
+10, `UI_STATE`'s palette byte is 10 while it is in use, and MENU's COLOR (id 0 in `MENU_DESC` / `MENU_SET`) has 11 values
+(max 10, the last "CUSTOM"). With none stored: 10 values as before, and `UI_SET` 0 with 10 answers rc 1.
+
+| cmd | Request args | Reply args |
+| --- | --- | --- |
+| 80 PALETTE_GET | — | flags (bit 0 stored, bit 1 in use), 5, then 5 × (r, g, b): the stored colours, or with none stored the palette in use (a place to start from) |
+| 81 PALETTE_SET | op 0 preview: 0, 5 × (r, g, b); op 1 store: 1, 5 × (r, g, b); op 2 remove: 2; op 3 drop the preview: 3 | rc, then PALETTE_GET's reply |
+
+Op 0 shows the colours at once and stores nothing (RAM only; the device's own COLOR or op 3 brings back the palette in
+use; a power cycle too). Op 1 stores them, makes CUSTOM the palette in use and saves like `UI_SET` (rc 0 saved, 3 applied in
+RAM only, 4 saved when the transport stops). Op 2 removes the stored palette (the built-in palette from before is in use
+again). rc 1: arguments (a value past its range, an unknown op, a wrong length). **The device accepts any colours**, readable
+or not; it is the editor that warns. The rule the editor warns by (the lightness 0..255 as in `firmware/src/gfx.c ux_luma`: (54 R + 183 G +
+19 B) / 256 of the colour at full scale): TEXT against BG at least 128 apart, TEXT against SURF 96, THEME against BG 80,
+ACCENT against BG 64; every built-in palette keeps 195, 171, 135 and 147 at the least. With colours nobody can read the way
+back is the editor's op 2, or the device's MENU: hold HOME for the menu, COLOR is the first row of the first tab (DISPLAY), a
+knob turn picks a built-in palette. A preview by the slider is op 0 sent at most every few tens of ms; the value in the
+settings changes only with op 1. Example: `F0 7D 46 4C 51 01 01 02 05 03 04 0A 06 ...` is op 1 with BG = (r 1, g 2, b 5),
+SURF = (3, 4, 10), ...
+
 ## Tagged device preferences v1
 
 INFO appends `0x55, 1, uiCaps` after the existing `NTRK, CHAIN_ROWS` bytes.
@@ -993,7 +1026,7 @@ advertises 9 (palette and favorites).
 | 38 FAV_SET | engine, preset v14, on/off | rc; when applied: engine, preset v14, on/off |
 
 UI_SET ids: 0 palette (0..count-1, the order of UI_PALETTES: GREY GREEN AMBER ICE VIOLET ROSE PAPER
-HI-CON NIGHT MONO; 1.0.2: GREY is the MONO of 1.0.1, MONO a new black and white palette), 1 font (retired: rc 2), 2 reserved, 3 preset filter (0 all, 1 favorites). Unsupported state
+HI-CON NIGHT MONO; 1.0.2: GREY is the MONO of 1.0.1, MONO a new black and white palette; 1.6: CUSTOM last while one is stored), 1 font (retired: rc 2), 2 reserved, 3 preset filter (0 all, 1 favorites). Unsupported state
 fields are 127.
 Both u28 signatures are four least-significant-first 7-bit bytes; compare them
 to refresh changed favorites and user slots. Factory references use stable
@@ -1058,7 +1091,7 @@ before MIDI IN the first 21, 1.2 the first 23, 1.3 / 1.4 the first 24, 1.5 / 1.5
 
 | index | id | name | kind | values (min 0) | default | tab |
 | --- | --- | --- | --- | --- | --- | --- |
-| 0 | 0 | COLOR | 0 | 0..9: GREY GREEN AMBER ICE VIOLET ROSE PAPER HI-CON NIGHT MONO (the order of `UI_PALETTES`) | GREY | 0 DISPLAY |
+| 0 | 0 | COLOR | 0 | 0..9: GREY GREEN AMBER ICE VIOLET ROSE PAPER HI-CON NIGHT MONO (the order of `UI_PALETTES`); 1.6: 10 CUSTOM while one is stored (CUSTOM palette, cmds 80, 81) | GREY | 0 DISPLAY |
 | 1 | 1 | STYLE | 0 | 0 FLAT, 1 LINE | FLAT | 0 DISPLAY |
 | 2 | 2 | LARGE | 0 | 0 OFF, 1 ON | OFF | 0 DISPLAY |
 | 3 | 3 | ANIM | 0 | 0 ON, 1 OFF, 2 IDLE (1.2: ON plus the LEDs' idle animation; firmware before: max 1) | ON | 0 DISPLAY |

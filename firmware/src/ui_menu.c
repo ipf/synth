@@ -413,7 +413,7 @@ static void draw_menu(void)
     int32_t pos0 = mt.pos;
     if (ui.menu == 1)
         mt_follow();
-    sig = ui.menu * 7u + ui.menu_sel * 131u + settings.palette * 1009u + settings.lowcut * 7919u + settings_hold * 3511u +
+    sig = ui.menu * 7u + ui.menu_sel * 131u + palette_cur() * 1009u + settings.lowcut * 7919u + settings_hold * 3511u +
           settings_leds * 6151u + ui_prefs * 4099u + ui_style * 257u + song.rec * 65537u + song.sel * 13u +
           ui_rec_prefs * 92821u + ui_scr * 131071u +          /* (#157: SCREEN OFF's value redraws its row) */
           ui_prefs2 * 524287u + ui_idle * 1048573u +      /* (1.2: ANIM IDLE's value redraws its row) */

@@ -89,6 +89,10 @@
 #                   DRUM KIT, the lanes' names, the 8 lanes play, saved, an older range reads them as 77.
 #                   LEDS (#212): INV LO / INV HI after INV (INV's lit LEDs at the mid level), saved as INV + a level byte.
 #                   SELECT (#84): MODW (the track's mod wheel, CC1 out) and VEL (the keys' velocity) after BPM / PAGE.
+# 1.6 (tests/v16_test.c): SEQ's piano roll follows the play position (#242, Discussion #238): a melodic pattern over 16 steps,
+#                   the transport playing: the roll's bank is the playhead's (STEP and DETAIL), the cursor and the pattern
+#                   untouched; not for 16 steps, stopped, DRUM's grid, AUTOMATION, HOME; held from a knob's move of the
+#                   cursor, an edit of its step or step entry, free again after 3 s or one pass round; reset by stop / track.
 # MOD (tests/mod_test.c): the modulation matrix: slots that do nothing are bit-identical, every source on each
 #                   kind of destination, clamping, MIDI CC1 / CC11 / aftertouch routing, the cost of 4 active
 #                   slots (at most +5 %), demos in build/mod_demo/.
@@ -273,6 +277,8 @@ if [ -f build/gen/felucca_tables.h ]; then
     run "1.5.5 fixes and UI: PAN +-100, AUTOMATION KNOB 3, SELECT PAGE, OCT- on the press (1.5.6), PROJECT ERASE, CLEAN INIT" "$OUT/ui155_test"
     $CC -O1 -w -Ibuild/gen -Ifirmware/src -o "$OUT/v156_test" tests/v156_test.c -lm
     run "1.5.6: the matrix's VEL / TIME (#213), DRUM kits DEEP TIGHT PERC (#216), LEDS INV LO / HI (#212), SELECT MODW / VEL (#84)" "$OUT/v156_test"
+    $CC -O1 -w -Ibuild/gen -Ifirmware/src -o "$OUT/v16_test" tests/v16_test.c -lm
+    run "1.6: SEQ's piano roll follows the play position (#242: STEP, DETAIL; held by the knobs, 3 s or one pass)" "$OUT/v16_test"
     $CC -O1 -w -Ibuild/gen -Ifirmware/src -o "$OUT/fun10_test" tests/fun10_test.c -lm
     run "1.2 (FUN10): LFO 2 SYNC / TRIG / POL, NUDGE (record, QUANTIZE, play, controls), 128 motion records, FUN10 / FUN9 / FUN8 / FUN7, user presets" "$OUT/fun10_test"
     $CC -O1 -w -Ibuild/gen -Ifirmware/src -o "$OUT/midi_control_test" tests/midi_control_test.c -lm

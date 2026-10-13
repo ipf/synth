@@ -680,6 +680,69 @@ static void cursor_fix(void)                           /* LEN got shorter: onto 
         cursor_set(TSEL->p[P_SLEN] - 1);
 }
 
+/* COLOR's value v (the menu, the editor): a built-in palette, or CUSTOM when one is stored */
+static void palette_choose(uint32_t v)
+{
+    if (v >= palette_n())                              /* (CUSTOM with none stored: nothing changes) */
+        return;
+    if (v >= NPALETTES) {
+        ui_cpal_flags |= CPAL_ACTIVE;
+    } else {
+        ui_cpal_flags &= (uint8_t)~CPAL_ACTIVE;
+        settings.palette = v;
+    }
+    palette_apply();
+    ui.force = 1;
+}
+
+/* SEQ > STEP / DETAIL follows the play position (1.6, #242, Discussion #238): a melodic pattern longer than the 16
+ * steps on the screen shows the bank the playhead is in while the transport plays (ui.bank only: the cursor, the
+ * pattern and the saved project are untouched; DRUM's grid keeps its bank, its keys edit what the grid shows). The
+ * roll is left alone ("held") from the moment a knob moves the cursor or edits the cursor's step, or step entry has the
+ * keys: the bank goes back to the cursor's, so what is being edited stays on the screen. Following starts again after
+ * FOLLOW_MS without that, or once the playhead has gone one pass round the pattern, whichever is first. The transport
+ * stopped, another track, or the roll left: nothing held any more */
+#define FOLLOW_MS 3000u
+static struct {
+    uint32_t t;                                        /* fm1_ms of the last touch of the cursor's step */
+    uint16_t prev, steps;                              /* the playhead at the last poll, the steps it has gone since */
+    uint8_t hold;
+} follow;
+
+static void follow_hold(void)
+{
+    follow.hold = 1;
+    follow.t = fm1_ms;
+    follow.prev = TSEL->seq_idx;
+    follow.steps = 0;
+    ui.bank = (uint8_t)(ui.cursor / 16u);
+}
+
+/* every pass of ui_input() */
+static void follow_poll(void)
+{
+    uint32_t len = (uint32_t)TSEL->p[P_SLEN], want;
+    if (!song.playing || ui.home || ui.menu || ui.confirm || cur_page()->graph != GR_ROLL || drum_track(TSEL)) {
+        follow.hold = 0;
+        return;
+    }
+    if (len <= 16u)
+        return;
+    if (ui.entry_open)                                 /* step entry has the keys: stay at the cursor */
+        follow_hold();
+    if (follow.hold) {
+        uint32_t idx = TSEL->seq_idx;
+        follow.steps = (uint16_t)(follow.steps + (idx + len - follow.prev) % len);
+        follow.prev = (uint16_t)idx;
+        if (fm1_ms - follow.t < FOLLOW_MS && follow.steps < len)
+            return;
+        follow.hold = 0;
+    }
+    want = TSEL->seq_idx / 16u;
+    if (want * 16u < len && want != ui.bank)
+        ui.bank = (uint8_t)want;
+}
+
 static void note_name(char *b, uint32_t n)
 {
     str_cpy(b, N_NOTE[n % 12u], 4);
@@ -1680,6 +1743,7 @@ static void track_select(uint32_t i)
     ui.ev_keep = 0;                              /* (AUTOMATION: a row kept at its default was the other track's) */
     ui.cursor = 0;
     ui.bank = 0;
+    follow.hold = 0;                             /* (1.6, #242: the roll follows the new track's playhead) */
     sync_reload = 1;
     ui.force = 1;
 }

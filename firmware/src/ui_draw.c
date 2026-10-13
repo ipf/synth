@@ -1461,7 +1461,7 @@ static void style_apply(void)
         ui_style = ui_style == 2u ? ST_LINE : ST_FLAT;
     if (ux.style != ui_style) {
         ux.style = ui_style;
-        palette_set(settings.palette);
+        palette_apply();
         ui.force = 1;
     }
 }
