@@ -34,7 +34,7 @@ icons or artwork. See [On AI-Assisted Development and Responsibility](https://gi
 
 ## Credits and licence
 
-Free software: [GPL-3.0-only](LICENSE), the Hügelton Sample Pack included; the engines in `firmware/engines` are MIT
+Free software: [GPL-3.0-only](LICENSE); the Hügelton Sample Pack is CC0 1.0; the engines in `firmware/engines` are MIT
 ([Felucca-Engines](https://github.com/hugelton/Felucca-Engines)); the bundled fonts and ported DSP keep their own licences
 ([LICENSES/](LICENSES/), [LICENSING.md](LICENSING.md)). Thanks to everyone whose work and contributions are in it: [CREDITS.md](CREDITS.md).
 
