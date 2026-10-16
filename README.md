@@ -2,6 +2,8 @@
 
 [![License: GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue.svg)](LICENSE)
 
+## Maintenance Notice
+
 What began as a personal experiment grew far beyond my expectations. I’m grateful to everyone who contributed, supported the project, and made music with Felucca.
 
 I’ve decided to step back from active development to focus on creating new instruments and music.
