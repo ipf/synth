@@ -208,6 +208,9 @@ run "DSP signed arithmetic: fixed DC/lowcut/FM6 vectors and phase wrap" "$OUT/si
 $CC -Ibuild/gen -Ifirmware/src -o "$OUT/phys_signed_test" tests/phys_signed_test.c -lm
 run "PHYS: signed output and frozen baseline render" "$OUT/phys_signed_test"
 
+$CC -Ibuild/gen -Ifirmware/src -o "$OUT/uart_dma_test" tests/uart_dma_test.c -lm
+run "TRS UART: pending events, stale counts, exact packets and continuous traffic" "$OUT/uart_dma_test"
+
 run "flash storage (A/B, torn writes)" "$OUT/storage_test"
 
 $CC -o "$OUT/upreset_test" tests/upreset_test.c
@@ -484,6 +487,9 @@ else
     run "Strict ASan/UBSan (no exclusions): signed_audio_scaling_test" "$A/signed_audio_scaling_test_strict"
     $STRICT_CC -o "$A/phys_signed_test_strict" tests/phys_signed_test.c -lm
     run "Strict ASan/UBSan (no exclusions): phys_signed_test" "$A/phys_signed_test_strict"
+
+    $STRICT_CC -o "$A/uart_dma_test_strict" tests/uart_dma_test.c -lm
+    run "Strict ASan/UBSan (no exclusions): uart_dma_test" "$A/uart_dma_test_strict"
     $SCC -o "$A/ldr_test" tests/ldr_test.c
     run "ASan/UBSan: update loader (other app -> this build)" "$A/ldr_test" "$OUT/old.fwsc" build/felucca.fwsc
     $SCC -DOWN_PKG=1 -o "$A/ota_test" tests/ota_test.c
