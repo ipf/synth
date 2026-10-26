@@ -72,7 +72,7 @@ static void fm1_led_dim_level(uint32_t lo) { web_dim_lo = lo; }
 /* the power-on LED sweep (hal/fm1_input.h fm1_led_anim_start, the picture hal/fm1_led_anim.h): its frame from the
  * clock (a scan frame 1.1 ms), the page draws each LED's level (web_anim_levels); at its end, or on a key or a button
  * down, the last picture (the glow everywhere, or dark) and the UI's LEDs from the next frame, as the scan does */
-#include "../../firmware/hal/fm1_led_anim.h"
+#include "../../firmware/bsp/boards/fm1/fm1_led_anim.h"
 static uint32_t web_anim_t0, web_anim_glow, web_anim_run, web_anim_idle;   /* (idle: 1.2's idle animation, MENU >
                                                                               * ANIM IDLE: fm1_idle_level, endless) */
 static uint32_t web_anim_frame(void) { return (web_ticks - web_anim_t0) / (1100u * FM1_TICKS_PER_US); }

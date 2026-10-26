@@ -2,3 +2,6 @@
 [submodule "firmware/engines"]
 	path = firmware/engines
 	url = https://github.com/hugelton/Felucca-Engines.git
+[submodule "firmware/bsp"]
+	path = firmware/bsp
+	url = https://github.com/hugelton/felucca-bsp.git

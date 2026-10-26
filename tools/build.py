@@ -149,10 +149,20 @@ def ldr_wrap(image):
     return ldr_head(crc16(body), 0x20, len(body), 0x41, LOADER_NAME) + body
 
 
+# The hardware layer: firmware/hal (Felucca's own, while it moves) first, then felucca-bsp (the submodule
+# firmware/bsp, MPL-2.0): its chip layer and the FM-1's board code. A file in hal/ wins over the BSP's.
+HAL_DIRS = (FW / "hal", FW / "bsp" / "chip", FW / "bsp" / "boards" / "fm1")
+HAL_INC = [f"-I{d.relative_to(SRC)}" for d in HAL_DIRS]
+
+
+def hal_file(name):
+    return next(d / name for d in HAL_DIRS if (d / name).exists())
+
+
 def build_loader():
     LDR.mkdir(parents=True, exist_ok=True)
     src = FW / "loader"
-    flags = [*CFLAGS, "-Ifirmware/hal", "-Ifirmware/src"]
+    flags = [*CFLAGS, *HAL_INC, "-Ifirmware/src"]
     tc_all(("cc", "-c", src / "crt0_ldr.S", "-o", LDR / "crt0_ldr.o"),
            ("cc", *flags, "-c", src / "loader.c", "-o", LDR / "loader.o"))
     elf = LDR / "loader.elf"
@@ -191,7 +201,7 @@ def ld_regions():
 
 
 def build_app():
-    flags = [*CFLAGS, "-Ifirmware/hal", "-Ifirmware/src", "-Ibuild/gen"]
+    flags = [*CFLAGS, *HAL_INC, "-Ifirmware/src", "-Ibuild/gen"]
     for flag in ("FELUCCA_FLASH", "FELUCCA_OTA", "FELUCCA_OTA_DRYRUN", "FELUCCA_OTA_RAMONLY", "FELUCCA_CDC",
                  "FELUCCA_UART", "FELUCCA_UAC", "FELUCCA_UAC_TONE", "FELUCCA_UAC_48K", "FELUCCA_ICONS", "FELUCCA_SLICE", "FELUCCA_FM4",
                  "FELUCCA_CDC_DEFAULT", "FELUCCA_UAC_AS_FIRST", "FELUCCA_CPU2"):
@@ -211,10 +221,10 @@ def build_app():
               FW / "src" / "felucca.c", "-o", OUT / "felucca.ll") if size else
              ("cc", *flags, "-c", FW / "src" / "felucca.c", "-o", OUT / "felucca.o"))
     (OUT / "fm1_cpu1.o").unlink(missing_ok=True)
-    tc_all(("cc", "-c", FW / "crt0.S", "-o", OUT / "crt0.o"),
-           ("cc", "-c", FW / "hal" / "fm1_vec.S", "-o", OUT / "fm1_vec.o"),
-           ("cc", "-c", FW / "hal" / "fm1_isr.S", "-o", OUT / "fm1_isr.o"),
-           *([("cc", "-c", FW / "hal" / "fm1_cpu1.S", "-o", OUT / "fm1_cpu1.o")] if CPU2 else []),
+    tc_all(("cc", "-c", hal_file("crt0.S"), "-o", OUT / "crt0.o"),
+           ("cc", "-c", hal_file("fm1_vec.S"), "-o", OUT / "fm1_vec.o"),
+           ("cc", "-c", hal_file("fm1_isr.S"), "-o", OUT / "fm1_isr.o"),
+           *([("cc", "-c", hal_file("fm1_cpu1.S"), "-o", OUT / "fm1_cpu1.o")] if CPU2 else []),
            cmain)
     if size:
         subprocess.run([sys.executable, SRC / "tools" / "size_fns.py", OUT / "felucca.ll", OUT / "felucca_size.ll"],
@@ -346,7 +356,7 @@ def mmio_check():
         s = re.sub(r"/\*.*?\*/", lambda m: "\n" * m.group(0).count("\n"), s, flags=re.S)
         return re.sub(r"//[^\n]*", "", s)
     defs = {}
-    for h in sorted((FW / "hal").glob("*.h")):
+    for h in sorted(h for d in HAL_DIRS for h in d.glob("*.h")):
         for m in re.finditer(r"^#define\s+(\w+)(?:\([^)]*\))?\s+(.*)$", strip(h.read_text()), re.M):
             defs[m.group(1)] = m.group(2)
     regs = {n for n, b in defs.items() if re.search(r"\bvolatile\b", b)}
@@ -387,6 +397,9 @@ def main():
         name = f"felucca-{a.release}.fwsc"
     if not (FW / "engines" / "src" / "felucca_engine.h").exists():
         raise SystemExit("firmware/engines is empty: the Felucca-Engines submodule "
+                         "(git submodule update --init, or clone with --recurse-submodules)")
+    if not (FW / "bsp" / "chip" / "fm1_cc.h").exists():
+        raise SystemExit("firmware/bsp is empty: the felucca-bsp submodule "
                          "(git submodule update --init, or clone with --recurse-submodules)")
     fm1pkg_make.SDK = a.sdk
     for rel, sha in SDK_SHA256.items():          # fail early without the SDK
