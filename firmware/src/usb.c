@@ -22,7 +22,7 @@
  * SET_CUR (UAC1 sampling frequency control, two discrete rates in the one alt setting). The engines stay
  * at 44.1 kHz; at 48 kHz uac_tap resamples (polyphase FIR 160 / 147, uac_fir.h) into the ring. 44.1 kHz,
  * the rate until a host asks for another, sends the samples as before, bit for bit. */
-#include "../hal/fm1_usb.h"   /* registers; relative, so the loader and the host tests find it too */
+#include "fm1_usb.h"   /* registers (firmware/bsp/chip; the loader and the host tests have its -I) */
 #ifndef FELUCCA_CDC
 #define FELUCCA_CDC 0
 #endif
