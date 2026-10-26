@@ -236,13 +236,11 @@ static void fm1_mailbox_clear(void) {}
 static void fm1_guard_enable(uint32_t m) { (void)m; }
 enum { FM1_GUARD_STACK = 1, FM1_GUARD_WRITE = 2, FM1_GUARD_BUS = 4, FM1_GUARD_PC = 8 };
 #if FELUCCA_CPU2
-/* the second core (hal/fm1_cpu1.h): none here, one core whatever MENU > 2ND CORE says (fx.c mix_block's C1_ON() is 0
- * without felucca.c's macros) */
-uint32_t _c1_start[1], _c1_end[1], _c1_load[1];
-static uint8_t fm1_c1_on, fm1_c1_gave_up;
-static void fm1_cpu1_halt(void) {}
+/* the second core (felucca-bsp chip/fm1_cpu1.h): none here, one core whatever MENU > 2ND CORE says (fx.c mix_block's
+ * C1_ON() is 0 without felucca.c's macros) */
+static uint8_t fm1_cpu1_on, fm1_cpu1_gave_up;
+static void fm1_cpu1_stop(void) {}
 static int fm1_cpu1_start(void) { return -1; }
-static void fm1_guard_pc_open(void) {}
 #endif
 #if FELUCCA_CDC
 static void cdc_task(void) {}

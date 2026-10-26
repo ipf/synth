@@ -5,7 +5,6 @@
 extern uint32_t _data_start[], _data_end[], _data_load[], _bss_start[], _bss_end[];
 extern uint32_t _pool_start[], _pool_end[], _rt_start[], _rt_end[], _rt_load[];
 #if FELUCCA_CPU2
-extern uint32_t _c1_start[], _c1_end[], _c1_load[];
 #endif
 
 
@@ -139,11 +138,8 @@ static uint8_t boot_clean;                    /* no crash, hang (WDT) or failed 
                                                * the sweep runs and the autosave is restored (project.c autosave_boot) */
 static void boot_leds(void)
 {
-    uint32_t crashed = fm1_crash.magic == FM1_CRASH_MAGIC && fm1_crash.count != crash_seen
-#if FELUCCA_CPU2
-                       && fm1_crash.core != 1u    /* (the second core's own fault left core 0 playing) */
-#endif
-                       ;
+    uint32_t crashed = fm1_crash.magic == FM1_CRASH_MAGIC && fm1_crash.count != crash_seen;   /* (a fault of the
+                                                   * second core's leaves no record: it is retired, core 0 plays on) */
     crash_seen = fm1_crash.count;
     boot_clean = !crashed && !bootguard.failed && !(fm1_boot.p3_rst & 4u);
     fm1_led_dim_level(settings_leds == LEDS_DIM_LO);
@@ -187,13 +183,11 @@ static void fm1_main(void)
     kb_boot_hold = 1;                         /* #137: no notes from the keys before the UI (seq.c keyboard_block) */
 #if FELUCCA_CPU2
     if (!bootguard.failed && (ui_prefs2 & (PREF_CPU2_ON >> 16))) {
-        /* the second core (hal/fm1_cpu1.h; fx.c mix_block hands it parts), at power-on, before the audio and
-         * the timers (started later it never reaches its entry). It starts in the chip's ROM: the PC limits open
-         * meanwhile. MENU > 2ND CORE OFF (the default), a crash in the last boot's first 30 s, or no answer: it is
-         * never started, one core, as 1.6 */
-        fm1_guard_pc_open();
+        /* the second core (felucca-bsp chip/fm1_cpu1.h; fx.c mix_block hands it parts), at power-on, before the
+         * audio and the timers (started later it never reaches its entry). It starts in the chip's ROM: fm1_cpu1_start
+         * opens the PC limits meanwhile. MENU > 2ND CORE OFF (the default), a crash in the last boot's first 30 s, or
+         * no answer: one core, as 1.6 */
         fm1_cpu1_start();
-        fm1_guard_enable(FM1_GUARD_PC);
     }
 #endif
     audio_init();
@@ -228,7 +222,7 @@ static void fm1_main(void)
             bootguard.failed = 0;
         }
 #if FELUCCA_CPU2
-        if (*(volatile uint8_t *)&fm1_c1_gave_up && !c1_told) {   /* (the ISR's) */
+        if (*(volatile uint8_t *)&fm1_cpu1_gave_up && !c1_told) {   /* (the ISR's) */
             c1_told = 1;                                /* (once: ON set again afterwards stays, for the next power-on) */
             if (ui_prefs2 & (PREF_CPU2_ON >> 16)) {
                 ui_prefs2 &= (uint8_t)~(PREF_CPU2_ON >> 16);   /* core 1 misread or stopped answering on this FM-1: one
@@ -324,7 +318,7 @@ void fm1_cstart(void)
 {
     uint32_t *s, *d, p3, src, wdt;
 #if FELUCCA_CPU2
-    fm1_cpu1_halt();                           /* (after Jangada, X0X): a second core still running from before
+    fm1_cpu1_stop();                           /* (after Jangada, X0X): a second core still running from before
                                                 * this reset (a watchdog, a fault, another firmware) would read the RAM
                                                 * cleared below */
 #endif
@@ -355,11 +349,8 @@ void fm1_cstart(void)
     for (s = _data_load, d = _data_start; d < _data_end; s++, d++)
         *d = *s;
     for (s = _rt_load, d = _rt_start; d < _rt_end; s++, d++)
-        *d = *s;                                /* flash driver code that must run from RAM */
-#if FELUCCA_CPU2
-    for (s = _c1_load, d = _c1_start; d < _c1_end; s++, d++)
-        *d = *s;                                /* the second core's waiting loop (hal/fm1_cpu1.h) */
-#endif
+        *d = *s;                                /* flash driver code that must run from RAM, then the second core's
+                                                 * waiting loop (.c1_text, app.ld) */
     fm1_mailbox_clear();
     fm1_guard_enable(FM1_GUARD_STACK | FM1_GUARD_WRITE | FM1_GUARD_BUS | FM1_GUARD_PC);
     fm1_boot.p3_rst = (uint8_t)p3;
