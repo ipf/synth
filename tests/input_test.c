@@ -46,7 +46,7 @@ static uint32_t host_bus;
 #undef FM1_PR
 #define FM1_PR(p, r) (*(host_now += host_bus, &host_reg[(p) & 15u][((r) / 4u) & 63u]))
 #define fm1_ticks host_ticks
-#include "../firmware/hal/fm1_input.h"
+#include "../firmware/bsp/boards/fm1/fm1_input.h"
 
 #define TICK_US 100u
 static int fails;
