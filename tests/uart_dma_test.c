@@ -20,7 +20,7 @@ static void con_write(uint32_t v), sync_io(void);
 #define FM1_UART1_COUNT_READ() count_read()
 #define FM1_UART1_SYNC() sync_io()
 #pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
-#include "../firmware/src/usb.c"
+#include "../firmware/bsp/chip/usb.c"
 #include "../firmware/src/midi_uart.c"
 /* Layout comes from the pinned wl82 SDK WL82.h, not a host register guess. */
 _Static_assert(sizeof(FM1_UT1_CON0) == 2, "CON0 is a 16-bit register");
