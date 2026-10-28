@@ -1,32 +1,53 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  * Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments */
 #define FELUCCA_FAVORITES 1
-/* Stable engine/preset references; fixed capacity independent of optional engines. */
+/* Stable engine/preset references; fixed capacity independent of optional engines. Engines 0..13 have a row of
+ * favourites each (a bit per factory preset); rows 14 and 15 hold the MIDI LEARN map (midi_learn.c) and settings
+ * (settings_persist.c), so an engine from 14 on keeps its favourites in a settings byte of its own: ADPCM (1.8, 8
+ * presets) in factory[15][13], a byte no firmware before it used (kept there as saved) */
+#define FAV_ENGINES 14u
 typedef struct {
     uint8_t factory[16][32]; /* engine 0..15, preset 0..255 */
     uint32_t user, filter;
 } favorites_t;
 static favorites_t favorites __attribute__((section(".pool")));
+static uint8_t *fav_bit(uint32_t engine, uint32_t preset, uint8_t *mask)   /* the byte and bit of a factory preset */
+{
+    if (engine < NENGINES && engine < FAV_ENGINES && preset < 256u) {
+        *mask = (uint8_t)(1u << (preset % 8u));
+        return &favorites.factory[engine][preset / 8u];
+    }
+#if FELUCCA_ADPCM
+    if (engine == ENGI_ADPCM && preset < 8u) {
+        *mask = (uint8_t)(1u << preset);
+        return &favorites.factory[15][13];
+    }
+#endif
+    return 0;
+}
 static int favorite_has(uint32_t engine, uint32_t preset)
 {
+    uint8_t m, *b;
     if (engine == NENGINES)
         return preset < UP_SLOTS && ((favorites.user >> preset) & 1u);
-    return engine < NENGINES && engine < 16u && preset < 256u &&
-        ((favorites.factory[engine][preset / 8u] >> (preset % 8u)) & 1u);
+    b = fav_bit(engine, preset, &m);
+    return b && (*b & m);
 }
 static int favorite_set(uint32_t engine, uint32_t preset, int on)
 {
-    if (engine > NENGINES || (engine == NENGINES ? preset >= UP_SLOTS : engine >= 16u || preset >= 256u))
-        return 0;
-    if (favorite_has(engine, preset) == !!on) return 0;
+    uint8_t m, *b;
     if (engine == NENGINES) {
+        if (preset >= UP_SLOTS || favorite_has(engine, preset) == !!on)
+            return 0;
         if (on) favorites.user |= 1u << preset;
         else favorites.user &= ~(1u << preset);
-    } else {
-        uint8_t *b = &favorites.factory[engine][preset / 8u];
-        if (on) *b |= (uint8_t)(1u << (preset % 8u));
-        else *b &= (uint8_t)~(1u << (preset % 8u));
+        return 1;
     }
+    b = fav_bit(engine, preset, &m);
+    if (!b || !!(*b & m) == !!on)
+        return 0;
+    if (on) *b |= m;
+    else *b &= (uint8_t)~m;
     return 1;
 }
 

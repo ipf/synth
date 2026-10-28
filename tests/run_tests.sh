@@ -190,6 +190,11 @@
 #                   GRAIN / SLICE). Longer runs: build/host/asan/fuzz_ed 300000 7 (iterations, seed), the same for the others.
 #                   UBSan leaves out the DSP's intended wraps (signed overflow, shifts) and the XIP rebase of a user zone's
 #                   offset (bounds, object-size, pointer-overflow: correct on the device's flat flash, not in C's model).
+# ADPCM (tests/adpcm_test.c): the voice (src/adpcm_dsp.c) sample for sample against snes_spc's SPC_DSP.cpp
+#                   (tests/adpcm_ref.cpp, when SNES_SPC points at a 0.9.0 checkout): BRR, Gaussian interpolation, ADSR, GAIN,
+#                   noise, the echo (FIR, feedback); its rate countdowns against the original's counter; the presets in the
+#                   mix (peak, clipping, voices freed, the echo idle), the pitch register; the part's engine memory shared
+#                   with PHYS (either engine after the other = from boot); demos in build/adpcm_demo/.
 # Change baseline entries only for reviewed, intentional differences in sound or cost;
 # retain every unaffected golden / CPU / target entry. VERBOSE=1: every render.
 set -e
@@ -342,6 +347,8 @@ if [ -f build/gen/felucca_tables.h ]; then
     if python3 -c "import PIL" 2>/dev/null; then python3 tests/ui_render.py build/ui_new build/ui_slot; fi
     $CC -w -DFELUCCA_FM4=1 -Ibuild/gen -Ifirmware/src -o "$OUT/ui_test_fm4" tests/ui_test.c -lm
     run "UI built with FELUCCA_FM4=1 (DIGITAL, kept in the tree): its OP pages, EDIT cycle, algorithm charts" "$OUT/ui_test_fm4"
+    $CC -w -DFELUCCA_ADPCM=1 -Ibuild/gen -Ifirmware/src -o "$OUT/ui_test_adpcm" tests/ui_test.c -lm
+    run "UI built with FELUCCA_ADPCM=1 (off by default): ADPCM last in PRESETS, no EDIT key (INIT stays on E5), its favourites" "$OUT/ui_test_adpcm"
     $CC -O1 -w -DFELUCCA_FM4=1 "-DFELUCCA_VERSION=\"$FV\"" -Ibuild/gen -Ifirmware/src -Itests -o "$OUT/ui_render_fm4" tests/ui_render.c -lm
     mkdir -p build/ui_fm4/ppm build/ui_fm4_slot
     run "UI renders with FELUCCA_FM4=1: DIGITAL's screens (EDIT, OP ENV, the 8 algorithm charts), lint, GREY gray, MONO neutral" \
@@ -438,6 +445,19 @@ if [ -f build/gen/felucca_tables.h ]; then
         run "PHYS: the fixed-point models against DaisySP's float originals (mode frequencies, decays, Svf)" "$OUT/phys_ref"
     else
         echo "== skip PHYS reference test (no DaisySP: set DAISYSP to a checkout)"
+    fi
+    if true; then                           # (the engine is built here whatever the firmware's default: FELUCCA_ADPCM=1)
+        S=${SNES_SPC:-vendor/snes_spc}/snes_spc
+        REF=-                               # (no snes_spc checkout: the comparison with it is skipped, the rest runs)
+        if [ -f "$S/SPC_DSP.cpp" ] && command -v c++ >/dev/null 2>&1; then
+            c++ -O2 -w -I"$S" -Ibuild/gen -Itests -o "$OUT/adpcm_ref" tests/adpcm_ref.cpp
+            "$OUT/adpcm_ref" "$OUT/adpcm_ref.bin" >/dev/null
+            REF="$OUT/adpcm_ref.bin"
+        fi
+        $CC -O2 -w -DFELUCCA_ADPCM=1 -Ibuild/gen -Ifirmware/src -Itests -o "$OUT/adpcm_test" tests/adpcm_test.c -lm
+        mkdir -p build/adpcm_demo
+        run "ADPCM (FELUCCA_ADPCM=1, off by default): the voice against snes_spc (with SNES_SPC), counters, presets, pitch, the engine memory, demos" \
+            "$OUT/adpcm_test" "$REF" build/adpcm_demo
     fi
     $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/drum_test" tests/drum_test.c -lm
     mkdir -p build/drum_demo

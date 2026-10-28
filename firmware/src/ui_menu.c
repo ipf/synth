@@ -52,6 +52,11 @@ static const menu_credit_t MENU_CREDITS[] = {
     {"Tony Gies / MIT", MC_TEXT},
     {"https://github.com/tgies/klattsch", MC_URL},
     {"", MC_TEXT},
+#if FELUCCA_ADPCM
+    {"ADPCM DSP", MC_TITLE},
+    {"Shay Green, ported by ugotworms / LGPL-2.1+", MC_TEXT},
+    {"", MC_TEXT},
+#endif
     {"DAISYSP", MC_TITLE},
     {"Electrosmith, Emilie Gillet", MC_TEXT},
     {"MIT", MC_TEXT},
