@@ -23,7 +23,7 @@ Installing is at your own risk: M-VAVE's updater or the installer's **Return to 
 - Edit: [web editor](https://hugelton.github.io/Felucca/webapp/editor/) ([Felucca-WebApp](https://github.com/hugelton/Felucca-WebApp))
 - Read: the manual and the release notes are in the [wiki](https://github.com/hugelton/Felucca/wiki/Home)
 - Build: [BUILDING.md](BUILDING.md)
-- Related: [Felucca-Engines](https://github.com/hugelton/Felucca-Engines) (the ANALOG, LOFI, TRIO, WHEEL and NOISE engines, MIT; still maintained) ·
+- Related: [Felucca-Engines](https://github.com/hugelton/Felucca-Engines) (the ANALOG, LOFI, TRIO, WHEEL, NOISE and PHASE engines, MIT; still maintained) ·
   [felucca-bsp](https://github.com/hugelton/felucca-bsp) (the FM-1 hardware layer)
 
 ## AI disclaimer

@@ -21,11 +21,11 @@ Three source files are ports and keep the licence of their originals:
 `firmware/src/fm6_core.c` (msfa, Apache-2.0). The firmware built with them is GPL-3.0-only as
 a whole.
 
-Five engines and the code they share are under the MIT licence, not the GPL. They are
+Six engines and the code they share are under the MIT licence, not the GPL. They are
 Hügelton Instruments' own work and live in their own repository, Felucca-Engines
 (<https://github.com/hugelton/Felucca-Engines>), included here as the git submodule
-`firmware/engines/`: the ANALOG, LOFI, TRIO, WHEEL and NOISE engines (`eng_analog.c`,
-`eng_lofi.c`, `eng_trio.c`, `eng_wheel.c`, `eng_noise.c`), the engine interface
+`firmware/engines/`: the ANALOG, LOFI, TRIO, WHEEL, NOISE and PHASE engines (`eng_analog.c`,
+`eng_lofi.c`, `eng_trio.c`, `eng_wheel.c`, `eng_noise.c`, `eng_phase.c`), the engine interface
 (`felucca_engine.h`), the shared DSP helpers (`dsp.c`) and the generator of their tables
 (`SPDX-License-Identifier: MIT`, `firmware/engines/LICENSE`, also
 `LICENSES/MIT-Felucca-Engines.txt`). The firmware built with them is GPL-3.0-only as a whole.
@@ -54,12 +54,11 @@ All by Hügelton Instruments (Leo Kuroshita), in this tree:
 | What | Licence | Where |
 | --- | --- | --- |
 | Felucca: firmware, tools, web pages, tests | GPL-3.0-only | `LICENSE` |
-| The PHASE engine | GPL-3.0-only | `firmware/src/eng_phase.c` |
 | The DRUM voices and kit | GPL-3.0-only | `firmware/src/drum_voice.c`, `firmware/src/eng_drum.c` |
 | The Hügelton Sample Pack: Felucca's drum sounds, made by `tools/gen_waves.py`, from which the SLICE engine's BREAK is built; the script and the sounds it makes | CC0 1.0 (<https://creativecommons.org/publicdomain/zero/1.0/>) | `tools/gen_waves.py` |
 | The controls picture | GPL-3.0-only | `docs/controls.jpg` |
 | The Fukiai icon font (<https://github.com/hugelton/Fukiai>): the firmware's icons (rasterised at build time by `tools/gen_aa_icons.py`) and the web editor's | MIT | `web/fukiai.ttf`, `LICENSES/MIT-Fukiai.txt`, `web/FUKIAI-LICENSE.txt` |
-| The ANALOG, LOFI, TRIO, WHEEL and NOISE engines, the engine interface and the shared DSP helpers: Felucca-Engines (<https://github.com/hugelton/Felucca-Engines>) | MIT | `firmware/engines/`, `LICENSES/MIT-Felucca-Engines.txt` |
+| The ANALOG, LOFI, TRIO, WHEEL, NOISE and PHASE engines, the engine interface and the shared DSP helpers: Felucca-Engines (<https://github.com/hugelton/Felucca-Engines>) | MIT | `firmware/engines/`, `LICENSES/MIT-Felucca-Engines.txt` |
 
 ## Third-party material
 
@@ -111,7 +110,7 @@ never uploaded or redistributed.
 
 ## Contributions
 
-Contributions are welcome under GPL-3.0-only. Changes to the five engines and the code they
+Contributions are welcome under GPL-3.0-only. Changes to the six engines and the code they
 share (`firmware/engines/`) go to the Felucca-Engines repository, under the MIT licence.
 
 ## Trademarks

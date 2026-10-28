@@ -443,8 +443,11 @@ def main():
                                                 for n, b in ((name, pkg), (app, bytes(img)))))
         for f in sorted((SRC / "LICENSES").glob("*.txt")):
             shutil.copy(f, rel / "LICENSES" / f.name)
-        if not (rel / "LICENSES" / "MIT-Felucca-Engines.txt").exists():     # ANALOG LOFI TRIO WHEEL NOISE (engines/)
+        if not (rel / "LICENSES" / "MIT-Felucca-Engines.txt").exists():     # ANALOG LOFI TRIO WHEEL NOISE PHASE (engines/)
             raise SystemExit("release: LICENSES/MIT-Felucca-Engines.txt is missing")
+        if not (rel / "LICENSES" / "MPL-2.0-felucca-bsp.txt").exists():     # the hardware layer (bsp/)
+            raise SystemExit("release: LICENSES/MPL-2.0-felucca-bsp.txt is missing")
+        shutil.copy(FW / "bsp" / "NOTICE", rel / "LICENSES" / "NOTICE-felucca-bsp.txt")   # its authors and origins
         for doc in ("LICENSE", "LICENSING.md"):
             shutil.copy(SRC / doc, rel / doc)
         if att.exists():

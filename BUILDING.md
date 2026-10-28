@@ -10,7 +10,7 @@ The build makes three files in `build/`:
 
 ## Get the source
 
-Two parts are git submodules: five engines (`firmware/engines/`, [Felucca-Engines](https://github.com/hugelton/Felucca-Engines),
+Two parts are git submodules: six engines (`firmware/engines/`, [Felucca-Engines](https://github.com/hugelton/Felucca-Engines),
 MIT) and the hardware layer (`firmware/bsp/`, [felucca-bsp](https://github.com/hugelton/felucca-bsp), MPL-2.0), so clone
 with `--recurse-submodules`:
 
