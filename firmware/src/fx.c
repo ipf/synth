@@ -973,7 +973,7 @@ static __attribute__((noinline)) void perf_master(int32_t *out, uint32_t n)
     }
 }
 
-/* ---- the second core (hal/fm1_cpu1.h; after Jangada's, github.com/zednaked/jangada, GPL-3.0) renders some of
+/* ---- the second core (bsp/chip/fm1_cpu1.h; after Jangada's, github.com/zednaked/jangada, GPL-3.0) renders some of
  * the parts of each block into its own sums (mx[1]) while this core renders the others; then this core adds them in
  * and goes on (the LFOs' blocks, the FX layer, the buses, the master) as with one core. The sums are integers, so the
  * order they add up in changes nothing: the output is bit for bit one core's. A part's render touches its own state

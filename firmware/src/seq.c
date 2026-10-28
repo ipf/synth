@@ -787,7 +787,7 @@ static void key_off(uint32_t k, track_t *t)
 }
 
 #ifdef FM1_INPUT_LAT
-/* the press latency stats (hal/fm1_input.h fm1_in_stat, console `inp`): from the first scan that saw
+/* the press latency stats (bsp/boards/fm1/fm1_input.h fm1_in_stat, console `inp`): from the first scan that saw
  * key k closed to its note-on here, and to the note's first sample leaving the DMA (kb_out_tick:
  * audio.c, the TIMER4 tick at which the block being rendered starts to play) */
 static uint32_t kb_out_tick;

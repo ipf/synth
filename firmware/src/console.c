@@ -258,7 +258,7 @@ static void con_dbg(void)
 #endif
 }
 
-/* input scan (hal/fm1_input.h fm1_in_stat) since the last `inp`, then cleared: tick gaps (= LED
+/* input scan (bsp/boards/fm1/fm1_input.h fm1_in_stat) since the last `inp`, then cleared: tick gaps (= LED
  * on-time of a column), per-column LED share in 1/1000, the tick cost, the dim pulse (its average width and the
  * bits of the 595 shift it spans), encoder transitions */
 static void con_inp(void)

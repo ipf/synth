@@ -37,7 +37,7 @@
 #endif
 #ifndef FELUCCA_CPU2
 #define FELUCCA_CPU2 1           /* 1 (1.6.1): the second core is built in and renders some parts when MENU > SYSTEM >
-                                  * 2ND CORE is ON (BETA; OFF by default: one core, as 1.6; hal/fm1_cpu1.h, fx.c
+                                  * 2ND CORE is ON (BETA; OFF by default: one core, as 1.6; bsp/chip/fm1_cpu1.h, fx.c
                                   * mix_block). 0 (FELUCCA_CPU2=0 build.py): none of it (no core 1 stack, waiting loop,
                                   * buffers or menu row). (The same default: core.h) */
 #endif

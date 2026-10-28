@@ -77,7 +77,7 @@ static void felucca_init(void)
     ui.force = 1;
 }
 
-/* The power-on LED sweep (1.1, hal/fm1_led_anim.h: a soft light over the keys left to right, then the buttons swell
+/* The power-on LED sweep (1.1, bsp/boards/fm1/fm1_led_anim.h: a soft light over the keys left to right, then the buttons swell
  * and settle on the glow; ~0.70 s), started before the scan and run by it: nothing waits for it, the splash's 430 ms
  * and the first ~0.27 s of the UI go by under it (the UI's LEDs from its end, or at once on a key or a button down).
  * Every LEDS setting: it is no idle glow; with DIM HI / DIM LO it ends on that glow (and is drawn over that glow
