@@ -2,19 +2,15 @@
 
 [![License: GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue.svg)](LICENSE)
 
-## Maintenance Notice
-
-What began as a personal experiment grew far beyond my expectations. I’m grateful to everyone who contributed, supported the project, and made music with Felucca.
-
-I’ve decided to step back from active development to focus on creating new instruments and music.
-
-Felucca will remain available with occasional maintenance, but new features, issue responses, and pull request reviews are not guaranteed.
-
-Thank you for everything. I hope you’ll look forward to my next creations.
-
 ## Overview
 
-Multi-engine synthesizer firmware for the M-VAVE FM-1, version 1.7.0. Connect the FM-1 to a computer by USB, open the
+Felucca is an open-source synthesizer firmware project that began as custom firmware for the M-VAVE FM-1.
+
+Originally developed for a single instrument, Felucca is evolving toward a multi-platform architecture, separating its synthesis engines from hardware-specific implementations. The aim is to make its instruments and sound engines adaptable to different hardware platforms without committing to specific ports or release schedules.
+
+### M-VAVE FM-1
+
+The FM-1 firmware is currently at version 1.7.0. Connect the FM-1 to a computer by USB, open the
 [web installer](https://hugelton.github.io/Felucca/) in Chrome or Edge and press Install; no extra hardware is needed.
 Installing is at your own risk: M-VAVE's updater or the installer's **Return to official V15** takes you back.
 [Try it in your browser](https://hugelton.github.io/Felucca/webapp/try/), no FM-1 needed.
