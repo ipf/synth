@@ -22,6 +22,15 @@ Installing is at your own risk: M-VAVE's updater or the installer's **Return to 
 - Related: [Felucca-Engines](https://github.com/hugelton/Felucca-Engines) (the ANALOG, LOFI, TRIO, WHEEL, NOISE and PHASE engines, MIT; still maintained) ·
   [felucca-bsp](https://github.com/hugelton/felucca-bsp) (the FM-1 hardware layer, MPL-2.0; Felucca builds on it from 1.7.0)
 
+## Platform Support
+
+| Platform | Status | Notes |
+| --- | --- | --- |
+| M-VAVE FM-1 | Supported | The original platform; firmware and web installer available. |
+| Other hardware | Not yet supported | Ports are welcome! |
+
+Felucca began on the FM-1, but it is not intended to stay there. Contributions and ports to other platforms are very welcome. If you are interested in bringing Felucca to another device, feel free to open an issue or pull request to discuss it. No specific future ports or release dates are promised.
+
 ## AI disclaimer
 
 Felucca is developed with the assistance of AI coding agents (code, tests, documentation, translation, maintenance). The
