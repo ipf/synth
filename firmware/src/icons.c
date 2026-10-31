@@ -256,6 +256,7 @@ static uint32_t engine_icon(const char *name)
         {"POLYSIX", ICON_PULSE},              /* (the PWM where the VCO is; the other engine dials taken) */
         {"JUNO106", ICON_WAVE},               /* (the saw where the DCO is; the panel toggle's own wanted) */
         {"FM6", ICON_MOD},                    /* (symbol_modular: six operators patched; a glyph of its own wanted) */
+        {"ADPCM", ICON_SAMPLE},               /* (short sampled waves) */
     };
     uint32_t i;
     for (i = 0; i < sizeof M / sizeof M[0]; i++)

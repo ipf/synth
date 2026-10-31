@@ -38,15 +38,25 @@ typedef struct { const char *text; uint8_t kind; } menu_credit_t;
 static const menu_credit_t MENU_CREDITS[] = {
     {"H\xFCgelton Instruments", MC_TITLE},  /* Felucca's own: above; these are ours too */
     {"Leo Kuroshita", MC_TEXT},
-    {"The PHASE and DRUM engines: GPL-3.0", MC_TEXT},
+    {"The DRUM engine: GPL-3.0", MC_TEXT},
     {"The Sample Pack: CC0", MC_TEXT},
+    {"Felucca-Engines (ANALOG LOFI TRIO WHEEL NOISE PHASE): MIT", MC_TEXT},
     {"Fukiai icon font: MIT", MC_TEXT},
     {"https://github.com/hugelton", MC_URL},
+    {"", MC_TEXT},
+    {"FELUCCA-BSP", MC_TITLE},
+    {"The hardware layer: Leo Kuroshita, Charles Vestal, Kerem Kilic and others (its NOTICE) / MPL-2.0", MC_TEXT},
+    {"https://github.com/hugelton/felucca-bsp", MC_URL},
     {"", MC_TEXT},
     {"KLATTSCH", MC_TITLE},
     {"Tony Gies / MIT", MC_TEXT},
     {"https://github.com/tgies/klattsch", MC_URL},
     {"", MC_TEXT},
+#if FELUCCA_ADPCM
+    {"ADPCM DSP", MC_TITLE},
+    {"Shay Green, ported by ugotworms / LGPL-2.1+", MC_TEXT},
+    {"", MC_TEXT},
+#endif
     {"DAISYSP", MC_TITLE},
     {"Electrosmith, Emilie Gillet", MC_TEXT},
     {"MIT", MC_TEXT},
@@ -135,7 +145,7 @@ static int32_t menu_document(int32_t y, int draw)
         else y = menu_text(text, y, c->kind == MC_TITLE ? T_THEME : c->kind == MC_URL ? T_MID : T_TEXT, draw);
     }
     y = menu_text("LICENSES + SOURCE", y + 12, T_THEME, draw);
-    y = menu_text("DRUM + own samples: GPL-3.0-only", y, T_TEXT, draw);
+    y = menu_text("Felucca: GPL-3.0-only; Felucca-Engines MIT; felucca-bsp MPL-2.0; the Sample Pack CC0", y, T_TEXT, draw);
     y = menu_text("Fonts and icons: their licences travel with the source and the release files.", y, T_TEXT, draw);
     y = menu_text("NO WARRANTY", y, T_TEXT, draw);
     y = menu_text("Full notices in source:", y + 8, T_TEXT, draw);
@@ -316,7 +326,7 @@ static void menu_row(uint32_t k, uint32_t row)
         cv_text_r(MR_VR, vy, &AF_M, b, val, bg);
         return;
     }
-    if (row >= MI_VALUES) {                            /* CALIBRATION, ABOUT: OCT+ opens them */
+    if (row >= MI_VALUES) {                            /* CLEAR ALL, CALIBRATION, ABOUT: OCT+ opens them */
         GFX_HOOK_ALIGN(0, y, 0, y + h, AL_V, "menu row chevron centred up/down");
         cv_icon_in(MR_VR - 12, y, 0, h, 12, ICON_X_RIGHT, sel ? T_INK : T_MID, bg);
         return;
@@ -546,9 +556,16 @@ static void menu_input(uint32_t oct)                  /* oct: ui_input.c oct_tap
         if (s)
             menu_put(ui.menu_sel, menu_step(ui.menu_sel, s));
     } else if (up) {
-        if (ui.menu_sel == MI_LCLEAR) {                 /* LEARN CLEAR (1.5): every learned CC; no dialog (the menu has
-                                                         * none: every other row's change is undone the same way) */
-            ui_message(ml_clear_all() ? "LEARN CLEARED" : "NOTHING LEARNED");
+        if (ui.menu_sel == MI_LCLEAR) {                 /* LEARN CLEAR (1.5): every learned CC; 1.8: the dialog first */
+            if (ml_count()) {
+                menu_close();
+                confirm_open(CF_LEARN_CLEAR, 0);
+            } else {
+                ui_message("NOTHING LEARNED");
+            }
+        } else if (ui.menu_sel == MI_CLRALL) {          /* CLEAR ALL (1.8, #266): the dialog, out of the menu */
+            menu_close();
+            confirm_open(CF_CLEAR_ALL, 0);
         } else if (ui.menu_sel == MI_PANEL) {
             panel_setup();
             scrn.idle = fm1_ms;                         /* (SCREEN OFF: its own loop had the input) */

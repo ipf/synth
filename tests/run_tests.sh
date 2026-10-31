@@ -13,7 +13,7 @@
 #                   (tests/target_budget.txt, +10 %; exact, static).
 #   voices          the budget of 8, steal fades, MONO / LEGATO / UNISON keep their note, the VOICE cap,
 #                   no hanging notes on any MIDI / key routing.
-# FELUCCA-ENGINES (engines/tests, MIT): ANALOG LOFI TRIO WHEEL NOISE on their own host against their golden renders,
+# FELUCCA-ENGINES (engines/tests, MIT): ANALOG LOFI TRIO WHEEL NOISE PHASE on their own host against their golden renders,
 #                   once with their own tables and once with build/gen's (the two generators agree).
 # ENGINE MEMORY (tests/union_test.c, 1.5): engine switches on a part (every pair and A -> B -> A of the engines that
 #                   share the part's state region, with others), hashed against 1.4's (tests/union_golden.txt).
@@ -135,12 +135,12 @@
 #                   keyboard (YIN), 0.75 s at a root, the aliases, GRAIN SRC 0; SLICE's PIANO its middle C zone (shared);
 #                   1.2's PIANO HD user-slot file (gen_samples.py --user-slot: build/piano_hd/PIANO_HD), as old users may
 #                   have installed it: valid in USR1 and bit for bit as SET 0.
-# INPUT (tests/input_test.c): the key / button debounce of hal/fm1_input.h against the TIMER5 scan and bouncing
+# INPUT (tests/input_test.c): the key / button debounce of bsp/boards/fm1/fm1_input.h against the TIMER5 scan and bouncing
 #                   contacts: a press within 2 scans (<= 2.3 ms), one note per bouncy press, no early or hanging
 #                   release, stray samples ignored, fast repeats, the encoders' detents; the LED scan: lit LEDs every
 #                   frame, dim ones a short pulse (the second line write) every frame, each only on its own column;
 #                   the breath (#119): dark .. ~60 % of lit (DIM LO ~30 %), smooth, no dark run over ~10 ms near its peak;
-#                   the power-on sweep (1.1, hal/fm1_led_anim.h): its length, every LED every frame at its level, the
+#                   the power-on sweep (1.1, bsp/boards/fm1/fm1_led_anim.h): its length, every LED every frame at its level, the
 #                   head left to right with its tail, the buttons, the end on the idle glow, the tick as before after;
 #                   the idle animation (1.2, MENU > ANIM IDLE): endless, every LED every frame, the light there and back,
 #                   the buttons breathing, a key down ends it before its next frame.
@@ -190,6 +190,11 @@
 #                   GRAIN / SLICE). Longer runs: build/host/asan/fuzz_ed 300000 7 (iterations, seed), the same for the others.
 #                   UBSan leaves out the DSP's intended wraps (signed overflow, shifts) and the XIP rebase of a user zone's
 #                   offset (bounds, object-size, pointer-overflow: correct on the device's flat flash, not in C's model).
+# ADPCM (tests/adpcm_test.c): the voice (src/adpcm_dsp.c) sample for sample against snes_spc's SPC_DSP.cpp
+#                   (tests/adpcm_ref.cpp, when SNES_SPC points at a 0.9.0 checkout): BRR, Gaussian interpolation, ADSR, GAIN,
+#                   noise, the echo (FIR, feedback); its rate countdowns against the original's counter; the presets in the
+#                   mix (peak, clipping, voices freed, the echo idle), the pitch register; the part's engine memory shared
+#                   with PHYS (either engine after the other = from boot); demos in build/adpcm_demo/.
 # Change baseline entries only for reviewed, intentional differences in sound or cost;
 # retain every unaffected golden / CPU / target entry. VERBOSE=1: every render.
 set -e
@@ -197,11 +202,22 @@ export AC79_SDK="${AC79_SDK:-$HOME/fw-AC79_AIoT_SDK}"
 cd "$(dirname "$0")/.."
 OUT=build/host
 mkdir -p "$OUT"
-CC="${CC:-cc} -O1 -Wall -Wno-unused-function"
+# the hardware layer: firmware/hal, then felucca-bsp (firmware/bsp: chip/, boards/fm1/), as tools/build.py
+HALI="-Ifirmware/hal -Ifirmware/bsp/chip -Ifirmware/bsp/boards/fm1 -Ifirmware/src"   # (src: uac_fir.h, which bsp/chip/usb.c includes)
+CC="${CC:-cc} -O1 -Wall -Wno-unused-function $HALI"
 fail=0
 run() { local ok=1; echo "== $1"; shift; "$@" || ok=0; [ $ok = 1 ] || { echo "    RUN FAIL: $* (exit $?)"; fail=1; }; }
 
 $CC -o "$OUT/storage_test" tests/storage_test.c
+$CC -Ibuild/gen -Ifirmware/src -o "$OUT/signed_audio_scaling_test" tests/signed_audio_scaling_test.c -lm
+run "DSP signed arithmetic: fixed DC/lowcut/FM6 vectors and phase wrap" "$OUT/signed_audio_scaling_test"
+
+$CC -Ibuild/gen -Ifirmware/src -o "$OUT/phys_signed_test" tests/phys_signed_test.c -lm
+run "PHYS: signed output and frozen baseline render" "$OUT/phys_signed_test"
+
+$CC -Ibuild/gen -Ifirmware/src -o "$OUT/uart_dma_test" tests/uart_dma_test.c -lm
+run "TRS UART: pending events, stale counts, exact packets and continuous traffic" "$OUT/uart_dma_test"
+
 run "flash storage (A/B, torn writes)" "$OUT/storage_test"
 
 $CC -o "$OUT/upreset_test" tests/upreset_test.c
@@ -212,6 +228,11 @@ run "keys and buttons: fast press, long release, bouncy contacts (one note each)
 
 $CC -o "$OUT/midi_uart_test" tests/midi_uart_test.c
 run "TRS MIDI parser" "$OUT/midi_uart_test"
+
+$CC -O2 -o "$OUT/timer5_midi_test" tests/timer5_midi_test.c
+run "TRS timestamping during audio with saturated CC input" "$OUT/timer5_midi_test"
+$CC -O2 -DFELUCCA_UART=0 -o "$OUT/timer5_midi_nouart_test" tests/timer5_midi_test.c
+run "TIMER5 with TRS input disabled" "$OUT/timer5_midi_nouart_test"
 
 HALF=$(sed -n 's/^#define HALF_FRAMES \([0-9]*\).*/\1/p' firmware/src/core.h)
 $CC -O2 -DT_CDC=1 -DHALF_FRAMES=$HALF -o "$OUT/uac_test" tests/uac_test.c -lm
@@ -283,8 +304,12 @@ if [ -f build/gen/felucca_tables.h ]; then
     run "1.6: SEQ's piano roll follows the play position (#242: STEP, DETAIL; held by the knobs, 3 s or one pass)" "$OUT/v16_test"
     $CC -O1 -w -Ibuild/gen -Ifirmware/src -o "$OUT/fun10_test" tests/fun10_test.c -lm
     run "1.2 (FUN10): LFO 2 SYNC / TRIG / POL, NUDGE (record, QUANTIZE, play, controls), 128 motion records, FUN10 / FUN9 / FUN8 / FUN7, user presets" "$OUT/fun10_test"
+    $CC -O1 -w -Ibuild/gen -Ifirmware/src -o "$OUT/midi_drift_test" tests/midi_drift_test.c -lm
+    run "External-clock long-run phase: five 20-minute USB/TRS cases" "$OUT/midi_drift_test"
     $CC -O1 -w -Ibuild/gen -Ifirmware/src -o "$OUT/midi_control_test" tests/midi_control_test.c -lm
     run "USB/TRS clock, bend, sustain, ownership and panic recovery" "$OUT/midi_control_test"
+    $CC -O1 -w -DTIMER5_SYNTH_TEST=1 -Ibuild/gen -Ifirmware/src -o "$OUT/timer5_cc_clock_test" tests/timer5_midi_test.c -lm
+    run "TRS clock and four sequencers under saturated learned CCs (full upstream map)" "$OUT/timer5_cc_clock_test"
     $CC -O1 -w -DFELUCCA_FM4=1 -Ibuild/gen -Ifirmware/src -o "$OUT/digital_test" tests/digital_test.c -lm
     run "DIGITAL (retired, built here with FELUCCA_FM4=1): operator envelopes/levels" "$OUT/digital_test"
     $CC -O2 -w -DFELUCCA_FM4=1 -Ibuild/gen -Ifirmware/src -o "$OUT/fm4_test" tests/fm4_test.c -lm
@@ -322,6 +347,8 @@ if [ -f build/gen/felucca_tables.h ]; then
     if python3 -c "import PIL" 2>/dev/null; then python3 tests/ui_render.py build/ui_new build/ui_slot; fi
     $CC -w -DFELUCCA_FM4=1 -Ibuild/gen -Ifirmware/src -o "$OUT/ui_test_fm4" tests/ui_test.c -lm
     run "UI built with FELUCCA_FM4=1 (DIGITAL, kept in the tree): its OP pages, EDIT cycle, algorithm charts" "$OUT/ui_test_fm4"
+    $CC -w -DFELUCCA_ADPCM=1 -Ibuild/gen -Ifirmware/src -o "$OUT/ui_test_adpcm" tests/ui_test.c -lm
+    run "UI built with FELUCCA_ADPCM=1 (off by default): ADPCM last in PRESETS, no EDIT key (INIT stays on E5), its favourites" "$OUT/ui_test_adpcm"
     $CC -O1 -w -DFELUCCA_FM4=1 "-DFELUCCA_VERSION=\"$FV\"" -Ibuild/gen -Ifirmware/src -Itests -o "$OUT/ui_render_fm4" tests/ui_render.c -lm
     mkdir -p build/ui_fm4/ppm build/ui_fm4_slot
     run "UI renders with FELUCCA_FM4=1: DIGITAL's screens (EDIT, OP ENV, the 8 algorithm charts), lint, GREY gray, MONO neutral" \
@@ -419,6 +446,19 @@ if [ -f build/gen/felucca_tables.h ]; then
     else
         echo "== skip PHYS reference test (no DaisySP: set DAISYSP to a checkout)"
     fi
+    if true; then                           # (the engine is built here whatever the firmware's default: FELUCCA_ADPCM=1)
+        S=${SNES_SPC:-vendor/snes_spc}/snes_spc
+        REF=-                               # (no snes_spc checkout: the comparison with it is skipped, the rest runs)
+        if [ -f "$S/SPC_DSP.cpp" ] && command -v c++ >/dev/null 2>&1; then
+            c++ -O2 -w -I"$S" -Ibuild/gen -Itests -o "$OUT/adpcm_ref" tests/adpcm_ref.cpp
+            "$OUT/adpcm_ref" "$OUT/adpcm_ref.bin" >/dev/null
+            REF="$OUT/adpcm_ref.bin"
+        fi
+        $CC -O2 -w -DFELUCCA_ADPCM=1 -Ibuild/gen -Ifirmware/src -Itests -o "$OUT/adpcm_test" tests/adpcm_test.c -lm
+        mkdir -p build/adpcm_demo
+        run "ADPCM (FELUCCA_ADPCM=1, off by default): the voice against snes_spc (with SNES_SPC), counters, presets, pitch, the engine memory, demos" \
+            "$OUT/adpcm_test" "$REF" build/adpcm_demo
+    fi
     $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/drum_test" tests/drum_test.c -lm
     mkdir -p build/drum_demo
     run "DRUM: voice targets, controls, no clipping, retrigger, hat choke, the kick on a small speaker, keys, 8 lanes, cost, demos" "$OUT/drum_test" build/drum_demo
@@ -470,16 +510,27 @@ elif ! san_ok; then
 else
     mkdir -p "$OUT/asan"
     A="$OUT/asan"
-    SCC="${CC%% *} $SAN -Ibuild/gen -Ifirmware/src"
+    SCC="${CC%% *} $SAN $HALI -Ibuild/gen -Ifirmware/src"
     export ASAN_OPTIONS="${ASAN_OPTIONS:-detect_leaks=0}"
+    # This regression uses strict ASan/UBSan, without the broad DSP exclusions.
+    STRICT_CC="${CC%% *} -O1 -g -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer -w $HALI -Ibuild/gen -Ifirmware/src"
+    $STRICT_CC -o "$A/signed_audio_scaling_test_strict" tests/signed_audio_scaling_test.c -lm
+    run "Strict ASan/UBSan (no exclusions): signed_audio_scaling_test" "$A/signed_audio_scaling_test_strict"
+    $STRICT_CC -o "$A/phys_signed_test_strict" tests/phys_signed_test.c -lm
+    run "Strict ASan/UBSan (no exclusions): phys_signed_test" "$A/phys_signed_test_strict"
+
+    $STRICT_CC -o "$A/uart_dma_test_strict" tests/uart_dma_test.c -lm
+    run "Strict ASan/UBSan (no exclusions): uart_dma_test" "$A/uart_dma_test_strict"
     $SCC -o "$A/ldr_test" tests/ldr_test.c
     run "ASan/UBSan: update loader (other app -> this build)" "$A/ldr_test" "$OUT/old.fwsc" build/felucca.fwsc
     $SCC -DOWN_PKG=1 -o "$A/ota_test" tests/ota_test.c
     run "ASan/UBSan: M-UPGRADE entry (own loader)" "$A/ota_test" build/felucca.fwsc
-    for t in editor_test project_test backup_test robust_test fun10_test fm6bank_test; do
+    for t in editor_test project_test backup_test robust_test fun10_test fm6bank_test midi_drift_test; do
         $SCC -o "$A/$t" tests/$t.c -lm
         run "ASan/UBSan: $t" "$A/$t"
     done
+    $SCC -DTIMER5_SYNTH_TEST=1 -o "$A/timer5_cc_clock_test" tests/timer5_midi_test.c -lm
+    run "ASan/UBSan: TRS clock under learned CC load during audio" "$A/timer5_cc_clock_test"
     $SCC -o "$A/fuzz_ed" tests/fuzz_ed.c -lm
     run "ASan/UBSan fuzz: editor SysEx and raw USB-MIDI packets (20000, seed 7)" "$A/fuzz_ed" 20000 7
     $SCC -o "$A/fuzz_proj" tests/fuzz_proj.c -lm
@@ -506,7 +557,7 @@ elif ! command -v node >/dev/null 2>&1 || [ ! -f build/gen/felucca_tables.h ]; t
     echo "== skip the browser emulator (needs node and build/gen)"
 else
     run "browser emulator: the firmware to WebAssembly (web/emu/build.sh -> build/emu)" sh web/emu/build.sh
-    cc -O2 -ffp-contract=off -w -Ibuild/gen -Ifirmware/src -o "$OUT/emu_native" web/emu/native_check.c -lm
+    cc -O2 -ffp-contract=off -w $HALI -Ibuild/gen -Ifirmware/src -o "$OUT/emu_native" web/emu/native_check.c -lm
     run "browser emulator: the same song from the native build" "$OUT/emu_native" "$OUT/emu_native.f32"
     run "browser emulator: boot, keys, MIDI, screen, LEDs, PLAY, a save kept across instances, = native, cost" \
         node web/emu/emu_test.mjs build/emu/felucca.wasm "$OUT/emu_native.f32"

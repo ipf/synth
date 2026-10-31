@@ -10,16 +10,18 @@ The build makes three files in `build/`:
 
 ## Get the source
 
-Five engines are in a git submodule (`firmware/engines/`, [Felucca-Engines](https://github.com/hugelton/Felucca-Engines),
-MIT), so clone with `--recurse-submodules`:
+Two parts are git submodules: six engines (`firmware/engines/`, [Felucca-Engines](https://github.com/hugelton/Felucca-Engines),
+MIT) and the hardware layer (`firmware/bsp/`, [felucca-bsp](https://github.com/hugelton/felucca-bsp), MPL-2.0), so clone
+with `--recurse-submodules`:
 
 ```
 git clone --recurse-submodules https://github.com/hugelton/Felucca.git
 ```
 
 In a clone made without it, run `git submodule update --init` once. GitHub's "Download ZIP" and the source archives
-it adds to a release leave `firmware/engines/` empty; each release also has `felucca-X.Y.Z-source.tar.gz`, the whole
-source with the submodule's files in it. The build stops with "firmware/engines is empty" when they are missing.
+it adds to a release leave `firmware/engines/` and `firmware/bsp/` empty; each release also has
+`felucca-X.Y.Z-source.tar.gz`, the whole source with the submodules' files in it. The build stops with
+"firmware/engines is empty" or "firmware/bsp is empty" when they are missing.
 
 ## Prerequisites (macOS)
 
@@ -73,11 +75,12 @@ Build options (environment, `0` or `1`; defaults in `firmware/src/felucca.c`, `c
 | `FELUCCA_UAC` | 1 | USB audio input (the master output, stereo, 44.1 or 48 kHz) |
 | `FELUCCA_UAC_48K` | 1 | `0`: the USB audio input at 44.1 kHz only, as up to 1.0.5.2 (`firmware/src/usb.c`) |
 | `FELUCCA_UAC_AS_FIRST` | 1 | the audio control header lists the audio streaming interface before the MIDI one, so the USB audio driver of older macOS (up to 15) finds it; `0`: 1.0 to 1.5's order, byte for byte (`firmware/src/usb.c`) |
-| `FELUCCA_CPU2` | 1 | the second core is built in (MENU > SYSTEM > 2ND CORE, OFF by default); `0`: none of it, 1.6's one-core code and RAM (`firmware/hal/fm1_cpu1.h`, `firmware/src/fx.c`) |
+| `FELUCCA_CPU2` | 1 | the second core is built in (MENU > SYSTEM > 2ND CORE, OFF by default); `0`: none of it, 1.6's one-core code and RAM (`firmware/bsp/chip/fm1_cpu1.h`, `firmware/src/fx.c`) |
 | `FELUCCA_UART` | 1 | TRS MIDI IN |
 | `FELUCCA_SLICE` | 1 | the SLICE engine |
 | `FELUCCA_ICONS` | 1 | parameter icons on the knob cards |
 | `FELUCCA_FM4` | 0 | the retired DIGITAL engine (4-operator FM) instead of its FM6 conversion |
+| `FELUCCA_ADPCM` | 0 | the ADPCM engine (engine 14, `firmware/src/eng_adpcm.c`): kept in the tree, not built by default. On the FM-1 one of its voices costs about three ANALOG voices (8 voices on one part: 54 % CPU, against 17 % for ANALOG; on all four parts the audio drops out); the figures are in `eng_adpcm.c` |
 
 `FELUCCA_USB_LAYOUT` (`0` to `3`, default `0`) picks other USB descriptor layouts for testing; see
 `firmware/src/usb.c`.
@@ -118,7 +121,9 @@ drawing code against stubs: every screen in every palette is rendered and checke
 overlapping text; PNGs land in `build/ui_new/`), every engine (DRUM, NOISE, PHYS, FM6, SLICE, the
 DIGITAL conversion), the chord keys, the modulation matrix, the FX layer, the reverbs, the SLICER
 and swing. With `DAISYSP` pointing at a DaisySP checkout, the PHYS models are also compared with
-their floating-point originals; without it that test is skipped. Felucca-Engines' own test
+their floating-point originals; without it that test is skipped. Likewise with `SNES_SPC` pointing at a
+snes_spc 0.9.0 checkout, the ADPCM engine's voice is compared sample for sample with its `SPC_DSP.cpp`
+(`tests/adpcm_ref.cpp`, needs `c++`); without it the rest of the ADPCM test runs. Felucca-Engines' own test
 (`firmware/engines/tests/run.sh`) runs too, and its standalone host is built once more with Felucca's tables
 against the same golden renders.
 

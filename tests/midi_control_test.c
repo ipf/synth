@@ -777,20 +777,25 @@ static int learn_test(void)
          ml_count() == ML_N && oct_leds() == OCT_BREATH && !menu_valued(MI_LCLEAR) && menu_valued(MI_MIDIIN);
     turn(EN_K1, 3); press(B_OCTDN);
     ok &= ml_count() == ML_N && ui.menu == 1;                           /* (knobs, OCT-: nothing) */
-    press(B_OCTUP);
-    ok &= !ml_count() && msg_is("LEARN CLEARED") && ui.menu == 1 && song.octave == 0 && oct_leds() == 0u;
+    press(B_OCTUP);                                                     /* (1.8: the dialog first) */
+    ok &= ml_count() == ML_N && ui.confirm == CF_LEARN_CLEAR && !ui.menu;
+    press(B_OCTDN);
+    ok &= ml_count() == ML_N && !ui.confirm;
+    hold(B_HOME);
+    ok &= ui.menu == 1 && ui.menu_sel == MI_LCLEAR;
+    press(B_OCTUP); press(B_OCTUP);
+    ok &= !ml_count() && msg_is("LEARN CLEARED") && !ui.menu && !ui.confirm && song.octave == 0;
     memcpy(before, trk[1].p, sizeof before);
-    press(B_HOME);
     queued(0xB0, 74, 3, 1);
     ok &= !memcmp(before, trk[1].p, sizeof before) && trk[0].p[P_E4] == 3;   /* (CC74: the standard map again) */
     hold(B_HOME); press(B_OCTUP);
     ok &= msg_is("NOTHING LEARNED") && ui.menu_sel == MI_LCLEAR;
     press(B_HOME);
-    bad += check("MENU > MIDI > LEARN CLEAR: OCT+ clears every CC (LEARN CLEARED; none: NOTHING LEARNED)", ok);
+    bad += check("MENU > MIDI > LEARN CLEAR: OCT+ asks (1.8), OCT- keeps, OCT+ again clears every CC (LEARN CLEARED; none: NOTHING LEARNED)", ok);
 
     /* the stored codes with 1.5's parameters (the INSERT 96..100, TYPE 101, ESYNC 102, P_E0 103): a common parameter
      * id + 1, below ML_E0; an engine one ML_E0 + k whatever P_E0 is; every id back as it went in */
-    ok = P_E0 == 103u && P_COUNT == 111u && P_E0 < ML_E0;
+    ok = P_E0 == 106u && P_COUNT == 114u && P_E0 < ML_E0;   /* (1.8: AFTERTOUCH's three before P_E0) */
     for (i = 0; i < P_COUNT; i++)
         ok &= ml_id(ml_code(i)) == i && (i < P_E0 ? ml_code(i) == i + 1u && ml_code(i) < ML_E0 : ml_code(i) == ML_E0 + i - P_E0);
     ok &= ml_id(0) == P_COUNT && ml_id(P_E0 + 1u) == P_COUNT && ml_id(ML_E0 - 1u) == P_COUNT;   /* (no such parameter) */
@@ -852,7 +857,7 @@ static int pc_test(void)
     pc(0, 1); frame();
     ok &= t->preset == 1;
     hold(B_SAVE);
-    ok &= same_sound(t, &was) && msg_is("UNDO/REDO T1");
+    ok &= same_sound(t, &was) && msg_is("UNDO/REDO T1 SOUND");
     bad += check("  two before a frame: the last loads; a run of PCs is one undo (SAVE held: the sound before)", ok);
 
     /* the editor: a RELOAD for the selected track only */

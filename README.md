@@ -2,19 +2,15 @@
 
 [![License: GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue.svg)](LICENSE)
 
-## Maintenance Notice
-
-What began as a personal experiment grew far beyond my expectations. I’m grateful to everyone who contributed, supported the project, and made music with Felucca.
-
-I’ve decided to step back from active development to focus on creating new instruments and music.
-
-Felucca will remain available with occasional maintenance, but new features, issue responses, and pull request reviews are not guaranteed.
-
-Thank you for everything. I hope you’ll look forward to my next creations.
-
 ## Overview
 
-Multi-engine synthesizer firmware for the M-VAVE FM-1, version 1.6.1. Connect the FM-1 to a computer by USB, open the
+Felucca is an open-source synthesizer firmware project that began as custom firmware for the M-VAVE FM-1.
+
+Originally developed for a single instrument, Felucca is evolving toward a multi-platform architecture, separating its synthesis engines from hardware-specific implementations. The aim is to make its instruments and sound engines adaptable to different hardware platforms without committing to specific ports or release schedules.
+
+### M-VAVE FM-1
+
+The FM-1 firmware is currently at version 1.8.0. Connect the FM-1 to a computer by USB, open the
 [web installer](https://hugelton.github.io/Felucca/) in Chrome or Edge and press Install; no extra hardware is needed.
 Installing is at your own risk: M-VAVE's updater or the installer's **Return to official V15** takes you back.
 [Try it in your browser](https://hugelton.github.io/Felucca/webapp/try/), no FM-1 needed.
@@ -23,8 +19,24 @@ Installing is at your own risk: M-VAVE's updater or the installer's **Return to 
 - Edit: [web editor](https://hugelton.github.io/Felucca/webapp/editor/) ([Felucca-WebApp](https://github.com/hugelton/Felucca-WebApp))
 - Read: the manual and the release notes are in the [wiki](https://github.com/hugelton/Felucca/wiki/Home)
 - Build: [BUILDING.md](BUILDING.md)
-- Related: [Felucca-Engines](https://github.com/hugelton/Felucca-Engines) (the ANALOG, LOFI, TRIO, WHEEL and NOISE engines, MIT; still maintained) ·
-  [felucca-bsp](https://github.com/hugelton/felucca-bsp) (the FM-1 hardware layer)
+- Platforms: the FM-1 (the reference; every release is tested on it) · the browser (`web/emu`) · a desktop with SDL2
+  (beta, run on macOS so far; Linux next: [platforms/linux](platforms/linux/README.md)). The same sources on each: what a platform does not
+  have (the FM-1's panel, USB, its flash) is given by its own files under `platforms/`.
+- Related: [Felucca-Engines](https://github.com/hugelton/Felucca-Engines) (the ANALOG, LOFI, TRIO, WHEEL, NOISE and PHASE engines, MIT; still maintained) ·
+  [felucca-bsp](https://github.com/hugelton/felucca-bsp) (the FM-1 hardware layer, MPL-2.0; Felucca builds on it from 1.7.0)
+
+## Platform Support
+
+| Platform | Status | Notes |
+| --- | --- | --- |
+| M-VAVE FM-1 | Supported | The original platform; firmware and web installer available. |
+| Browser | Supported | [Try it](https://hugelton.github.io/Felucca/webapp/try/), no FM-1 needed. |
+| Desktop (SDL2) | Beta | Source only, in [platforms/linux](platforms/linux/README.md); run on macOS so far, Linux next. |
+| M5Stack CoreS3 | In progress | Runs on the device; not published yet. |
+| M-VAVE SMK-37 | Proposed | A board in [felucca-bsp#13](https://github.com/hugelton/felucca-bsp/issues/13); untested. |
+| Other hardware | Not yet supported | Ports are welcome! Linux-based devices: see the [FAQ](https://github.com/hugelton/Felucca/wiki/FAQ). |
+
+Felucca began on the FM-1, but it is not intended to stay there. Contributions and ports to other platforms are very welcome. If you are interested in bringing Felucca to another device, feel free to open an issue or pull request to discuss it. No specific future ports or release dates are promised.
 
 ## AI disclaimer
 
@@ -35,7 +47,8 @@ icons or artwork. See [On AI-Assisted Development and Responsibility](https://gi
 ## Credits and licence
 
 Free software: [GPL-3.0-only](LICENSE); the Hügelton Sample Pack is CC0 1.0; the engines in `firmware/engines` are MIT
-([Felucca-Engines](https://github.com/hugelton/Felucca-Engines)); the bundled fonts and ported DSP keep their own licences
+([Felucca-Engines](https://github.com/hugelton/Felucca-Engines)); the hardware layer in `firmware/bsp` is MPL-2.0
+([felucca-bsp](https://github.com/hugelton/felucca-bsp)); the bundled fonts and ported DSP keep their own licences
 ([LICENSES/](LICENSES/), [LICENSING.md](LICENSING.md)). Thanks to everyone whose work and contributions are in it: [CREDITS.md](CREDITS.md).
 
 M-VAVE and FM-1 are trademarks of their respective owners. Felucca is not affiliated with or endorsed by them.

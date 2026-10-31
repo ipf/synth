@@ -28,11 +28,19 @@
                                             * second core (mod.c, voice.c SPREAD, eng_formant.c): one each with two cores,
                                             * one for all with one, as up to 1.6 */
 #define C1_PI(t) ((uint32_t)((t) - trk) % C1_NP)   /* a part's copy */
-#define NENGINES (15 + FELUCCA_SLICE)   /* SLICE (13) comes last, then 14 POLYSIX, 15 JUNO106 (appended,
-                                          * never reorder) */
+#ifndef FELUCCA_ADPCM
+#define FELUCCA_ADPCM 0          /* the ADPCM engine (eng_adpcm.c), engine 14: not built by default (FELUCCA_ADPCM=1 builds
+                                  * it): on the FM-1 it costs about three ANALOG voices a voice (eng_adpcm.c, the figures) */
+#endif
+#if FELUCCA_ADPCM && !FELUCCA_SLICE
+#error "FELUCCA_ADPCM needs FELUCCA_SLICE (ADPCM is engine 14, after SLICE)"
+#endif
+#define NENGINES (13 + FELUCCA_SLICE + FELUCCA_ADPCM)   /* SLICE (13), then ADPCM, POLYSIX, JUNO106 (appended,
+                                                         * never reorder) */
+#define ENGI_ADPCM 14u
 #define ENGI_DIGITAL 1u          /* reserved without FELUCCA_FM4: never selectable (eng_ok), its sounds load as FM6 */
-#define ENGI_POLYSIX (13u + FELUCCA_SLICE)   /* after SLICE: 14 with it, 13 without */
-#define ENGI_JUNO (14u + FELUCCA_SLICE)      /* after POLYSIX: 15 with it, 14 without */
+#define ENGI_POLYSIX (14u + FELUCCA_ADPCM)   /* after ADPCM: 15 with it, 14 without */
+#define ENGI_JUNO (15u + FELUCCA_ADPCM)      /* after POLYSIX: 16 with it, 15 without */
 /* 15 white-key columns + INIT, its hold is CLEAN INIT (LAYER EDIT: ui_layer.c) — everything
  * fits: without FM4 only DIGITAL yields; with FM4 JUNO106 does */
 #define NENG_SHOWN (NENGINES - 1u)   /* the engines one can pick, in the display order of engines.c ENGINE_ORDER */
@@ -73,6 +81,7 @@ enum {                          /* per-track parameters */
     P_ITYPE, P_IA, P_IB, P_IC, P_IMIX,         /* 1.5 (#78, #177): the INSERT, its TYPE, three values and MIX (fx.c) */
     P_FTYPE,                                   /* 1.5 (#104): ANALOG's filter TYPE, LP (as before) / BP / HP (eng_analog.c) */
     P_ESYNC,                                   /* 1.5 (#175): ENV SYNC: ATK DEC REL as note values of the tempo (voice.c) */
+    P_ATSNS, P_ATDST, P_ATAMT,                 /* 1.8: AFTERTOUCH: the keys' pressure (keytouch.c) and its routing (mod.c) */
     P_E0, P_E1, P_E2, P_E3, P_E4, P_E5, P_E6, P_E7,
     P_COUNT
 };
@@ -314,9 +323,9 @@ typedef struct track {
     uint8_t lfo_wrap;            /* the LFO's phase wrapped this block: its S&H is drawn after the parts (voice.c) */
     uint32_t esync_k[3];         /* ATK's step, DEC's and REL's coefficient (Q16) this block (voice.c esync_coef) */
     uint8_t spread_on;           /* SPREAD this block (fx.c mix_part, voice.c track_render) */
-    uint8_t rsv_sz[1];           /* (sizeof(track_t) a multiple of 16: below) */
+    uint8_t rsv_sz[15];          /* (sizeof(track_t) a multiple of 16: below; 1.8's AFTERTOUCH grew it by 14) */
 #else
-    uint8_t rsv_sz[14];          /* (sizeof(track_t) a multiple of 16: below) */
+    uint8_t rsv_sz[12];          /* (sizeof(track_t) a multiple of 16: below; 1.8's AFTERTOUCH took 2 of it) */
 #endif
     int16_t armp, aholdp;        /* P_AMODE / P_AHOLD as last seen by the ISR */
     /* engine switch (voice.c engine_block): the old engine's voices fade out, then it switches */

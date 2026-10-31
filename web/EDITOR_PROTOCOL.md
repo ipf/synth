@@ -67,6 +67,13 @@ insert effect with a dry / wet mix, Discussions #78 #177), then `TYPE` (101, ANA
 P_COUNT and P_E0 from `INFO` keeps working. Projects stay FUN10 (3840 bytes, 111 at byte 66; 16 bytes to spare). See
 "1.5: the INSERT" and "1.5: filter TYPE, ENV SYNC" below.
 
+**1.8 (114 parameters, FUN10 as it was):** three track parameters went in before the engine parameters, which moved
+from 103..110 to 106..113: P_COUNT 114, P_E0 106. AFTERTOUCH, on EDIT > VOICE 3: `AT` (103, the keys' pressure: OFF,
+1 .. 10; only F3 .. C5 sense it), `ATDST` (104, a destination as the matrix's `DST`) and `ATAMT` (105, -64..63): the
+track's aftertouch, the keys' or MIDI's, routed as a modulation slot of its own. All three 0 = as before. No command
+changed; an editor that takes P_COUNT and P_E0 from `INFO` keeps working. Projects stay FUN10 (114 at byte 66; 4 bytes
+to spare before MIDI IN TRACK's three).
+
 ## Framing
 
 A request is `F0 7D 46 4C <cmd> <args...> F7`:
@@ -92,7 +99,7 @@ watches (v2, `WATCH`), the device also sends push frames (cmds 23, 24, 26) at an
 | track | 0..3: tracks 1..4 (synth parts) |
 | engine byte | 0..NENGINES−1 (firmware before 1.0: NENGINES = its drum track, no engine). The numbers are fixed, new engines are appended: 0 ANALOG, 1 reserved (DIGITAL before 1.0: see below), 2 PHASE, 3 LOFI, 4 SAMPLE, 5 VOICE, 6 TRIO, 7 WHEEL, 8 GRAIN, 9 PHYS, 10 DRUM, 11 NOISE, 12 FM6, 13 SLICE (NENGINES 14; a build with `FELUCCA_SLICE=0` has 13). The device and the editor list them in another order (ANALOG FM6 PHASE LOFI SAMPLE VOICE TRIO WHEEL GRAIN PHYS NOISE SLICE DRUM: `ENGINE_ORDER`); the numbers stay |
 
-The engine parameters are `P_E0..P_E7`: P_COUNT−8 .. P_COUNT−1 (103..110 since 1.5; 96..103 in 1.2 .. 1.4; 91..98 in
+The engine parameters are `P_E0..P_E7`: P_COUNT−8 .. P_COUNT−1 (106..113 since 1.8; 103..110 in 1.5 .. 1.7; 96..103 in 1.2 .. 1.4; 91..98 in
 1.1), and `INFO` gives `P_E0`.
 Their meaning, range and names depend on the current engine, so re-read `DESC` for them
 after an engine change.
@@ -983,12 +990,15 @@ F7` (rc 0, 16 entries, the first CC74 on T4 id 98).
 ## CUSTOM palette (80-81; 1.6)
 
 COLOR (MENU > DISPLAY, Discussion #239, #244) has a palette of the user's as its 11th value, CUSTOM. A palette is five
-stored colours, BG SURF TEXT THEME ACCENT; the device derives the other tokens (MID, DIM, LINE, SEL, TINT, INK, RAISE, KEY,
-LANE, GRID, REC) from them with fixed blends, as for the built-in palettes (`firmware/src/gfx.c palette_set`,
+stored colours, color1 color2 color3 primary secondary (1.7; 1.6 and before: BG SURF TEXT THEME ACCENT): color1 the
+background, color2 the identity colour (values, curves, selections; the card colour SURF is color1 + 12 % of it), color3
+the text, primary REC and the warnings, secondary the one active thing. The device derives the other tokens (SURF, MID,
+DIM, LINE, SEL, TINT, INK, RAISE, KEY, LANE, GRID) from them with fixed blends, as for the built-in palettes (`firmware/src/gfx.c palette_set`,
 `tools/gen_ui_palettes.py`), CUSTOM is not GREY and not MONO (the channels blend as they are). The colours are RGB565,
 sent as three 7-bit bytes each: red 0..31, green 0..63, blue 0..31. CUSTOM is part of the settings (kept across
 power-off, not in projects or user presets; a full backup carries it with the settings object, id 1: bytes 0..9 and 12 of
-the favorites' 16th row). Firmware before 1.6 keeps the bytes (a round trip through it does not lose the palette) and shows
+the favorites' 16th row; byte 12 bit 2: the 1.7 layout. A CUSTOM stored by 1.6 is read as color1 = BG, color2 = THEME, color3 = TEXT, a red
+primary and secondary = ACCENT, once, at the first start of 1.7; 1.6 reading a 1.7 CUSTOM shows its five as it knew them). Firmware before 1.6 keeps the bytes (a round trip through it does not lose the palette) and shows
 the built-in palette that was in use before CUSTOM was chosen (the settings' palette field is never CUSTOM). INFO
 advertises `45 01 5` (five colours) after `4B 01 NCOND`; firmware without the tag answers neither command.
 
@@ -1006,12 +1016,12 @@ use; a power cycle too). Op 1 stores them, makes CUSTOM the palette in use and s
 RAM only, 4 saved when the transport stops). Op 2 removes the stored palette (the built-in palette from before is in use
 again). rc 1: arguments (a value past its range, an unknown op, a wrong length). **The device accepts any colours**, readable
 or not; it is the editor that warns. The rule the editor warns by (the lightness 0..255 as in `firmware/src/gfx.c ux_luma`: (54 R + 183 G +
-19 B) / 256 of the colour at full scale): TEXT against BG at least 128 apart, TEXT against SURF 96, THEME against BG 80,
-ACCENT against BG 64; every built-in palette keeps 195, 171, 135 and 147 at the least. With colours nobody can read the way
+19 B) / 256 of the colour at full scale): color3 against color1 at least 128 apart, color2 against color1 80,
+secondary against color1 64, primary against color1 64; every built-in palette keeps 195, 171, 135 and 147 at the least. With colours nobody can read the way
 back is the editor's op 2, or the device's MENU: hold HOME for the menu, COLOR is the first row of the first tab (DISPLAY), a
 knob turn picks a built-in palette. A preview by the slider is op 0 sent at most every few tens of ms; the value in the
-settings changes only with op 1. Example: `F0 7D 46 4C 51 01 01 02 05 03 04 0A 06 ...` is op 1 with BG = (r 1, g 2, b 5),
-SURF = (3, 4, 10), ...
+settings changes only with op 1. Example: `F0 7D 46 4C 51 01 01 02 05 03 04 0A 06 ...` is op 1 with color1 = (r 1, g 2, b 5),
+color2 = (3, 4, 10), ...
 
 ## Tagged device preferences v1
 

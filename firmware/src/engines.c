@@ -10,9 +10,13 @@
  * last claimed it (eng_mem_owner); a switch to another such engine zeroes its engine_t.mem bytes, which is
  * the state each had at power-on, so a switch sounds as it did with the arrays (tests/union_test.c). State
  * that runs on across notes and switches stays outside (WHEEL's wheels, GRAIN's random numbers).
- * Sized by the largest, PHYS (3 x SYMP's slot); an engine that needs more than ENG_MEM_PART grows it for
+ * Sized by the largest, ADPCM when it is built (else PHYS, 3 x SYMP's slot); an engine that needs more than ENG_MEM_PART grows it for
  * every part (x NPART of the pool). Zero-initialised pool section: main.c fm1_cstart clears it. */
+#if FELUCCA_ADPCM
+#define ENG_MEM_PART 13344u    /* ADPCM: its 192 ms echo line, 8 voices and the DSP (13288 B; the host's pointers 13320) */
+#else
 #define ENG_MEM_PART 12888u
+#endif
 static union {
     uint64_t align;
     uint8_t b[ENG_MEM_PART];
@@ -22,7 +26,7 @@ static uint8_t eng_mem_owner[NPART];       /* engine index + 1 whose state is in
 #define ENG_MEM_FITS(name, size) _Static_assert((size) <= ENG_MEM_PART, name " state over ENG_MEM_PART")
 
 #include "../engines/src/eng_analog.c"   /* Felucca-Engines (MIT): ANALOG LOFI TRIO WHEEL NOISE */
-#include "eng_phase.c"
+#include "../engines/src/eng_phase.c"   /* Felucca-Engines (MIT): PHASE */
 #include "../engines/src/eng_lofi.c"
 #include "eng_sample.c"
 #include "eng_formant.c"
@@ -41,6 +45,9 @@ static uint8_t eng_mem_owner[NPART];       /* engine index + 1 whose state is in
 #endif
 #if FELUCCA_SLICE
 #include "eng_slice.c"
+#endif
+#if FELUCCA_ADPCM
+#include "eng_adpcm.c"           /* ADPCM: BRR waves and an FIR echo, its DSP ported from snes_spc (adpcm_dsp.c, LGPL-2.1+) */
 #endif
 
 /* the editor protocol, user presets and projects store these indices: append, never reorder */
@@ -65,8 +72,11 @@ static const engine_t *const ENGINES[NENGINES] = {
 #if FELUCCA_SLICE
     &ENG_SLICE,                  /* 13 (FELUCCA_SLICE=0 builds without it) */
 #endif
-    &ENG_POLYSIX,                /* 14 (ENGI_POLYSIX, appended 1.5: never reorder these) */
-    &ENG_JUNO,                   /* 15 (ENGI_JUNO, appended) */
+#if FELUCCA_ADPCM
+    &ENG_ADPCM,                  /* 14 (ENGI_ADPCM; FELUCCA_ADPCM=0 builds without it) */
+#endif
+    &ENG_POLYSIX,                /* 15 (ENGI_POLYSIX, appended: never reorder these) */
+    &ENG_JUNO,                   /* 16 (ENGI_JUNO, appended) */
 };
 
 /* a track's engine number as an index (the audio paths: a compare, cheaper than % NENGINES; a bad number: 0) */
@@ -131,6 +141,9 @@ static const uint8_t ENGINE_ORDER[NENG_SHOWN] = {
     14u + FELUCCA_SLICE,         /* JUNO106 (under FM4 DIGITAL is in its show: eng_ok) */
 #endif
     10,                          /* DRUM */
+#if FELUCCA_ADPCM
+    14,                          /* ADPCM (1.8): last, so the EDIT layer's white keys keep the 13 above (ui_layer.c LY_ENG_KEYS) */
+#endif
 };
 
 /* the engines one can pick (engine 1 only with FELUCCA_FM4), in ENGINE_ORDER: eng_ok(e), the n-th of them
