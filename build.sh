@@ -9,6 +9,7 @@ set -e
 cd "$(dirname "$0")"
 export JIELI_TOOLCHAIN="${JIELI_TOOLCHAIN:-$HOME/.jieli/toolchain}"
 export AC79_SDK="${AC79_SDK:-$HOME/fw-AC79_AIoT_SDK}"
+export FELUCCA_ADPCM="${FELUCCA_ADPCM:-1}"   # the stock FM-1 sounds as the ADPCM engine (FELUCCA_ADPCM=0: without)
 PY="${PYTHON:-python3}"
 
 "$PY" -c 'import PIL' 2>/dev/null || { echo "build.sh: $PY has no Pillow (pip3 install Pillow)"; exit 1; }

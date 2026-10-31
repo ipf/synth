@@ -18,14 +18,24 @@ static uint8_t *fav_bit(uint32_t engine, uint32_t preset, uint8_t *mask)   /* th
         *mask = (uint8_t)(1u << (preset % 8u));
         return &favorites.factory[engine][preset / 8u];
     }
-    if (preset < 8u && (engine == ENGI_JUNO || engine == ENGI_ADPCM)) {
+#ifdef ENGI_ADPCM
+    if (engine == ENGI_ADPCM && preset < 8u) {          /* ADPCM (1.8, 8 presets): [15][13] */
         *mask = (uint8_t)(1u << preset);
-        return &favorites.factory[15][engine == ENGI_ADPCM ? 13u : 22u];
+        return &favorites.factory[15][13u];
     }
-    if (engine == ENGI_POLYSIX && preset < 64u) {
+#endif
+#ifdef ENGI_JUNO
+    if (engine == ENGI_JUNO && preset < 8u) {           /* JUNO106 (ours, 8 presets): [15][22] */
+        *mask = (uint8_t)(1u << preset);
+        return &favorites.factory[15][22u];
+    }
+#endif
+#ifdef ENGI_POLYSIX
+    if (engine == ENGI_POLYSIX && preset < 64u) {       /* POLYSIX (ours, 64 presets): [15][14..21] */
         *mask = (uint8_t)(1u << (preset % 8u));
         return &favorites.factory[15][14u + preset / 8u];
     }
+#endif
     return 0;
 }
 static int favorite_has(uint32_t engine, uint32_t preset)
