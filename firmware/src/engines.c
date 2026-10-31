@@ -26,7 +26,7 @@ static uint8_t eng_mem_owner[NPART];       /* engine index + 1 whose state is in
 #define ENG_MEM_FITS(name, size) _Static_assert((size) <= ENG_MEM_PART, name " state over ENG_MEM_PART")
 
 #include "../engines/src/eng_analog.c"   /* Felucca-Engines (MIT): ANALOG LOFI TRIO WHEEL NOISE */
-#include "../engines/src/eng_phase.c"   /* Felucca-Engines (MIT): PHASE */
+#include "../engines/src/eng_phase.c"   /* Felucca-Engines (MIT): PHASE (submodule at d026007 + our preset_t ins[] mod) */
 #include "../engines/src/eng_lofi.c"
 #include "eng_sample.c"
 #include "eng_formant.c"
@@ -136,9 +136,9 @@ static const uint8_t ENGINE_ORDER[NENG_SHOWN] = {
 #if FELUCCA_SLICE
     13,                          /* SLICE */
 #endif
-    13u + FELUCCA_SLICE,         /* POLYSIX (back: INIT's hold is CLEAN INIT, ui_layer.c) */
+    ENGI_POLYSIX,                /* POLYSIX (back: INIT's hold is CLEAN INIT, ui_layer.c) */
 #if !FELUCCA_FM4
-    14u + FELUCCA_SLICE,         /* JUNO106 (under FM4 DIGITAL is in its show: eng_ok) */
+    ENGI_JUNO,                   /* JUNO106 (under FM4 DIGITAL is in its show: eng_ok) */
 #endif
     10,                          /* DRUM */
 #if FELUCCA_ADPCM

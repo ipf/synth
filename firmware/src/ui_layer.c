@@ -75,9 +75,11 @@ static const page_t *ly_page(uint32_t l) { return l == LAYER_SCL ? &LY_SCL : l =
 #define LY_OPEN 2u                     /* ui.ly_t0: the map opened (no tap any more) */
 #define LY_COMBO 4u                    /* .. by a combo */
 #define LY_DEAD 8u                     /* .. pressed where there is no layer: does nothing */
-#define LY_ENG_KEYS ((uint32_t)(NENG_SHOWN - FELUCCA_ADPCM))   /* EDIT: white keys for the engines before ADPCM (1.8: last
+#define LY_ENG_KEYS ((uint32_t)(NENG_SHOWN - FELUCCA_ADPCM - 2u))   /* EDIT: white keys for the engines before ADPCM (1.8: last
                                         * in engines.c ENGINE_ORDER, picked with PRESETS' ENG knob), so INIT and CLEAN INIT
-                                        * stay where they were: 13 engines from F3, INIT E5 (14 and F5 with FELUCCA_FM4) */
+                                        * stay where they were: 13 engines from F3, INIT E5 (14 and F5 with FELUCCA_FM4).
+                                        * POLYSIX and JUNO106 (ours) also picked with the ENG knob: 15 engines + INIT +
+                                        * CLEAN INIT would not fit the cells (a white key: F3 .. G5, 16 cells) */
 #define LY_INIT LY_ENG_KEYS            /* .. INIT, the white key after them */
 #define LY_CLEAN (LY_INIT + 1u)         /* .. and CLEAN INIT's, the next (1.5.5, #190: F5) */
 typedef char ly_init_fits[LY_CLEAN < 16u ? 1 : -1];   /* (a white key: F3 .. G5) */
