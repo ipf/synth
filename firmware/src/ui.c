@@ -42,7 +42,7 @@ static uint32_t up_gen;                      /* bumped on every user bank change
 /* MENU's two-valued settings (ui_menu.c MENU_FLAGS), a bit each in a byte no engine uses (as ui_layer.c layer_seen):
  * saved with the settings; 0 in older ones = every setting's default (append-only: a new setting takes a new bit,
  * its default is 0) */
-#define ui_prefs (favorites.factory[15][30])
+#define ui_prefs (favorites.factory[16][30])
 #define PREF_LATCH 1u                          /* MENU > FX LATCH ON (#40) */
 #define PREF_ANIM_OFF 2u                       /* MENU > ANIM OFF (#46): values snap (no rolling digits, no glide) */
 #define PREF_ACCEL 4u                          /* MENU > KNOB ACCEL ON (#52): fast turns of wide values x2..x8 */
@@ -60,7 +60,7 @@ static uint32_t up_gen;                      /* bumped on every user bank change
  * 4-5 COUNT-IN (OFF, 1 BAR, 2 BARS); 0 in older settings = OFF / MID / OFF, so nothing clicks or counts in that did
  * not; 3 (unknown) reads as 0 (settings_persist.c puts it back). Bit 6 (1.2): MENU > SCALE LEDS ON (Discussion #127,
  * ui_input.c scale_leds; 0 in older settings = OFF). Bit 7 (1.5.5, #208): MENU > MIDI > AUTO SELECT ON */
-#define ui_rec_prefs (favorites.factory[15][28])
+#define ui_rec_prefs (favorites.factory[16][28])
 #define PREF_REC 0xFF00u                       /* (menu_items.c MENU_FLAGS: a bit of ui_rec_prefs, << 8) */
 #define PREF_SCALE_LEDS (0x40u << 8)
 #define PREF_MIDI_FOLLOW (0x80u << 8)          /* 1.5.5 (#208): MENU > MIDI > AUTO SELECT ON, bit 7 of ui_rec_prefs (0 in
@@ -72,7 +72,7 @@ static uint32_t up_gen;                      /* bumped on every user bank change
  * (Discussion #188, ui_input.c: SELECT steps the pages; 0 = BPM, as before); bit 5 MIDI > SCREEN WAKE PANEL (scr_input:
  * only the panel wakes SCREEN OFF, as up to 1.5.1; 0, every older setting, = +MIDI, the default: a note-on too).
  * 1.5.6: bit 6 SELECT's second bit (#84: sel_mode). Bit 7 free */
-#define ui_prefs2 (favorites.factory[15][24])
+#define ui_prefs2 (favorites.factory[16][24])
 #define PREF_X 0xFF0000u                       /* (menu_items.c MENU_FLAGS: a bit of ui_prefs2, << 16) */
 #define PREF_SCOPE_MIX (0x01u << 16)
 #define PREF_PREVIEW (0x02u << 16)
@@ -96,12 +96,12 @@ static uint32_t sel_mode(void) { return ((ui_prefs2 >> 4) & 1u) | ((ui_prefs2 >>
  * rows of TRACKS, and KNOB 1..4 the LEVEL of T1..T4 in place of the engine's four: home_param). A byte of its own no
  * engine uses, saved with the settings; 0 in older settings = SCOPE; an unknown value (a later firmware's view) reads as
  * SCOPE and is kept as saved (1.3 / 1.4 read LEVELS so) */
-#define ui_home_view (favorites.factory[15][26])
+#define ui_home_view (favorites.factory[16][26])
 /* 1.5.6 (#212): MENU > DISPLAY > LEDS INV LO / INV HI: INV with the idle LEDs at the steady mid level (ui_input.c
  * ui_leds) instead of lit. The mode stays INV (settings_leds, panel.c: so firmware before 1.5.6 reads plain INV) and
  * this byte no engine uses holds the level: 1 LO, 2 HI; 0 (every older setting) or another value = INV as before.
  * Saved with the settings; read only while LEDS is INV (menu_items.c leds_row) */
-#define ui_leds_inv (favorites.factory[15][25])
+#define ui_leds_inv (favorites.factory[16][25])
 static uint32_t leds_inv(void) { return settings_leds == LEDS_INV && ui_leds_inv - 1u < 2u ? ui_leds_inv : 0u; }
 enum { HV_SCOPE, HV_TRACKS, HV_LEVELS, HV_COUNT };
 static int home_tracks(void) { return ui_home_view == HV_TRACKS || ui_home_view == HV_LEVELS; }
@@ -128,7 +128,7 @@ static void rp_put(uint32_t f, uint32_t v)
 /* MENU > STYLE (ui_menu.c): ST_FLAT ST_LINE (gfx.c) in another byte no engine uses, saved with the settings;
  * 0 in older ones = FLAT; 2, the retired PIXEL (1.0.1), reads as LINE; anything else unknown as FLAT (settings_persist.c). gfx.c draws from its copy, ux.style
  * (ui_draw.c style_apply) */
-#define ui_style (favorites.factory[15][29])
+#define ui_style (favorites.factory[16][29])
 static void draw_gaps(uint32_t y, uint32_t h);        /* (ui_draw.c) */
 
 static uint8_t sync_reload;                  /* engine / preset / project / user preset loaded: editor RELOAD push */
@@ -246,10 +246,10 @@ enum { CF_NONE, CF_CLEAR_SEQ, CF_CLEAR_TRK, CF_OVR_PROJ, CF_OVR_USER, CF_LOAD_PA
  * Off: lcd_power(0) (DISPOFF, SLPIN) and nothing is drawn. Waking, a frame at a time (never a wait in
  * the loop): 120 ms after the SLPIN, SLPOUT (lcd_power(1)); 120 ms after that one frame redraws everything
  * (ui.force), then DISPON (lcd_power(2)) */
-#define ui_scr (favorites.factory[15][27])
+#define ui_scr (favorites.factory[16][27])
 /* MENU > ANIM IDLE (1.2, Discussion #135; menu_items.c, ui_input.c idle_leds): bit 0, the LEDs' idle animation, in a
  * byte no engine uses, kept with the settings; 0 in every older setting = off. The other bits: 0 (room for a delay) */
-#define ui_idle (favorites.factory[15][10])
+#define ui_idle (favorites.factory[16][10])
 #define SCR_DEF 0u                                     /* NEVER (1.1.5.1; 1.1.5: 30 MIN) */
 static const uint8_t SCR_CODE[5] = {0, 2, 1, 4, 7};    /* the stored byte of NEVER 5 15 30 60 MIN (1.1.5: 3 2 1 0 7) */
 static const uint8_t SCR_DEC[8] = {0, 2, 1, 0, 3, 0, 0, 4};   /* .. and back (3: 1.1.5's NEVER; 5, 6 unknown) */
@@ -1375,6 +1375,13 @@ static void apply_preset_to(track_t *t, uint32_t pi)
         const preset_t *pr = &e->presets[pi];
         for (i = 0; i < 4u; i++)
             t->p[P_DIST + i] = (int16_t)(pr->fx[i] ? pr->fx[i] - 1 : FX_DEF[i]);
+        if (pr->ins[0]) {       /* a sound's own built-in effect (POLYSIX's factory patches, polymorphic) */
+            t->p[P_ITYPE] = (int16_t)(pr->ins[0] - 1);
+            t->p[P_IA] = (int16_t)(pr->ins[1] - 1);
+            t->p[P_IB] = (int16_t)(pr->ins[2] - 1);
+            t->p[P_IC] = (int16_t)(pr->ins[3] - 1);
+            t->p[P_IMIX] = 127; /* the section blends its own dry against its wet (fx.c ins_p6fx) */
+        }
     }
     fm6_track_loaded(t);                              /* FM6: the preset's patch (its SLOT) */
     load_end(t);
@@ -1547,7 +1554,7 @@ static uint32_t preset_all_at(uint32_t n, uint32_t *k)
  * OTHER, category.c): the list mode 0 ALL, 1 FAV, 1 + CAT_* a category. The category is kept with the settings in a
  * byte no engine uses (ui_lcat: 0 = none; firmware before reads ALL there, and favorites.filter stays 0 / 1 for it, the
  * editor and backups); the PRESETS knob and page browse that list */
-#define ui_lcat (favorites.factory[15][11])
+#define ui_lcat (favorites.factory[16][11])
 #define LIST_N (1u + CAT_N)                              /* ALL FAV BASS LEAD PAD PLUCK KEYS DRUM FX OTHER */
 static uint32_t list_mode(void) { return favorites.filter ? 1u : ui_lcat && ui_lcat < CAT_N ? 1u + ui_lcat : 0u; }
 static void list_set(uint32_t m)

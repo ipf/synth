@@ -636,7 +636,8 @@ static __attribute__((noinline)) void rev_side_mix(int32_t *l, int32_t *r, uint3
  * recordings) comes after, so its edges stay sharp (no flanger feedback or phaser ringing smears them) and a STUT
  * repeats the processed sound. State in the pool, per track (ins[], 580 B each); noinline, its own loops: the audio
  * ISR's inlined path gains one test per part (track_t ins_run) */
-enum { IT_OFF, IT_SOFT, IT_HARD, IT_FOLD, IT_FUZZ, IT_CRUSH, IT_PHASER, IT_FLANGER, IT_CHORUS, IT_N };
+enum { IT_OFF, IT_SOFT, IT_HARD, IT_FOLD, IT_FUZZ, IT_CRUSH, IT_PHASER, IT_FLANGER, IT_CHORUS,
+       IT_P6CHO, IT_P6PHAS, IT_P6ENS, IT_JCHO, IT_N };   /* the P6 section: polyp's fx.rs; then the Juno's */
 #define IL_LEN 256u                     /* FLANG / CHOR: the line, samples (a power of 2: masked) */
 static const uint8_t INS_HOLD[16] = {64, 48, 40, 32, 24, 20, 16, 12, 10, 8, 6, 5, 4, 3, 2, 1};   /* CRUSH RATE */
 typedef struct {
@@ -774,10 +775,179 @@ static __attribute__((noinline)) void ins_swept(ins_t *s, const track_t *t, int3
     }
 }
 
+/* CHOR6 / PHAS6 / ENSEM: polyp's Polysix effects section (its fx.rs, as float), the one modulated
+ * bucket-brigade line for CHOR, six alternately signed taps on it for PHAS, three fixed-rate
+ * modulators on a widened spread for ENSEM — each at the KLM-368 schematic's own clock range (CH
+ * 120K ~ 60KHZ, PH 500K ~ 100KHZ, EN 100K ~ 30KHZ), whose period is what the line's base delay
+ * comes from. One line per track, mono (polyp is stereo; its right channel offsets the LFOs, which
+ * a track's INSERT cannot). A = INT (polyp's fx_speed: the rate), B = DEPTH (a weight on the sweep,
+ * 127 = as authored), C = FDBK, the wet back into the line (polyp has nothing there: 0 as
+ * documented). In the pool */
+#define P6_LINE (FS * 40 / 1000 + 8u)                   /* polyp's 0.04 * sr + 8 */
+static float ins_p6line[NTRK][P6_LINE] __attribute__((section(".pool")));
+typedef union { float f; uint32_t u; } p6q_bits_t;
+typedef struct {
+    uint32_t ph1, ph2, ph3;             /* the modulators, Q32 cycles */
+    uint16_t wp;                        /* the line's next write */
+    float lp;                           /* CHOR / ENSEM's outgoing low-pass */
+    int32_t dc;                         /* the wet's DC blocker (Q8, as the swept types') */
+} p6ins_t;
+static p6ins_t ins_p6[NTRK] __attribute__((section(".pool")));
+static inline float p6_exp2(float x)              /* (eng_polysix.c's, named apart: the test TUs
+        * carry both the engine and fx.c) */
+{
+    p6q_bits_t b;
+    int32_t n = (int32_t)x;
+    float f, lf;
+    if (n > x)
+        n--;                                            /* floor */
+    f = x - (float)n;
+    lf = 0.693147180559945f * f;
+    b.u = (uint32_t)(n + 127) << 23;
+    return b.f * (1.0f
+        + lf * (0.99999999263f
+        + lf * (0.500005834225f
+        + lf * (0.166667017177f
+        + lf * (0.041665314516f
+        + lf * (0.00833379222f
+        + lf * (0.00139003245f
+        + lf * 0.000199712173f)))))));
+}
+static inline float p6_clampf(float v, float lo, float hi) { return v < lo ? lo : v > hi ? hi : v; }
+static inline float p6_read(float *buf, uint32_t wp, float d)
+{
+    float n = (float)P6_LINE, p = (float)wp - d, f;
+    uint32_t i;
+    while (p < 0.0f)
+        p += n;
+    if (p >= n)
+        p -= n;
+    i = (uint32_t)p;
+    f = p - (float)i;
+    return buf[i] * (1.0f - f) + buf[i + 1u < P6_LINE ? i + 1u : 0u] * f;
+}
+static void p6_clear(uint32_t tr)
+{
+    memset(ins_p6line[tr], 0, sizeof ins_p6line[tr]);
+    memset(&ins_p6[tr], 0, sizeof(p6ins_t));
+}
+static void ins_p6fx(ins_t *s, const track_t *t, int32_t *b, uint32_t n, int32_t tw)
+{
+    p6ins_t *m = &ins_p6[(uint32_t)(t - trk) % NTRK];
+    float *buf = ins_p6line[(uint32_t)(t - trk) % NTRK];
+    float speed = (float)clamp(t->p[P_IA], 0, 127) / 127.0f;
+    float dep = (float)clamp(t->p[P_IB], 0, 127) / 127.0f;
+    float fb = (float)t->p[P_IC] *
+               (s->type == IT_P6PHAS ? 0.3f / 127.0f : 0.7f / 127.0f);   /* the phaser's six taps can add in
+               * phase (|sum| up to 3): a full 0.7 loops it into a ring (run with FDBK 100 on a loud input) */
+    uint32_t i;
+    if (s->type == IT_P6CHO) {              /* CH 120K ~ 60KHZ, 600 stages: the line 5 .. 10 ms */
+        uint32_t inc = (uint32_t)(0.2f * p6_exp2(4.321928f * speed) * (4294967296.0f / FS));
+        float base = 600.0f / (120000.0f - 60000.0f * speed) * FS;    /* stages over the clock, samples */
+        float depth = base * 0.2f * (1.0f - 0.75f * speed) * dep;     /* the depth falls with the speed,
+                                                                       * as the manual says it is reduced */
+        for (i = 0; i < n; i++) {
+            float x = p6_clampf((float)b[i] / 262144.0f, -1.0f, 1.0f);
+            float y, wet;
+            s->w += clamp(tw - s->w, -SL_SLOPE, SL_SLOPE);
+            m->ph1 += inc;
+            wet = p6_read(buf, m->wp, base + depth * (float)osc_sine(m->ph1) / 32767.0f);
+            buf[m->wp] = p6_clampf(x + fb * wet, -4.0f, 4.0f);
+            m->wp = m->wp + 1u < P6_LINE ? m->wp + 1u : 0u;
+            y = x * 0.6666667f + wet * 0.3333333f;    /* Fig. 8's 1 : 2, a third over the pair */
+            m->lp += 0.35f * (y - m->lp);             /* the chorus stage's own ~3.3 kHz rolloff */
+            {   int32_t yq = clamp((int32_t)(m->lp * 262144.0f), -262144, 262143);
+                m->dc += ((yq << 8) - m->dc) >> 9;    /* ~14 Hz, on the wet (the other types' own) */
+                b[i] = pf_mix(b[i], yq - (m->dc >> 8), s->w);
+            }
+        }
+    } else if (s->type == IT_JCHO) {        /* the Juno-106's chorus (the port's chorus.rs, mono): the modes
+                                             * I / II and the deeper I+II in series, the LFO fixed ~0.5 Hz
+                                             * (the original's own, not the user's), the base 6 ms and the
+                                             * spreads as authored; A = its mode (1 I, 2 II, 3 both), B and
+                                             * C unused (the panel has only the switch). Mono as the P6's:
+                                             * the original is stereo; its right channel's delays offset */
+        uint32_t inc = (uint32_t)(0.5f * (4294967296.0f / FS));
+        uint32_t mode = clamp(t->p[P_IA], 0, 3) & 3u;
+        for (i = 0; i < n; i++) {
+            float x = (float)clamp(b[i], -262144, 262143) / 262144.0f;
+            float l = x, wet;
+            uint32_t bit;
+            s->w += clamp(tw - s->w, -SL_SLOPE, SL_SLOPE);
+            m->ph1 += inc;
+            for (bit = 1u; bit <= 2u; bit++) {
+                if (!(mode & bit))
+                    continue;
+                wet = p6_read(buf, m->wp, (0.006f + (bit == 2u ? 0.004f : 0.0015f)
+                             * (float)osc_sine(m->ph1) / 32767.0f) * FS);
+                buf[m->wp] = p6_clampf(l, -4.0f, 4.0f);       /* the stage's own input, tal's write */
+                m->wp = m->wp + 1u < P6_LINE ? m->wp + 1u : 0u;
+                l = l * 0.7f + wet * 0.5f;                    /* the mix, chorus.rs's own */
+            }
+            {   int32_t yq = clamp((int32_t)(l * 262144.0f), -262144, 262143);
+                m->dc += ((yq << 8) - m->dc) >> 9;   /* ~14 Hz, on the wet (the other types' own) */
+                b[i] = pf_mix(b[i], yq - (m->dc >> 8), s->w);
+            }
+        }
+        return;
+    } else if (s->type == IT_P6PHAS) {          /* PH 500K ~ 100KHZ, 1000 stages: 2.0 .. 10.0 ms */
+        uint32_t inc = (uint32_t)(0.15f * p6_exp2(4.906891f * speed) * (4294967296.0f / FS));
+        float base = 1000.0f / (500000.0f - 400000.0f * speed);       /* seconds */
+        float band = 0.0007f * (1.0f - 0.75f * speed) * dep;
+        for (i = 0; i < n; i++) {
+            float x = (float)clamp(b[i], -262144, 262143) / 262144.0f;
+            float tap, step, sum = 0.0f, y;
+            int32_t k;
+            s->w += clamp(tw - s->w, -SL_SLOPE, SL_SLOPE);
+            m->ph1 += inc;
+            tap = base + band * (float)osc_sine(m->ph1) / 32767.0f;
+            if (tap < 0.0002f)
+                tap = 0.0002f;
+            tap *= (float)FS;
+            step = tap * 0.2f >= 1.0f ? tap * 0.2f : 1.0f;    /* a fifth of the line between the taps */
+            for (k = 0; k < 6; k++)
+                sum += (k & 1 ? -0.5f : 0.5f) * p6_read(buf, m->wp, tap + (float)k * step);
+            y = 0.5f * x + 0.5f * sum;
+            buf[m->wp] = p6_clampf(x + fb * sum, -4.0f, 4.0f);
+            m->wp = m->wp + 1u < P6_LINE ? m->wp + 1u : 0u;
+            {   int32_t yq = clamp((int32_t)(y * 262144.0f), -262144, 262143);
+                m->dc += ((yq << 8) - m->dc) >> 9;    /* ~14 Hz, on the wet (the other types' own) */
+                b[i] = pf_mix(b[i], yq - (m->dc >> 8), s->w);
+            }
+        }
+    } else {                                    /* ENSEM: "the speed ... is not adjustable", the manual */
+        uint32_t inc1 = (uint32_t)(0.5f * (4294967296.0f / FS));
+        uint32_t inc2 = (uint32_t)(0.31f * (4294967296.0f / FS));
+        uint32_t inc3 = (uint32_t)(0.77f * (4294967296.0f / FS));
+        float base = 0.008f + 0.005f * speed;
+        float spread = (0.0015f + 0.004f * speed) * dep;
+        for (i = 0; i < n; i++) {
+            float x = (float)clamp(b[i], -262144, 262143) / 262144.0f;
+            float r, y;
+            s->w += clamp(tw - s->w, -SL_SLOPE, SL_SLOPE);
+            m->ph1 += inc1;
+            m->ph2 += inc2;
+            m->ph3 += inc3;
+            r = p6_read(buf, m->wp, (base + spread * (float)osc_sine(m->ph1) / 32767.0f) * FS)
+              + p6_read(buf, m->wp, (base * 1.4f + spread * 1.3f * (float)osc_sine(m->ph2) / 32767.0f) * FS)
+              + p6_read(buf, m->wp, (base * 1.9f + spread * 0.8f * (float)osc_sine(m->ph3) / 32767.0f) * FS);
+            y = (x + r) * 0.25f;                /* Fig. 8's 1 : 1 : 1 with the dry, a quarter over the four */
+            m->lp += 0.4f * (y - m->lp);
+            buf[m->wp] = p6_clampf(x + fb * y, -4.0f, 4.0f);
+            m->wp = m->wp + 1u < P6_LINE ? m->wp + 1u : 0u;
+            {   int32_t yq = clamp((int32_t)(m->lp * 262144.0f), -262144, 262143);
+                m->dc += ((yq << 8) - m->dc) >> 9;    /* ~14 Hz, on the wet (the other types' own) */
+                b[i] = pf_mix(b[i], yq - (m->dc >> 8), s->w);
+            }
+        }
+    }
+}
+
 /* the INSERT at rest at once (mix_part: TYPE turned OFF while the part was silent, its fade never ran) */
 static __attribute__((noinline)) void ins_rest(track_t *t)
 {
     memset(&ins[(uint32_t)(t - trk) % NTRK], 0, sizeof(ins_t));
+    p6_clear((uint32_t)(t - trk) % NTRK);
     t->ins_run = 0;
 }
 
@@ -795,9 +965,12 @@ static __attribute__((noinline)) void track_insert(track_t *t, int32_t *b, uint3
             return;                                     /* dry: bit for bit */
         }
         memset(s, 0, sizeof *s);                        /* starting: no stale line or filter */
+        p6_clear((uint32_t)(t - trk) % NTRK);
         s->type = (uint8_t)ty;
     }
-    if (s->type >= IT_PHASER)
+    if (s->type >= IT_P6CHO)                            /* the Polysix section: its own line */
+        ins_p6fx(s, t, b, n, tw);
+    else if (s->type >= IT_PHASER)
         ins_swept(s, t, b, n, tw);
     else
         ins_drive(s, t, b, n, tw);

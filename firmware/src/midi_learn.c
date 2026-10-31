@@ -5,11 +5,11 @@
  * parameter of a track it edits) picks its parameter on the selected track, as it edits it; the next CC that comes
  * (midi_control.c midi_learned: any channel ROUT hears) is set to it, and stays until something else is learned on it.
  * Then turn the next knob. OCT- clears the picked parameter's CC, OCT+ (or GLO + D4 again) is done. The footer's first
- * row says what is picked and its CC (ml_line). The map: midi_control.c (ML_N entries in favorites.factory[14], kept
+ * row says what is picked and its CC (ml_line). The map: midi_control.c (ML_N entries in favorites.factory[17], kept
  * with the settings, saved as each one changes); one CC sets one parameter, a parameter has one CC: learning one again
  * replaces both. The editor reads and edits it (editor_learn.c). Its state: ui.ml (ui.c) */
-typedef char ml_row_free[NENGINES <= 14 ? 1 : -1];   /* (factory[14]: no engine's favourites; favorites.c) */
-static uint8_t *const ml_tab = favorites.factory[14];
+typedef char ml_row_free[NENGINES <= 16 ? 1 : -1];   /* rows 0..15 the engines', 16 the UI's: learn lives in 17 */
+static uint8_t *const ml_tab = favorites.factory[17];
 static volatile uint8_t *const ml_io = ui.ml.io;         /* (midi_control.c ml_arm, ml_heard) */
 
 static uint32_t ml_code(uint32_t id) { return id >= P_E0 ? ML_E0 + id - P_E0 : id + 1u; }

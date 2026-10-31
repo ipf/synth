@@ -1,0 +1,26 @@
+{
+  "name": "A D4 Chime with Chord Memory",
+  "values": {
+    "attack": 0.001,
+    "attenuator": 0.0,
+    "cutoff": 62.309647,
+    "decay": 15.0,
+    "eg_intensity": 0.3,
+    "fx_mode": 1,
+    "fx_speed": 0.0,
+    "key_tracking": 0.0,
+    "mg_delay": 0.0,
+    "mg_dest": 1,
+    "mg_freq": 2.671699,
+    "mg_level": 0.0,
+    "octave": 1,
+    "pw_pwm": 0.0,
+    "pwm_speed": 0.1,
+    "release": 15.0,
+    "resonance": 0.2,
+    "sub_osc": 2,
+    "sustain": 1.0,
+    "vca_mode": 0,
+    "wave": 0
+  }
+}

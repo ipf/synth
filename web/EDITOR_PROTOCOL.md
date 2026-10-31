@@ -245,13 +245,20 @@ checked byte for byte by `web/test_web.mjs`): header at 0, ADPCM data at 512.
 
 | Offset | Field |
 | --- | --- |
-| 0 | magic `"FSMP"` (u32 0x504D5346), u16 version 1, u8 zone count 1..16, u8 0 |
+| 0 | magic `"FSMP"` (u32 0x504D5346), u16 version 1, u8 zone count 1..16, u8 reserved (bit 0 in USR1: a span set, USR1..3 as one keyboard, `tools/fm1_sample_upload.py span`) |
 | 8 | name, 8 ASCII bytes (0-padded) |
 | 16 | u32 data length (bytes), u32 CRC-32 (zlib) of the data, 8 bytes 0 |
 | 32 | 16 zones × 28 bytes: u32 off (in the data), n (samples), loop start, loop end, rate (Hz / 44100 × 65536); i16 root × 16 (MIDI note), ADPCM predictor at the loop start; u8 step index at the loop start, lo note, hi note, looped (0/1) |
 
 Data is IMA ADPCM, 4 bit, low nibble first, starting from predictor 0 and step index 0.
 All little endian.
+
+A span set (USR1's reserved bit 0, from the uploader's `span` command) is USR1..3 as one keyboard: while it is
+set, a note's zone is looked for in all three slots' tables (the narrowest zone wins), so SET USR1..3 all play
+the same kit (`tools/sampleio.py span_slots` packs the cuts one per key, 16 a slot). The keyboard plays it like
+the drum kits' own keymaps: key k of the keyboard = the k-th cut (cut 1 on the keyboard floor, the octave and
+transpose knobs ignored). The cuts are looped zones: the sound's LOOP knob on = the cut repeats while held,
+off = the one-shot.
 
 The slot's last 4 KiB sector (offset 0x13000) holds SLICE's slices set by hand on the device (`src/slice_store.c`:
 magic `"SLM1"`, the sample's length and data CRC, the slice starts) when the data leaves it free (at most 77,312

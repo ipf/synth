@@ -552,6 +552,30 @@ static int demos(const char *dir)
     return (int)n;
 }
 
+/* --- the Polysix factory patches carry their own effect as the preset's INSERT (1.6.2, ui.c apply_preset_to) --- */
+static void test_p6(void)
+{
+    track_t *t;
+    fresh(ENGI_POLYSIX, preset_by_name(ENGI_POLYSIX, "2A STRINGS"));
+    t = &trk[0];
+    ck("p6: a patch's fx_mode loads as its INSERT (2A STRINGS: ENSEM at its rate, full MIX)",
+       t->p[P_ITYPE] == IT_P6ENS && t->p[P_IMIX] == 127 && t->p[P_IA] == 64 && t->p[P_IB] == 127 && t->p[P_IC] == 0);
+    fresh(ENGI_POLYSIX, 0);                     /* BRASS: no effect in polyp, the INSERT stays off */
+    ck("p6: a patch without fx leaves the INSERT at its default", t->p[P_ITYPE] == IT_OFF);
+}
+
+/* --- the JUNO106's factory patches carry the Juno's chorus as the preset's INSERT (eng_juno.c) --- */
+static void test_juno(void)
+{
+    track_t *t;
+    fresh(ENGI_JUNO, preset_by_name(ENGI_JUNO, "STRINGS"));
+    t = &trk[0];
+    ck("juno: the chorus patches load as their INSERT (STRINGS: JCHO II, full MIX)",
+       t->p[P_ITYPE] == IT_JCHO && t->p[P_IMIX] == 127 && t->p[P_IA] == 2 && t->p[P_IB] == 0 && t->p[P_IC] == 0);
+    fresh(ENGI_JUNO, 0);                        /* INIT: no chorus, the INSERT stays off */
+    ck("juno: a patch without chorus leaves the INSERT at its default", t->p[P_ITYPE] == IT_OFF);
+}
+
 int main(int argc, char **argv)
 {
     test_identity();
@@ -560,6 +584,8 @@ int main(int argc, char **argv)
     test_motion();
     test_stored();
     test_cost();
+    test_p6();
+    test_juno();
     if (argc > 1)
         printf("insert: %d demos in %s (each TYPE on a loop: two bars dry, two with it)\n", demos(argv[1]), argv[1]);
     if (bad) {

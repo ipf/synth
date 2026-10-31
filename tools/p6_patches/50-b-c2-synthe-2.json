@@ -1,0 +1,23 @@
+{
+  "name": "B C2 Synthe 2",
+  "values": {
+    "octave": 1,
+    "wave": 1,
+    "sub_osc": 0,
+    "cutoff": 565.685425,
+    "resonance": 0.7,
+    "eg_intensity": -0.2,
+    "key_tracking": 0.75,
+    "vca_mode": 0,
+    "mg_freq": 2.671699,
+    "mg_delay": 5.6,
+    "mg_level": 0.35,
+    "mg_dest": 2,
+    "attack": 0.838038,
+    "decay": 2.192164,
+    "sustain": 0,
+    "release": 0.838038,
+    "fx_mode": 2,
+    "fx_speed": 0.3
+  }
+}

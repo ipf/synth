@@ -1,0 +1,25 @@
+{
+  "name": "A C5 Electric Piano 2",
+  "values": {
+    "attack": 0.001,
+    "attenuator": 10.0,
+    "cutoff": 54.512173,
+    "decay": 3.220451,
+    "eg_intensity": 0.3,
+    "fx_mode": 0,
+    "key_tracking": 0.0,
+    "mg_delay": 0.0,
+    "mg_dest": 2,
+    "mg_freq": 1.852528,
+    "mg_level": 0.4,
+    "octave": 0,
+    "pw_pwm": 0.0,
+    "pwm_speed": 22.525,
+    "release": 2.192164,
+    "resonance": 0.2,
+    "sub_osc": 0,
+    "sustain": 0.2,
+    "vca_mode": 0,
+    "wave": 0
+  }
+}

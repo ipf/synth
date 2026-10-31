@@ -1,0 +1,26 @@
+{
+  "name": "B B2 Organ (Slow)",
+  "values": {
+    "octave": 1,
+    "wave": 0,
+    "pw_pwm": 0,
+    "pwm_speed": 0.1,
+    "sub_osc": 0,
+    "cutoff": 289.911865,
+    "resonance": 0.3,
+    "eg_intensity": 0.1,
+    "key_tracking": 0.675,
+    "vca_mode": 1,
+    "attenuator": 0,
+    "mg_freq": 0.033,
+    "mg_delay": 0,
+    "mg_level": 0,
+    "mg_dest": 2,
+    "attack": 0.001,
+    "decay": 0.001,
+    "sustain": 0,
+    "release": 0.001,
+    "fx_mode": 3,
+    "fx_speed": 0.2
+  }
+}

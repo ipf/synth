@@ -15,7 +15,7 @@
  *   SCL  SET   any key: its note name is ROOT; KNOB 1..4 ROOT SCL CHRD VOIC (LY_SCL: the SCL page's first two,
  *              the CHORD page's two; QNT TRN stay on SCL); the LEDs show the root lit and the scale's notes breathing
  *   EDIT SET   the white keys from F3: the engines in PRESETS order (one key each, the NENG_SHOWN one can pick:
- *              engines.c eng_vis), the next white key INIT (LY_INIT: E5), the next CLEAN INIT (LY_CLEAN: F5, 1.5.5)
+ *              engines.c eng_vis), the last white key INIT whose hold (~0.4 s) is CLEAN INIT (1.5.5's #190)
  *              (the dialog); KNOB 1 ENG, 2 No. (the engine's sounds), 3 FAV. Sound loads as on PRESETS: the steps
  *              stay, SAVE held undoes, the editor gets RELOAD; they apply while playing too. 1.4.1: the black keys
  *              the selected track's engine's quick actions (EQA below: DRUM 1..8 its lanes' MUTE; other engines
@@ -74,17 +74,16 @@ static const page_t *ly_page(uint32_t l) { return l == LAYER_SCL ? &LY_SCL : l =
 #define LY_OPEN 2u                     /* ui.ly_t0: the map opened (no tap any more) */
 #define LY_COMBO 4u                    /* .. by a combo */
 #define LY_DEAD 8u                     /* .. pressed where there is no layer: does nothing */
-#define LY_INIT ((uint32_t)NENG_SHOWN) /* EDIT: the white key of INIT, the one after the engines (13: E5), its map cell */
-#define LY_CLEAN (LY_INIT + 1u)         /* .. and CLEAN INIT's, the next (1.5.5, #190: F5) */
-typedef char ly_init_fits[LY_CLEAN < 16u ? 1 : -1];   /* (a white key: F3 .. G5) */
-#define layer_seen (favorites.factory[15][31])   /* bit l: layer l opened once (a byte no engine uses) */
+#define LY_INIT ((uint32_t)NENG_SHOWN) /* EDIT: the last white key, INIT (tap) whose hold (~0.4 s) is CLEAN INIT */
+typedef char ly_init_fits[LY_INIT < 16u ? 1 : -1];   /* (a white key: F3 .. G5) */
+#define layer_seen (favorites.factory[16][31])   /* bit l: layer l opened once (a byte no engine uses) */
 static const khint_t FX_LATCH_FOOT[3] = {{KC_KEYS, "ON / OFF"}, {KC_K14, "MACROS"}, {KC_OCTDN, "ALL OFF"}};
 static const khint_t FX_KEY_FOOT[3] = {{KC_PRESETS, "ASSIGN"}, {KC_EDIT, "DEFAULT"}, {KC_K14, "MACROS"}};   /* (a key held) */
 static const khint_t GLO_LOCK_FOOT[3] = {{KC_OCTDN, "UNDO"}, {KC_GLO, "DONE"}, {0, 0}};   /* (locked: PLAY plays, #183) */
 static const khint_t EU_FOOT[3] = {{KC_OCTUP, "APPLY"}, {KC_OCTDN, "CANCEL"}, {0, 0}};   /* (SEQ TOOLS' EUCLID open) */
 /* the FX layer's key map (perform.c perf_map_of / perf_map_put: 16 x 5 bits; all 0, every older setting: the default
  * map) in 10 bytes no engine uses, kept with the settings */
-#define fx_keys (&favorites.factory[15][14])
+#define fx_keys (&favorites.factory[16][14])
 
 static struct {
     uint8_t l, trk, loaded, oct;       /* SET: the layer and the track of the snapshot; EDIT: a sound loaded since
@@ -105,6 +104,8 @@ static struct {
     uint8_t dt_l, dt_hint, dtap;       /* #83: the layer of the last tap that opened a page (0 none), its hint said; the
                                         * press now armed is that tap's second (a double tap) */
     uint32_t dt_ms;                    /* .. when that tap was let go (fm1_ms) */
+    uint8_t init_k, init_h;            /* EDIT: the INIT key held (k + 1; 0 none) since fm1_ms; init_h: CLEAN fired */
+    uint32_t init_ms;
     struct { uint8_t home, page, act, seq, fam[FAM_COUNT], rec, go; } nv;   /* .. the page it left (put back by the
                                         * lock); REC: the arming before its tap, the transport that tap started */
 } lys;
@@ -657,12 +658,11 @@ static void layer_key(uint32_t l, uint32_t k)
             edit_load(eng_vis(p), 0);
         else if (p == LY_INIT && chain_busy())
             ui_message("STOP TO EDIT");
-        else if (p == LY_INIT)
-            confirm_open(CF_INIT_SOUND, song.sel);      /* (the dialog closes the layer) */
-        else if (p == LY_CLEAN && chain_busy())
-            ui_message("STOP TO EDIT");
-        else if (p == LY_CLEAN)
-            confirm_open(CF_CLEAN_SOUND, song.sel);
+        else if (p == LY_INIT) {                    /* tap: INIT on release, hold ~0.4 s: CLEAN INIT (its own
+                                                     * white key went to the 16th engine, POLYSIX) */
+            lys.init_k = (uint8_t)(k + 1u);
+            lys.init_ms = fm1_ms;
+        }
     } else if (l == LAYER_EDIT) {
         eqa_key(k, p);                                  /* (black keys: the engine's quick actions) */
     } else if (l == LAYER_REC) {
@@ -681,6 +681,17 @@ static void layer_key(uint32_t l, uint32_t k)
 static void layer_keys(uint32_t keys)
 {
     uint32_t k, l = layer_open() ? layer_open() : ui.layer, s = 0;
+    if (lys.init_k) {                                   /* the INIT key: hold ~0.4 s CLEAN INIT, a tap INIT */
+        if (layer_open() != LAYER_EDIT || !(fm1_in.notes >> (lys.init_k - 1u) & 1u)) {
+            if (!lys.init_h && layer_open() == LAYER_EDIT)
+                confirm_open(CF_INIT_SOUND, song.sel);
+            lys.init_k = 0;
+        } else if (!lys.init_h && fm1_ms - lys.init_ms >= 400u) {
+            confirm_open(CF_CLEAN_SOUND, song.sel);     /* (the dialog closes the layer) */
+            lys.init_h = 1;
+            lys.init_k = 0;
+        }
+    }
     for (k = 0; keys && k < 27u; k++)
         if ((keys >> k) & 1u)
             layer_key(l, k);
@@ -855,7 +866,7 @@ static uint32_t layer_leds(uint32_t *br)
             can = (mask >> e) & 1u;
         } else if (l == LAYER_EDIT && !b) {             /* the engine lit, the others and INIT breathe */
             on = p < NENG_SHOWN && p < LY_INIT && eng_vis(p) == TSEL->eng_req % NENGINES;
-            can = p < NENG_SHOWN && p < LY_INIT ? 1u : (p == LY_INIT || p == LY_CLEAN) && !chain_busy();
+            can = p < NENG_SHOWN && p < LY_INIT ? 1u : p == LY_INIT && !chain_busy();
         } else if (l == LAYER_EDIT && (a = eqa_of(TSEL, p)) != 0) {   /* the quick actions: on lit (DRUM: sounding), */
             on = a->on(TSEL, a->arg) != 0u;             /* a HOLD one off breathes, none dark */
             can = a->kind == LK_HOLD;
@@ -1047,10 +1058,10 @@ static void eqa_row(uint32_t n)
             cv_rect(x + (int32_t)w - 7 + j, 102 + j, 4 - j, 1, ink);
     }
 }
-static void layer_edit(void)                            /* the engines from F3, INIT next (LY_INIT), CLEAN INIT after */
-{                                                        /* it (1.5.5), the sound under them (cells show the engine's
-                                                         * icon, not the key's note) */
-    uint32_t n = NENG_SHOWN < LY_INIT ? NENG_SHOWN : LY_INIT, cells = n + 2u, i, h = cells > 12u ? 20u : 28u;   /* 4 rows of 20: 8 px clear above the sound row */
+static void layer_edit(void)                            /* the engines from F3, INIT the last white key: its tap
+                                                         * inits the sound, its hold is CLEAN INIT */
+{
+    uint32_t n = NENG_SHOWN, cells = n + 1u, i, h = cells > 12u ? 20u : 28u;   /* 4 rows of 20: 8 px clear above the sound row */
     uint32_t na = eqa_count(TSEL);
     for (i = 0; i < cells; i++) {
         int32_t x = LC_X(i % 4u), y = 4 + (int32_t)(h + 4u) * (int32_t)(i / 4u);
@@ -1059,9 +1070,7 @@ static void layer_edit(void)                            /* the engines from F3, 
             lcell(x, y, (int32_t)h, 0, engine_icon(en->name), 0, h > 24u ? en->name : eng_abbr(en->name),
                   eng_vis(i) == TSEL->eng_req % NENGINES ? LS_SEL : LS_OFF, 0);
         else
-            lcell(x, y, (int32_t)h, 0, i == n ? ICON_X_WARN : ICON_COUNT, 0, i == n ? "INIT" : "CLEAN",   /* (CLEAN: no
-                                                                                    * icon, the word fills the cell) */
-                  chain_busy() ? LS_DIM : LS_OFF, 0);
+            lcell(x, y, (int32_t)h, 0, ICON_X_WARN, 0, "INIT", chain_busy() ? LS_DIM : LS_OFF, 0);
     }
     if (na)                                             /* the black keys' quick actions in the sound's place (KNOB 2 */
         eqa_row(na);                                    /* still shows its number) */

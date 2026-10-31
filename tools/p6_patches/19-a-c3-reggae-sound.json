@@ -1,0 +1,24 @@
+{
+  "name": "A C3 Reggae Sound",
+  "values": {
+    "attack": 0.001,
+    "attenuator": 10.0,
+    "cutoff": 221.892381,
+    "decay": 0.011067,
+    "eg_intensity": 0.5,
+    "fx_mode": 2,
+    "fx_speed": 0.2,
+    "key_tracking": 0.3,
+    "mg_delay": 0.0,
+    "mg_dest": 0,
+    "mg_freq": 2.671699,
+    "mg_level": 0.0,
+    "octave": 1,
+    "release": 15.0,
+    "resonance": 0.22,
+    "sub_osc": 1,
+    "sustain": 0.45,
+    "vca_mode": 1,
+    "wave": 1
+  }
+}

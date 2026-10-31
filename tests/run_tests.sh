@@ -199,7 +199,7 @@ OUT=build/host
 mkdir -p "$OUT"
 CC="${CC:-cc} -O1 -Wall -Wno-unused-function"
 fail=0
-run() { echo "== $1"; shift; "$@" || fail=1; }
+run() { local ok=1; echo "== $1"; shift; "$@" || ok=0; [ $ok = 1 ] || { echo "    RUN FAIL: $* (exit $?)"; fail=1; }; }
 
 $CC -o "$OUT/storage_test" tests/storage_test.c
 run "flash storage (A/B, torn writes)" "$OUT/storage_test"

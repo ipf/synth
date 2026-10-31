@@ -1687,14 +1687,14 @@ function makeMockDevice(opt = {}) {
     E("MIDI", ["USB", "TRS"], 0), E("SYNC", NDASH, 0), E("ROUT", ["CH1-4", "SEL", "CH5-8", "CH9-12", "CH13-16", "TRACK"], 0), D("CPU", F.INT, 0, 0, 0),
     D("SLOT", F.INT, 1, 4, 1), E("NAME", NDASH, 0), E("LOAD", NGO, 0), E("SAVE", NGO, 0),
     E("ENG", ["ANALOG", "-", "PHASE", "LOFI", "SAMPLE", "VOICE", "TRIO", "WHEEL",
-      "GRAIN", "PHYS", "DRUM", "NOISE", "FM6", "SLICE"], 0), E("SET", NGO, 0),
+      "GRAIN", "PHYS", "DRUM", "NOISE", "FM6", "SLICE", "POLYSIX", "JUNO106"], 0), E("SET", NGO, 0),
     E("CLRSQ", NGO, 0), E("INIT", NGO, 0),
     E("TYPE", ["ROOM", "SPRING", "HALL"], 2),       /* G_RTYPE (id 24, was G_DRCH): the reverb's model (HALL: 1.2) */
     D("-", F.INT, 0, 0, 0), D("-", F.INT, 0, 0, 0),   /* G_DRLVL, G_DRREV: inert since 1.0 */
   ];
   const NONE = D("-", F.INT, 0, 0, 0);
   const RATIO = [".5", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "14", "16"];
-  const P = (name, e, env = [10, 70, 90, 60], mono = 0, pat = 0) => ({ name, e, env, mono, pat });
+  const P = (name, e, env = [10, 70, 90, 60], mono = 0, pat = 0, ins = null) => ({ name, e, env, mono, pat, ins });
   const ENG = [
     { name: "ANALOG", titles: ["OSC", "FLT"], edit: [E("WAVE", ["SAW", "SQR", "TRI", "SIN", "PWM", "SYNC", "SUB"], 0), D("DTN", F.INT, 0, 127, 10, null, "ct"), D("MIX", F.PCT, 0, 127, 64),
         D("NOIS", F.PCT, 0, 127, 0), D("CUT", F.CUTOFF, 0, 127, 90), D("RES", F.PCT, 0, 127, 30), D("DRV", F.PCT, 0, 127, 0), D("KTR", F.PCT, 0, 127, 64)],
@@ -1774,6 +1774,85 @@ function makeMockDevice(opt = {}) {
         E("DIV", ["4", "8", "16", "32", "AUTO", "MAN"], 2), D("START", F.INT, 0, 31, 0), D("PTCH", F.SEMI, -24, 24, 0),
         E("MODE", ["ONE", "GATE", "LOOP"], 0), E("REV", ["OFF", "ON"], 0), D("DCAY", F.TIME, 0, 127, 127), D("TONE", F.INT, 0, 127, 127)],
       presets: [P("CHOP", [0, 2, 0, 0, 0, 0, 127, 127], [0, 127, 127, 30], 0, 9), P("STUTTER", [0, 1, 0, 0, 1, 0, 90, 110], [0, 127, 127, 12], 0, 10)] },
+    { name: "POLYSIX", titles: ["VCO", "VCF"], edit: [E("WAVE", ["PW", "SAW+PW", "PWM", "SAW+PWM"], 3), E("OCT", ["16'", "8'", "4'"], 1),
+        D("WIDTH", F.PCT, 0, 127, 32), D("PWM", F.LFOHZ, 0, 127, 91), E("SUB", ["OFF", "1 OCT", "2 OCT"], 2),
+        D("CUTOFF", F.CUTOFF, 0, 127, 74), D("RES", F.PCT, 0, 127, 32), D("EG INT", F.BIPCT, -64, 63, 22)],
+      presets: [P("BRASS", [1, 0, 0, 76, 0, 46, 25, 8], [53, 87, 89, 127], 0, 0),
+        P("2A STRINGS", [2, 0, 76, 69, 0, 46, 13, 0], [66, 127, 127, 94], 0, 0, [11, 64, 127, 0, 127]),
+        P("3A ELECTRIC", [0, 1, 44, 69, 0, 0, 38, 13], [0, 127, 0, 127], 0, 0),
+        P("4A CLAVI", [0, 0, 95, 76, 0, 32, 30, 32], [0, 48, 95, 21], 0, 0),
+        P("5A ACOUSTIC", [0, 1, 85, 76, 0, 43, 25, 0], [20, 114, 0, 87], 0, 0),
+        P("6A ORGAN 1", [1, 1, 38, 83, 0, 22, 57, 16], [0, 21, 127, 32], 0, 0, [11, 64, 127, 0, 127]),
+        P("MOON SND", [2, 1, 44, 76, 0, 0, 51, 32], [0, 127, 127, 32], 0, 0),
+        P("8A VIBES", [0, 2, 0, 76, 0, 6, 13, 6], [13, 107, 89, 127], 0, 0),
+        P("1A SYNTHE OR", [1, 2, 32, 76, 2, 127, 13, 0], [0, 127, 127, 21], 0, 0, [10, 0, 127, 0, 127]),
+        P("2A HI(GH) ST", [1, 1, 32, 76, 0, 53, 25, 0], [66, 114, 89, 101], 0, 0, [11, 127, 127, 0, 127]),
+        P("3A FAT SOLO", [1, 0, 32, 76, 0, 0, 19, 32], [0, 74, 114, 127], 0, 0, [10, 25, 127, 0, 127]),
+        P("4A SAXOPHONE", [0, 0, 91, 76, 0, 46, 13, 32], [60, 48, 127, 32], 0, 0),
+        P("5A FLUTE", [0, 2, 64, 76, 1, 19, 83, 0], [46, 107, 83, 61], 0, 0),
+        P("6A TROMBONE", [1, 0, 32, 127, 0, 0, 15, 16], [46, 101, 108, 101], 0, 0),
+        P("7A GUITAR", [0, 1, 51, 83, 0, 9, 25, 20], [0, 87, 102, 81], 0, 0),
+        P("8A HONKY TON", [0, 2, 83, 76, 1, 127, 102, 32], [0, 114, 0, 101], 0, 0),
+        P("SYN LEAD", [2, 1, 95, 83, 1, 0, 64, 32], [0, 127, 127, 32], 0, 0, [10, 0, 127, 0, 127]),
+        P("FAT BASS", [1, 1, 32, 76, 1, 13, 64, 19], [0, 67, 127, 32], 0, 0),
+        P("3A REGGAE SO", [1, 1, 32, 76, 1, 40, 28, 32], [0, 54, 127, 32], 0, 0, [10, 25, 127, 0, 127]),
+        P("4A BANJO", [0, 1, 89, 83, 0, 73, 25, 0], [0, 94, 0, 74], 0, 0),
+        P("5A ELECTRIC", [0, 0, 0, 69, 0, 12, 25, 19], [0, 127, 25, 127], 0, 0),
+        P("6A FILTERED", [0, 0, 89, 83, 0, 32, 57, 0], [0, 61, 127, 32], 0, 0),
+        P("7A NEW WAVE", [0, 2, 13, 76, 2, 113, 30, 0], [0, 127, 127, 32], 0, 0),
+        P("8A JAZZ GUIT", [0, 0, 51, 76, 0, 0, 25, 14], [0, 127, 127, 32], 0, 0),
+        P("1A UNISON SO", [1, 1, 32, 96, 2, 19, 38, 13], [0, 127, 127, 127], 0, 0, [10, 0, 127, 0, 127]),
+        P("2A UNISON SO", [0, 0, 95, 76, 0, 113, 0, 0], [0, 120, 127, 21], 0, 0),
+        P("3A ORGAN 2", [1, 1, 32, 69, 0, 46, 38, 0], [27, 21, 127, 32], 0, 0),
+        P("4A CHIME WIT", [0, 1, 0, 76, 2, 15, 25, 19], [0, 127, 127, 127], 0, 0, [9, 0, 127, 0, 127]),
+        P("5A SOUND FAL", [0, 0, 127, 96, 0, 26, 127, 32], [0, 127, 25, 127], 0, 0, [11, 0, 127, 0, 127]),
+        P("6A THIN SOUN", [0, 1, 95, 83, 0, 86, 38, 0], [0, 114, 0, 127], 0, 0),
+        P("7A TOUCH SOU", [0, 2, 76, 83, 0, 66, 64, 0], [73, 107, 0, 127], 0, 0),
+        P("8A KIM CARNE", [2, 0, 64, 76, 0, 73, 25, 32], [0, 114, 83, 107], 0, 0, [11, 25, 127, 0, 127]),
+        P("1B BRASS ENS", [1, 0, 0, 76, 0, 32, 25, 13], [53, 114, 51, 67], 0, 0),
+        P("2B MELLOW BR", [1, 1, 0, 0, 0, 46, 38, 6], [53, 114, 51, 114], 0, 0, [11, 44, 127, 0, 127]),
+        P("3B OBOE", [0, 1, 0, 76, 0, 59, 25, 0], [53, 74, 51, 61], 0, 0),
+        P("4B FLUTE", [0, 1, 51, 76, 0, 39, 38, 0], [60, 74, 51, 48], 0, 0),
+        P("5B STRINGS O", [1, 1, 32, 70, 0, 73, 0, 0], [93, 21, 127, 114], 0, 0, [11, 51, 127, 0, 127]),
+        P("6B SOLO VIOL", [1, 2, 32, 76, 0, 59, 0, 0], [80, 114, 51, 101], 0, 0),
+        P("7B BOWING ST", [1, 1, 32, 70, 0, 73, 0, 0], [80, 101, 51, 114], 0, 0, [11, 51, 127, 0, 127]),
+        P("8B KOTO", [2, 1, 64, 62, 0, 59, 25, 13], [0, 101, 0, 114], 0, 0),
+        P("1B ELECTRIC", [0, 1, 64, 62, 0, 39, 51, 0], [0, 114, 0, 114], 0, 0, [11, 51, 127, 0, 127]),
+        P("2B ORGAN (SL", [0, 1, 0, 0, 0, 46, 38, 6], [0, 21, 127, 32], 0, 0, [11, 25, 127, 0, 127]),
+        P("3B ORGAN (FA", [0, 1, 0, 0, 0, 46, 38, 6], [0, 21, 127, 32], 0, 0, [11, 51, 127, 0, 127]),
+        P("4B HARPSICOR", [0, 2, 76, 0, 0, 73, 51, 19], [0, 101, 51, 107], 0, 0),
+        P("5B CLAVI", [0, 0, 102, 0, 0, 39, 25, 19], [0, 114, 0, 21], 0, 0, [11, 25, 127, 0, 127]),
+        P("6B CHORUS (F", [1, 1, 0, 76, 0, 59, 102, 0], [80, 87, 102, 34], 0, 0, [11, 89, 127, 0, 127]),
+        P("7B CHORUS (M", [1, 0, 0, 76, 0, 59, 102, 0], [80, 87, 102, 34], 0, 0, [11, 89, 127, 0, 127]),
+        P("8B STEAM PIP", [0, 1, 127, 0, 0, 39, 127, 0], [27, 21, 127, 48], 0, 0, [11, 0, 127, 0, 127]),
+        P("1B SYNTHE 1", [2, 1, 64, 70, 0, 0, 83, 25], [0, 114, 64, 21], 0, 0, [9, 38, 127, 0, 127]),
+        P("2B SYNTHE 2", [1, 1, 32, 76, 0, 59, 89, 0], [93, 127, 0, 114], 0, 0, [10, 38, 127, 0, 127]),
+        P("3B SYNTHE 3", [3, 1, 13, 34, 0, 73, 83, 0], [13, 114, 51, 101], 0, 0, [10, 76, 127, 0, 127]),
+        P("4B SLOW ATTA", [1, 1, 32, 62, 0, 39, 89, 13], [106, 127, 102, 127], 0, 0, [10, 13, 127, 0, 127]),
+        P("5B SYNTHE BA", [1, 0, 32, 76, 1, 32, 70, 13], [0, 101, 76, 101], 0, 0),
+        P("6B SYNTHE 4", [2, 1, 89, 70, 0, 39, 127, 0], [40, 21, 127, 101], 0, 0, [9, 25, 127, 0, 127]),
+        P("7B ORIENTAL", [2, 1, 64, 89, 0, 46, 25, 13], [0, 101, 51, 114], 0, 0, [9, 51, 127, 0, 127]),
+        P("8B SYNTHE HA", [0, 2, 51, 70, 0, 46, 38, 19], [0, 101, 64, 127], 0, 0, [11, 38, 127, 0, 127]),
+        P("1B WHISTLE", [0, 1, 127, 76, 0, 32, 127, 6], [66, 21, 127, 21], 0, 0),
+        P("2B SOUND EFF", [0, 1, 127, 127, 0, 19, 127, 0], [0, 21, 127, 101], 0, 0, [11, 51, 127, 0, 127]),
+        P("3B GAMBANG", [0, 0, 25, 48, 0, 46, 127, 0], [0, 74, 70, 127], 0, 0, [11, 51, 127, 0, 127]),
+        P("4B SOUND EFF", [0, 1, 127, 96, 0, 32, 127, 13], [0, 114, 89, 127], 0, 0),
+        P("5B SOUND EFF", [0, 1, 127, 76, 0, 46, 127, 0], [27, 87, 76, 127], 0, 0),
+        P("6B CAVE ECHO", [0, 0, 127, 62, 0, 46, 127, 0], [0, 87, 51, 127], 0, 0, [11, 127, 127, 0, 127]),
+        P("7B SOUND EFF", [0, 1, 127, 0, 0, 53, 127, 0], [0, 127, 51, 127], 0, 0),
+        P("8B SOUND EFF", [0, 1, 127, 0, 0, 19, 127, 6], [0, 61, 51, 48], 0, 0)] },
+    /* 15 JUNO106 (eng_juno.c: SAW SUB PW PWM NOIS CUT RES EG; the presets of gen_juno_presets.py, the chorus
+       ones as the INSERT's JCHO with their mode) */
+    { name: "JUNO106", titles: ["DCO", "VCF"], edit: [D("SAW", F.PCT, 0, 127, 127), D("SUB", F.PCT, 0, 127, 127), D("PW", F.PCT, 0, 127, 0),
+        D("PWM", F.PCT, 0, 127, 0), D("NOISE", F.PCT, 0, 127, 0), D("CUTOFF", F.CUTOFF, 0, 127, 127), D("RES", F.PCT, 0, 127, 0), D("EG", F.BIPCT, -64, 63, 0)],
+      presets: [P("INIT", [127, 127, 0, 0, 0, 127, 0, 63], [27, 103, 76, 27], 0, 0),
+        P("BASS", [127, 0, 56, 0, 0, 5, 44, 35], [29, 82, 19, 39], 0, 0),
+        P("BRASS", [0, 127, 64, 0, 0, 48, 25, 32], [63, 76, 95, 64], 0, 0, [12, 1, 0, 0, 127]),
+        P("STRINGS", [127, 64, 0, 0, 0, 57, 13, 25], [84, 89, 108, 82], 0, 0, [12, 2, 0, 0, 127]),
+        P("POLYPAD", [127, 76, 0, 0, 8, 66, 15, 22], [92, 103, 114, 89], 0, 0, [12, 3, 0, 0, 127]),
+        P("ACID", [127, 0, 35, 127, 0, 0, 91, 41], [27, 64, 0, 37], 0, 0),
+        P("BELL", [127, 0, 10, 0, 0, 103, 6, 19], [27, 95, 0, 113], 0, 0, [12, 2, 0, 0, 127]),
+        P("FX", [0, 0, 0, 0, 44, 122, 51, 13], [100, 103, 127, 101], 0, 0, [12, 3, 0, 0, 127])] },
   ];
   const FM6_E = ENG.findIndex((e) => e.name === "FM6"), FM6_OWN = FM6.FACTORY_PK.length, DRUM_E = ENG.findIndex((e) => e.name === "DRUM");
   /* factory PATTERNS[] (engines.c; the device loads them from SAVE > PHRASES, presets only suggest one): absolute
@@ -1801,7 +1880,7 @@ function makeMockDevice(opt = {}) {
   TP.push(E("SYNC", ["OFF", "4BAR", "2BAR", "1/1", "1/2", "1/4", "1/8", "8T", "1/16", "16T", "1/32"], 0),   /* 1.2: LFO 2 (91..93) */
     E("TRIG", ["NOTE", "FREE"], 0), E("POL", ["BI", "UNI"], 0), E("QNTZ", ["OFF", "ON"], 1),   /* and QUANTIZE (94) */
     D("SPRD", F.PCT, 0, 127, 0),   /* SPREAD (95, #148) */
-    E("INSRT", ["OFF", "SOFT", "HARD", "FOLD", "FUZZ", "CRUSH", "PHASR", "FLANG", "CHOR"], 0),   /* 1.5: the INSERT (96..100) */
+    E("INSRT", ["OFF", "SOFT", "HARD", "FOLD", "FUZZ", "CRUSH", "PHASR", "FLANG", "CHOR", "CHOR6", "PHAS6", "ENSEM", "JCHO"], 0),   /* 1.5: the INSERT (96..100), 9..: the Polysix's, 12: the Juno's (fx.c IT_JCHO) */
     D("INS A", F.PCT, 0, 127, 64), D("INS B", F.PCT, 0, 127, 96), D("INS C", F.PCT, 0, 127, 96), D("MIX", F.PCT, 0, 127, 127),
     E("TYPE", ["LP", "BP", "HP"], 0), E("ESYNC", ["OFF", "ON"], 0));   /* 1.5: ANALOG's filter TYPE (101, #104), ENV SYNC (102, #175) */
   const P_COUNT = 111, G_COUNT = 27, NSTEP = 64, P_E0 = 103, G_ENGSEL = 20, P_SLCR = 45;
@@ -1859,6 +1938,8 @@ function makeMockDevice(opt = {}) {
     for (let i = P_SLCR + 4; i < P_E0; i++) if (!trackOwn(i, P_E0)) st.p[i] = TP[i].def;   /* a factory preset turns the
                                                      matrix off; the SLICER, the chord keys, the steps and the other track
                                                      settings stay (ui.c apply_preset_to) */
+    if (pr.ins) [96, 97, 98, 99, 100].forEach((id, i) => { st.p[id] = pr.ins[i]; });   /* a sound's own effect
+                                                     (ui.c apply_preset_to: ITYPE, IA, IB, IC, then its full MIX) */
     if (st.engine === FM6_E) {                    /* eng_fm6.c fm6_track_loaded */
       const t = st.tracks[st.sel];
       t.own = null;
@@ -2424,11 +2505,14 @@ function enumShown(d) {
 
 /* the order the device shows its engines in (src/engines.c ENGINE_ORDER): the lists here follow it, the protocol keeps
    the engine numbers. engineOrder(names): the indices of names in that order, "-" (a reserved number) left out; a name
-   the list does not know (another firmware) follows in index order */
+   the list does not know (another firmware) follows in index order. POLYSIX is back everywhere (its 16th key went to
+   INIT, whose hold is CLEAN INIT) */
 const ENGINE_ORDER = ["ANALOG", "FM6", "DIGITAL", "PHASE", "LOFI", "SAMPLE", "VOICE", "TRIO", "WHEEL", "GRAIN", "PHYS", "NOISE",
-  "SLICE", "DRUM"];
+  "SLICE", "POLYSIX", "JUNO106", "DRUM"];
 function engineOrder(names) {
-  const rank = (n) => { const k = ENGINE_ORDER.indexOf(n); return k < 0 ? ENGINE_ORDER.length : k; };
+  const rank = (n) => {
+    const k = ENGINE_ORDER.indexOf(n); return k < 0 ? ENGINE_ORDER.length : k;
+  };
   return (names || []).map((n, i) => i).filter((i) => names[i] !== "-")
     .sort((a, b) => rank(names[a]) - rank(names[b]) || a - b);
 }

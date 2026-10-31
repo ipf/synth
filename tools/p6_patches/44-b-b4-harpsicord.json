@@ -1,0 +1,26 @@
+{
+  "name": "B B4 Harpsicord",
+  "values": {
+    "octave": 2,
+    "wave": 0,
+    "pw_pwm": 0.6,
+    "pwm_speed": 0.1,
+    "sub_osc": 0,
+    "cutoff": 1103.783729,
+    "resonance": 0.4,
+    "eg_intensity": 0.3,
+    "key_tracking": 1.05,
+    "vca_mode": 0,
+    "attenuator": 0,
+    "mg_freq": 0.033,
+    "mg_delay": 0,
+    "mg_level": 0,
+    "mg_dest": 2,
+    "attack": 0.001,
+    "decay": 0.320372,
+    "sustain": 0.4,
+    "release": 0.518155,
+    "fx_mode": 0,
+    "fx_speed": 0
+  }
+}

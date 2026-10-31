@@ -260,6 +260,42 @@ int main(int argc, char **argv)
                  same, (uint32_t)sizeof NOTES);
         check(m, same == sizeof NOTES);
     }
+
+    /* 4: a span set: USR1's rsv bit 0 = USR1..3 as one keyboard, one cut a key (tools/sampleio.py span_slots) */
+    {
+        uint32_t k, ok = 1;
+        for (k = 0; k < SMP_USER_SLOTS; k++) {
+            smp_user_hdr_t *h = (smp_user_hdr_t *)SMP_USER_XIP(k);
+            smp_zone_t *z = &h->zone[0];
+            h->magic = SMP_USER_MAGIC;
+            h->version = 1;
+            h->nz = 1;
+            h->rsv = k == 0 ? 1 : 0;
+            h->data_len = 600;
+            memset(h->zone, 0, sizeof h->zone);
+            z->off = 0; z->n = 200; z->le = 199; z->rate = 32768u; z->lo = z->hi = (uint8_t)(60u + k);
+            z->root16 = (int16_t)((60u + k) * 16u); z->looped = 1;   /* (the uploader's looped zones: LOOP decides) */
+            smp_user_scan(k);
+            ok &= usr_nz[k] == 1u;
+        }
+        check("span set: USR1's rsv bit 0: USR1..3 are one keyboard (each slot its own v1 header)", ok && usr_span);
+        check("span kit: the cuts take the keyboard's keys in note order (like the drum kits' keymaps)"
+              " sample_keys 0 61 -1: 60 61 62 -1",
+              usr_kit_n == 3u && usr_kit[0] == 60u && usr_kit[1] == 61u && usr_kit[2] == 62u &&
+              sample_keys(0, 0) == 60 && sample_keys(0, 2) == 62 && sample_keys(0, 3) == -1);
+        render(ENGI_SAMPLE, (int16_t)SMP_NSETS, 61, 0, &zone);
+        render(ENGI_SAMPLE, (int16_t)SMP_NSETS, 62, 0, &zone2);
+        check("span set: key 61 plays USR2's zone, 62 USR3's (the narrowest zone of all three slots)",
+              zone == (int32_t)(0x8000u | 1u << 5) && zone2 == (int32_t)(0x8000u | 2u << 5));
+        render(ENGI_SAMPLE, (int16_t)SMP_NSETS, 63, 0, &zone);
+        check("span set: a key with no cut stays silent (no zone, not the sine)", zone == 0);
+        render(ENGI_SAMPLE, (int16_t)(SMP_NSETS + 1), 62, 0, &zone);
+        check("span set: USR2 itself plays the same keyboard (not 'USR2: no sample')", zone == (int32_t)(0x8000u | 2u << 5));
+        render(ENGI_SAMPLE, (int16_t)SMP_NSETS, 60, &ended, 0);
+        snprintf(m, sizeof m, "span kit: LOOP on (the zones looped): the cut repeats while held"
+                 " (RMS %.0f late, does not end at %.2f s)", rms(FS, FS * SECS), (double)FS * SECS / FS);
+        check(m, !ended && rms(FS, FS * SECS) > 100.0);
+    }
     printf("sample: %s\n", fails ? "FAILED" : "all checks ok");
     return fails != 0;
 }

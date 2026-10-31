@@ -1,0 +1,26 @@
+{
+  "name": "A A3 Electric Piano 1",
+  "values": {
+    "octave": 1,
+    "wave": 0,
+    "pw_pwm": 0.35,
+    "pwm_speed": 0.1,
+    "sub_osc": 0,
+    "cutoff": 20,
+    "resonance": 0.3,
+    "eg_intensity": 0.2,
+    "key_tracking": 0.525,
+    "vca_mode": 0,
+    "attenuator": 0,
+    "mg_freq": 1.852528,
+    "mg_delay": 0,
+    "mg_level": 0.4,
+    "mg_dest": 1,
+    "attack": 0.001,
+    "decay": 15,
+    "sustain": 0,
+    "release": 15,
+    "fx_mode": 0,
+    "fx_speed": 0
+  }
+}

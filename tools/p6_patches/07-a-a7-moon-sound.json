@@ -1,0 +1,26 @@
+{
+  "name": "A A7 Moon Sound",
+  "values": {
+    "octave": 1,
+    "wave": 2,
+    "pw_pwm": 0.35,
+    "pwm_speed": 7.575,
+    "sub_osc": 0,
+    "cutoff": 20,
+    "resonance": 0.4,
+    "eg_intensity": 0.5,
+    "key_tracking": 0,
+    "vca_mode": 1,
+    "attenuator": -4,
+    "mg_freq": 2.671699,
+    "mg_delay": 0,
+    "mg_level": 0,
+    "mg_dest": 2,
+    "attack": 0.001,
+    "decay": 15,
+    "sustain": 0.5,
+    "release": 15,
+    "fx_mode": 0,
+    "fx_speed": 0
+  }
+}

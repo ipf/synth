@@ -1,0 +1,23 @@
+{
+  "name": "A C2 Fat Bass",
+  "values": {
+    "attack": 0.001,
+    "attenuator": 10.0,
+    "cutoff": 58.280651,
+    "decay": 0.028949,
+    "eg_intensity": 0.3,
+    "fx_mode": 0,
+    "key_tracking": 0.0,
+    "mg_delay": 0.0,
+    "mg_dest": 0,
+    "mg_freq": 2.671699,
+    "mg_level": 0.0,
+    "octave": 1,
+    "release": 0.001,
+    "resonance": 0.5,
+    "sub_osc": 1,
+    "sustain": 0.75,
+    "vca_mode": 1,
+    "wave": 1
+  }
+}

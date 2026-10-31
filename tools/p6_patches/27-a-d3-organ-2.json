@@ -1,0 +1,23 @@
+{
+  "name": "A D3 Organ 2",
+  "values": {
+    "attack": 0.006843,
+    "attenuator": 2.0,
+    "cutoff": 289.911865,
+    "decay": 0.001,
+    "eg_intensity": 0.0,
+    "fx_mode": 0,
+    "key_tracking": 0.75,
+    "mg_delay": 0.0,
+    "mg_dest": 2,
+    "mg_freq": 1.852528,
+    "mg_level": 0.25,
+    "octave": 1,
+    "release": 0.075725,
+    "resonance": 0.3,
+    "sub_osc": 0,
+    "sustain": 0.0,
+    "vca_mode": 1,
+    "wave": 1
+  }
+}

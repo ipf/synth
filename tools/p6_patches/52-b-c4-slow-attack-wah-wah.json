@@ -1,0 +1,23 @@
+{
+  "name": "B C4 Slow Attack Wah-Wah",
+  "values": {
+    "octave": 1,
+    "wave": 1,
+    "sub_osc": 0,
+    "cutoff": 207.544625,
+    "resonance": 0.7,
+    "eg_intensity": 0.2,
+    "key_tracking": 0.3,
+    "vca_mode": 0,
+    "mg_freq": 1.284523,
+    "mg_delay": 0.8,
+    "mg_level": 0.1,
+    "mg_dest": 2,
+    "attack": 2.192164,
+    "decay": 2.192164,
+    "sustain": 0.8,
+    "release": 2.192164,
+    "fx_mode": 2,
+    "fx_speed": 0.1
+  }
+}

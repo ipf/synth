@@ -1,0 +1,25 @@
+{
+  "name": "B C7 Oriental Sound",
+  "values": {
+    "attack": 0.001,
+    "cutoff": 289.911865,
+    "decay": 0.320372,
+    "eg_intensity": 0.2,
+    "fx_mode": 1,
+    "fx_speed": 0.4,
+    "key_tracking": 0.6,
+    "mg_delay": 0.0,
+    "mg_dest": 2,
+    "mg_freq": 5.556908,
+    "mg_level": 0.3,
+    "octave": 1,
+    "pw_pwm": 0.5,
+    "pwm_speed": 6.08,
+    "release": 0.838038,
+    "resonance": 0.2,
+    "sub_osc": 0,
+    "sustain": 0.4,
+    "vca_mode": 0,
+    "wave": 2
+  }
+}

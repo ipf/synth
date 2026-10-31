@@ -270,9 +270,10 @@ def to_int16(x):
     return [max(-32768, min(32767, int(v / pk * 30000))) for v in x]
 
 
-def user_slot(name, zones):
-    """zones: [(int16 samples at SLOT_RATE, root, lo or None, hi or None)] -> (header bytes, ADPCM data).
-    Zones without lo/hi split the keyboard between their roots."""
+def user_slot(name, zones, rate=SLOT_RATE, rsv=0, looped=0):
+    """zones: [(int16 samples at rate, root, lo or None, hi or None)] -> (header bytes, ADPCM data).
+    Zones without lo/hi split the keyboard between their roots. rsv: the header's reserved byte (bit 0:
+    a span set, see span_slots). looped: the zones repeat while held (the sound's LOOP knob off: one-shot)."""
     zs, data = [], bytearray()
     for s, root, lo, hi in zones:
         adp, st = ima_encode(s, 0)
@@ -280,16 +281,39 @@ def user_slot(name, zones):
         data += adp
     if len(data) > SLOT_MAX_DATA:
         raise ValueError(f"too long: {len(data)} B of ADPCM, a slot holds {SLOT_MAX_DATA} B "
-                         f"({SLOT_MAX_DATA * 2 / SLOT_RATE:.1f} s in all)")
+                         f"({SLOT_MAX_DATA * 2 / rate:.1f} s in all)")
     if not 1 <= len(zs) <= SLOT_ZONES:
         raise ValueError(f"1..{SLOT_ZONES} files per slot")
     zs.sort(key=lambda z: z["root"])
     for z, (lo, hi) in zip(zs, key_split([z["root"] for z in zs])):
         if z["lo"] is None:
             z["lo"], z["hi"] = lo, hi
-    rate = int(round(SLOT_RATE / 44100 * 65536))
-    zb = b"".join(struct.pack("<5I2h4B", z["off"], z["n"], z["ls"], z["le"], rate, z["root"] * 16, z["pred"],
-                              z["idx"], z["lo"], z["hi"], 0) for z in zs)
+    rz = int(round(rate / 44100 * 65536))
+    zb = b"".join(struct.pack("<5I2h4B", z["off"], z["n"], z["ls"], z["le"], rz, z["root"] * 16, z["pred"],
+                              z["idx"], z["lo"], z["hi"], looped) for z in zs)
     nm = re.sub(r"[^\x20-\x7E]", "", name.upper())[:8].encode().ljust(8, b"\0")
-    hdr = struct.pack("<IHBB8sII8x", 0x504D5346, 1, len(zs), 0, nm, len(data), zlib.crc32(data)) + zb
+    hdr = struct.pack("<IHBB8sII8x", 0x504D5346, 1, len(zs), rsv, nm, len(data), zlib.crc32(data)) + zb
     return hdr.ljust(SLOT_HDR_LEN, b"\0"), bytes(data)
+
+
+def span_slots(zones):
+    """zones with their key (lo == hi == root: one cut per key) -> [[zone per slot]]: the cuts in the first
+    slot with room (a cut never split: each slot's data is one linear ADPCM window), 16 zones a slot"""
+    out, used = [], []
+    for z in zones:
+        n = (len(z[0]) + 1) // 2
+        if n > SLOT_MAX_DATA:
+            raise ValueError(f"root {z[1]}: {n} B of ADPCM, a slot holds {SLOT_MAX_DATA} B")
+        for k in range(len(out)):
+            if len(out[k]) < SLOT_ZONES and used[k] + n <= SLOT_MAX_DATA:
+                break
+        else:
+            out.append([])
+            used.append(0)
+            k = len(out) - 1
+        out[k].append(z)
+        used[k] += n
+    if len(out) > 3:                                  # the firmware's SMP_USER_SLOTS
+        raise ValueError(f"{len(out)} slots of cuts, a span set has 3")
+    return out
+

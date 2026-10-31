@@ -1,0 +1,26 @@
+{
+  "name": "B D3 Gambang",
+  "values": {
+    "octave": 0,
+    "wave": 0,
+    "pw_pwm": 0.2,
+    "pwm_speed": 0.1,
+    "sub_osc": 0,
+    "cutoff": 289.911865,
+    "resonance": 1,
+    "eg_intensity": 0,
+    "key_tracking": 0.9,
+    "vca_mode": 0,
+    "attenuator": 0,
+    "mg_freq": 0.617584,
+    "mg_delay": 0,
+    "mg_level": 0.15,
+    "mg_dest": 1,
+    "attack": 0.001,
+    "decay": 0.046821,
+    "sustain": 0.55,
+    "release": 2.192164,
+    "fx_mode": 3,
+    "fx_speed": 0.4
+  }
+}

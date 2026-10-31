@@ -1,0 +1,23 @@
+{
+  "name": "B C6 Synthe 4",
+  "values": {
+    "attack": 0.017899,
+    "cutoff": 207.544625,
+    "decay": 0.001,
+    "eg_intensity": 0.0,
+    "fx_mode": 1,
+    "fx_speed": 0.2,
+    "key_tracking": 1.5,
+    "mg_dest": 1,
+    "mg_level": 0.0,
+    "octave": 1,
+    "pw_pwm": 0.7,
+    "pwm_speed": 6.08,
+    "release": 0.320372,
+    "resonance": 1.0,
+    "sub_osc": 0,
+    "sustain": 1.0,
+    "vca_mode": 0,
+    "wave": 2
+  }
+}

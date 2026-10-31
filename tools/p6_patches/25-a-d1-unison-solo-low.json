@@ -1,0 +1,24 @@
+{
+  "name": "A D1 Unison Solo Low",
+  "values": {
+    "attack": 0.001,
+    "attenuator": 0.0,
+    "cutoff": 76.146158,
+    "decay": 15.0,
+    "eg_intensity": 0.2,
+    "fx_mode": 2,
+    "fx_speed": 0.0,
+    "key_tracking": 0.0,
+    "mg_delay": 0.0,
+    "mg_dest": 1,
+    "mg_freq": 8.014123,
+    "mg_level": 0.0,
+    "octave": 1,
+    "release": 15.0,
+    "resonance": 0.3,
+    "sub_osc": 2,
+    "sustain": 1.0,
+    "vca_mode": 0,
+    "wave": 1
+  }
+}

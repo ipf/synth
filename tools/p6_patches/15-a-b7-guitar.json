@@ -1,0 +1,25 @@
+{
+  "name": "A B7 Guitar",
+  "values": {
+    "attack": 0.001,
+    "attenuator": 10.0,
+    "cutoff": 47.69048,
+    "decay": 0.122474,
+    "eg_intensity": 0.32,
+    "fx_mode": 0,
+    "key_tracking": 0.0,
+    "mg_delay": 2.4,
+    "mg_dest": 2,
+    "mg_freq": 3.853101,
+    "mg_level": 0.0,
+    "octave": 1,
+    "pw_pwm": 0.4,
+    "pwm_speed": 4.585,
+    "release": 0.075725,
+    "resonance": 0.2,
+    "sub_osc": 0,
+    "sustain": 0.8,
+    "vca_mode": 0,
+    "wave": 0
+  }
+}

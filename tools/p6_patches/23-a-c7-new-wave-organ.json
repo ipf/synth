@@ -1,0 +1,25 @@
+{
+  "name": "A C7 New Wave Organ",
+  "values": {
+    "attack": 0.001,
+    "attenuator": 0.0,
+    "cutoff": 8199.945841,
+    "decay": 15.0,
+    "eg_intensity": 0.0,
+    "fx_mode": 0,
+    "key_tracking": 0.525,
+    "mg_delay": 0.0,
+    "mg_dest": 0,
+    "mg_freq": 2.671699,
+    "mg_level": 0.25,
+    "octave": 2,
+    "pw_pwm": 0.1,
+    "pwm_speed": 0.1,
+    "release": 15.0,
+    "resonance": 0.24,
+    "sub_osc": 2,
+    "sustain": 1.0,
+    "vca_mode": 1,
+    "wave": 0
+  }
+}

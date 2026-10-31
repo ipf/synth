@@ -323,14 +323,14 @@ static int leds(void)
         menu_put(MI_LEDS, 5);
         settings_export(&p);
         ok = p.zoom == (LEDS_TAG | LEDS_INV) && leds_from_stored(p.zoom) == LEDS_INV && leds_stored_ok(p.zoom) &&
-             p.favorites.factory[15][25] == 2u;          /* (older firmware: INV, the byte kept unread) */
+             p.favorites.factory[16][25] == 2u;          /* (older firmware: INV, the byte kept unread) */
         menu_put(MI_LEDS, 2);
         ok &= settings_import(&p, (int)sizeof p) == 1 && menu_get(MI_LEDS) == 5u;
-        p.favorites.factory[15][25] = 0;                 /* (a setting of before: INV) */
+        p.favorites.factory[16][25] = 0;                 /* (a setting of before: INV) */
         ok &= settings_import(&p, (int)sizeof p) == 1 && menu_get(MI_LEDS) == 3u;
-        p.favorites.factory[15][25] = 7;                 /* (an unknown level: INV) */
+        p.favorites.factory[16][25] = 7;                 /* (an unknown level: INV) */
         ok &= settings_import(&p, (int)sizeof p) == 1 && menu_get(MI_LEDS) == 3u;
-        p.favorites.factory[15][25] = 1;                 /* (a level with DIM HI: DIM HI) */
+        p.favorites.factory[16][25] = 1;                 /* (a level with DIM HI: DIM HI) */
         p.zoom = 0;
         ok &= settings_import(&p, (int)sizeof p) == 1 && menu_get(MI_LEDS) == 2u && !leds_inv();
         menu_put(MI_LEDS, 2);
@@ -364,7 +364,7 @@ static int select_play(void)
         settings_export(&p);
         menu_put(MI_SELECT, 0);
         ok &= settings_import(&p, (int)sizeof p) == 1 && menu_get(MI_SELECT) == 3u;
-        p.favorites.factory[15][24] = 0;
+        p.favorites.factory[16][24] = 0;
         ok &= settings_import(&p, (int)sizeof p) == 1 && menu_get(MI_SELECT) == 0u;
     }
     bad += check("SELECT (#84): BPM PAGE MODW VEL; PAGE bit 4 as 1.5.5, MODW / VEL bit 6 too; saved, older settings BPM", ok);

@@ -1,0 +1,23 @@
+{
+  "name": "B C8 Synthe Harp",
+  "values": {
+    "attack": 0.001,
+    "cutoff": 289.911865,
+    "decay": 0.320372,
+    "eg_intensity": 0.3,
+    "fx_mode": 3,
+    "fx_speed": 0.3,
+    "key_tracking": 0.6,
+    "mg_dest": 1,
+    "mg_level": 0.0,
+    "octave": 2,
+    "pw_pwm": 0.4,
+    "pwm_speed": 0.1,
+    "release": 2.192164,
+    "resonance": 0.3,
+    "sub_osc": 0,
+    "sustain": 0.5,
+    "vca_mode": 0,
+    "wave": 0
+  }
+}

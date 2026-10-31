@@ -1,0 +1,26 @@
+{
+  "name": "B B8 Steam Pipe Organ",
+  "values": {
+    "octave": 1,
+    "wave": 0,
+    "pw_pwm": 1,
+    "pwm_speed": 0.1,
+    "sub_osc": 0,
+    "cutoff": 207.544625,
+    "resonance": 1,
+    "eg_intensity": 0,
+    "key_tracking": 0.825,
+    "vca_mode": 0,
+    "attenuator": 0,
+    "mg_freq": 0.033,
+    "mg_delay": 0,
+    "mg_level": 0,
+    "mg_dest": 2,
+    "attack": 0.006843,
+    "decay": 0.001,
+    "sustain": 1,
+    "release": 0.006843,
+    "fx_mode": 3,
+    "fx_speed": 0
+  }
+}

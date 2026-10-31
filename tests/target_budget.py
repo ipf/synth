@@ -31,7 +31,7 @@ FUNCS = ["analog_render", "digital_render", "digital_render_legacy", "digital_re
          "perf_flanger", "perf_phaser",                     # .. FLANGER, PHASER (1.2), while held or fading
          "perf_throw",                                      # .. REV / ECHO THROW (1.5.1): per part, while held or gliding
          "rev_room", "rev_spring", "rev_hall", "rev_side_mix",   # the reverb bus (fx.c): REVERB TYPE ROOM / SPRING / HALL (and its stereo)
-         "track_insert", "ins_drive", "ins_swept"]          # the per-track INSERT (fx.c, 1.5), while a TYPE plays
+         "track_insert", "ins_drive", "ins_swept"]        # the per-track INSERT (fx.c, 1.5), while a TYPE plays
 # built only with FELUCCA_FM4=1 (DIGITAL, src/eng_digital.c; not in the default build, so not in BUDGET): absent,
 # they are skipped; present, checked against these (their budget lines until the engine was retired in 1.0)
 OPTIONAL = {"digital_render": 12, "digital_render_legacy": 333, "digital_render_custom": 558,
@@ -53,10 +53,17 @@ TARGET = re.compile(r"goto -?\d+ <[^>]*: ([0-9a-f]+) >")
 
 def functions(path):
     """{name: [(addr, text)]}: a function runs to the next label not starting with '.' (the compiler's
-    jump-table labels are inside functions); jump-table data ('< n : 0x.. >') is left out"""
+    jump-table labels are inside functions); jump-table data ('< n : 0x.. >') is left out
+    shortcut: the decode stops at the first unknown instruction, so the float-only POLYSIX (p6_render,
+    and ins_p6fx under track_insert) and every pure-float loop measure as no budget at all — when the
+    disassembler learns the FPU opcodes (3f e5), add them to FUNCS (device budget rows are still owed)."""
     out, cur = {}, None
     with open(path) as f:
         for line in f:
+            if "<unknown instruction>" in line and cur is not None:
+                cur = None                       # the JL objdump loses its alignment on the first one it
+                continue                         # cannot decode (track_insert's 6-byte branches): the
+                                                 # rest is invented, so the function ends there
             m = LABEL.match(line.strip())
             if m:
                 name = m.group(1)

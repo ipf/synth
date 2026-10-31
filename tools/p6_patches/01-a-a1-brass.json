@@ -1,0 +1,26 @@
+{
+  "name": "A A1 Brass",
+  "values": {
+    "octave": 0,
+    "wave": 1,
+    "pw_pwm": 0,
+    "pwm_speed": 0.1,
+    "sub_osc": 0,
+    "cutoff": 289.911865,
+    "resonance": 0.2,
+    "eg_intensity": 0.12,
+    "key_tracking": 1.05,
+    "vca_mode": 0,
+    "attenuator": 0,
+    "mg_freq": 2.671699,
+    "mg_delay": 1.6,
+    "mg_level": 0.2,
+    "mg_dest": 2,
+    "attack": 0.046821,
+    "decay": 0.122474,
+    "sustain": 0.7,
+    "release": 15,
+    "fx_mode": 0,
+    "fx_speed": 0
+  }
+}

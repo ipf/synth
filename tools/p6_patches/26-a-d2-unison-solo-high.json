@@ -1,0 +1,25 @@
+{
+  "name": "A D2 Unison Solo High",
+  "values": {
+    "attack": 0.001,
+    "attenuator": 0.0,
+    "cutoff": 8199.945841,
+    "decay": 1.355403,
+    "eg_intensity": -0.25,
+    "fx_mode": 0,
+    "key_tracking": 1.05,
+    "mg_delay": 0.0,
+    "mg_dest": 2,
+    "mg_freq": 2.671699,
+    "mg_level": 0.0,
+    "octave": 0,
+    "pw_pwm": 0.75,
+    "pwm_speed": 9.07,
+    "release": 0.001,
+    "resonance": 0.0,
+    "sub_osc": 0,
+    "sustain": 1.0,
+    "vca_mode": 0,
+    "wave": 0
+  }
+}

@@ -54,11 +54,15 @@ static const char *const N_ROUTE[] = {"CH1-4", "SEL", "CH5-8", "CH9-12", "CH13-1
 static const char *const N_NOTE[] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
 static const char *const N_DASH[] = {"--"};
 static const char *const N_RTYPE[] = {"ROOM", "SPRING", "HALL"};   /* G_RTYPE: the reverb bus's model (fx.c) */
+static const char *const N_JMODE[] = {"--", "I", "II", "I+II"};    /* the Juno's chorus mode (fx.c IT_JCHO) */
 static const char *const N_GO[] = {"--", "GO"};
 static const char *const N_SLCR[] = {"OFF", "GATE", "STUT"};             /* SL_OFF .. SL_STUT (slicer.c) */
 static const char *const N_SLDIV[] = {"1/8", "1/16", "1/32", "8T", "16T", "32T"};   /* SL_DEN */
 /* the INSERT's types (1.5, fx.c IT_*; append-only: stored). Its three values A B C mean what the type says (ins_desc) */
-static const char *const N_ITYPE[] = {"OFF", "SOFT", "HARD", "FOLD", "FUZZ", "CRUSH", "PHASR", "FLANG", "CHOR"};
+static const char *const N_ITYPE[] = {"OFF", "SOFT", "HARD", "FOLD", "FUZZ", "CRUSH", "PHASR", "FLANG", "CHOR",   /* append-only (stored) */
+                                      "CHOR6", "PHAS6", "ENSEM",   /* 9..: the Polysix section (fx.c IT_P6CHO) */
+                                      "JCHO",               /* 12: the Juno-106's own chorus (eng_juno.c) */
+};
 /* CRUSH: BITS 1..16 and RATE (the held sample's rate, fx.c INS_HOLD) over the range in 16 even parts (0-terminated) */
 static const char *const N_IBITS[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15",
                                       "16", 0};
@@ -75,6 +79,12 @@ static const char *const N_ENGNAME[] = {"ANALOG", FELUCCA_FM4 ? "DIGITAL" : "-",
 #if FELUCCA_SLICE
                                              "SLICE",
 #endif
+#if !FELUCCA_FM4
+                                             "POLYSIX",            /* (under FM4 its 16th white key would not fit: eng_ok) */
+#else
+                                             "-",                  /* 14 POLYSIX: hidden under FM4 (eng_ok) */
+#endif
+                                             "JUNO106",            /* appended: the Juno-106 (JUNO, eng_juno.c) */
 };
 
 #define PD(l, f, mn, mx, df) {l, f, mn, mx, df, 0, 0}
@@ -170,17 +180,23 @@ static const param_desc_t TP[P_COUNT] = {
 /* the INSERT's A B C as its TYPE means them (TP's ranges and defaults): the drives DRIVE TONE LEVEL, CRUSH BITS RATE
  * LPF, the swept ones RATE DEPTH FDBK; OFF TP's own */
 #define PU(l, f, df, n, u) {l, f, 0, 127, df, n, u}
-static const param_desc_t INS_DESC[3][3] = {
+static const param_desc_t INS_DESC[5][3] = {
     {PU("DRIVE", F_PCT, 64, 0, 0), PU("TONE", F_CUTOFF, 96, 0, 0), PU("LEVEL", F_DB, 96, 0, 0)},
     {PU("BITS", F_INT, 64, N_IBITS, 0), PU("RATE", F_INT, 96, N_IRATE, "Hz"), PU("LPF", F_CUTOFF, 96, 0, 0)},
     {PU("RATE", F_LFOHZ, 64, 0, 0), PU("DEPTH", F_PCT, 96, 0, 0), PU("FDBK", F_PCT, 96, 0, 0)},
+    {PU("INT", F_PCT, 64, 0, 0), PU("DEPTH", F_PCT, 127, 0, 0), PU("FDBK", F_PCT, 0, 0, 0)},   /* the Polysix
+                                                               * section's own: the sweep's rate, its weight
+                                                               * (127 as authored), the wet fed back */
+    {{"MODE", F_ENUM, 0, 3, 1, N_JMODE, 0}, PU("-", F_INT, 0, 0, 0), PU("-", F_INT, 0, 0, 0)},   /* the Juno's
+                                                               * chorus: I / II, the deeper I+II in series */
 };
 #undef PU
 static const param_desc_t *ins_desc(int32_t type, uint32_t k)
 {
     if (type <= 0 || type >= (int32_t)NELEM(N_ITYPE))
         return &TP[P_IA + k];
-    return &INS_DESC[type < 5 ? 0 : type == 5 ? 1 : 2][k];   /* (IT_SOFT .. IT_FUZZ, IT_CRUSH, the swept ones) */
+    return &INS_DESC[type < 5 ? 0 : type == 5 ? 1 : type >= 12 ? 4 : type >= 9 ? 3 : 2][k];   /* (IT_SOFT .. IT_FUZZ, IT_CRUSH,
+                                                                              * the swept ones, the Polysix's, the Juno's) */
 }
 
 static const param_desc_t GP[G_COUNT] = {
@@ -395,6 +411,7 @@ static void param_format(const param_desc_t *d, int32_t v, char *val, const char
         *unit = "st";
         break;
     case F_ENUM:
+        
         str_cpy(val, d->names[v < d->min ? d->min : v > d->max ? d->max : v], 6);
         if (d->unit)
             *unit = d->unit;

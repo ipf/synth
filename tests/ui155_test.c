@@ -128,7 +128,7 @@ static int select_page(void)
     uint8_t before[32];
     uint32_t i;
     ui_power_on();
-    memcpy(before, favorites.factory[15], 32);
+    memcpy(before, favorites.factory[16], 32);
     ok = menu_get(MI_SELECT) == 0u && str_eq(MI_NAME[MI_SELECT], "SELECT") && MI_TAB[MI_SELECT] == MTAB_CONTROL &&
          MI_SELECT < MI_VALUES && str_eq(menu_vname(MI_SELECT, 0), "BPM") && str_eq(menu_vname(MI_SELECT, 1), "PAGE") &&
          mtab_rows(MTAB_CONTROL) <= MTAB_ROWS;
@@ -139,15 +139,15 @@ static int select_page(void)
     bad += check("SELECT (#188): MENU > CONTROL > SELECT, BPM by default: SELECT sets the tempo as before", ok);
 
     menu_put(MI_SELECT, 1);
-    ok = menu_get(MI_SELECT) == 1u && favorites.factory[15][24] == (uint8_t)(before[24] | 0x10u);
+    ok = menu_get(MI_SELECT) == 1u && favorites.factory[16][24] == (uint8_t)(before[24] | 0x10u);
     for (i = 0; i < 32u; i++)
-        ok &= i == 24u || favorites.factory[15][i] == before[i];
+        ok &= i == 24u || favorites.factory[16][i] == before[i];
     {   /* saved with the settings; settings from before it read BPM */
         persist_t p;
         settings_export(&p);
         ui_prefs2 = 0;
         ok &= settings_import(&p, (int)sizeof p) == 1 && menu_get(MI_SELECT) == 1u;
-        p.favorites.factory[15][24] &= (uint8_t)~0x10u;
+        p.favorites.factory[16][24] &= (uint8_t)~0x10u;
         ok &= settings_import(&p, (int)sizeof p) == 1 && menu_get(MI_SELECT) == 0u;
         menu_put(MI_SELECT, 1);
     }
@@ -439,9 +439,10 @@ static int clean_init(void)
 
     ui_power_on();
     go_home(); frame();
-    lay_combo(B_EDIT, white(LY_CLEAN));
-    ok = ui.confirm == CF_CLEAN_SOUND && LY_CLEAN == LY_INIT + 1u && LY_CLEAN < 16u;
-    key_up(white(LY_CLEAN)); btn_up(B_EDIT); frame();
+    lay_combo(B_EDIT, white(LY_INIT));
+    frames(400);                                        /* INIT held 0.4 s: CLEAN INIT */
+    ok = ui.confirm == CF_CLEAN_SOUND;
+    key_up(white(LY_INIT)); btn_up(B_EDIT); frame();
     confirm_text(a, b);
     ok &= str_eq(a, "CLEAN INIT SOUND?") && str_eq(b, "NO FX, NO MOD");
     dress(TSEL);

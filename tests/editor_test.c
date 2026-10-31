@@ -1161,7 +1161,7 @@ static int learn_protocol(void)
     int bad = 0, ok;
     uint32_t n, i;
     reset();
-    memset(favorites.factory[14], 0, 32);
+    memset(favorites.factory[17], 0, 32);
     n = request(ED_LEARN_GET, 0, 0);
     ok = n == 6u + 1u + 4u * ML_N && host_wire[4] == ED_LEARN_GET && host_wire[5] == ML_N;
     for (i = 0; i < ML_N; i++)
@@ -1200,7 +1200,7 @@ static int learn_protocol(void)
         ok = learn_entry(0, 0, 0, 0, 0) && learn_entry(1, 1, 20, 1, P_PAN) && ml_count() == ML_N - 1u;
         ok &= request(ED_LEARN_SET, odd, 1) && host_wire[5] == 1u;
         request(ED_LEARN_SET, all, 1);
-        ok &= host_wire[5] != 1u && host_wire[5] != 5u && !ml_count() && !favorites.factory[14][0] && !memcmp(favorites.factory[14], favorites.factory[14] + 1, 31);
+        ok &= host_wire[5] != 1u && host_wire[5] != 5u && !ml_count() && !favorites.factory[17][0] && !memcmp(favorites.factory[17], favorites.factory[17] + 1, 31);
         ok &= request(ED_LEARN_GET, odd, 1) == 0u;          /* (GET takes no arguments) */
         bad += check("LEARN_SET op 1 clears one CC, op 2 all; unknown ops rc 1; GET with arguments: no reply", ok);
     }
@@ -1320,11 +1320,11 @@ static int custom_palette(void)
         palette_apply();
         ok &= T_BG == good[0] && T_ACCENT == good[4];
         bad += check("settings: CUSTOM kept by an export and an import, in use after palette_apply", ok);
-        p.favorites.factory[15][12] = 3; p.favorites.factory[15][0] = p.favorites.factory[15][4] = 0x55;   /* hard to read: kept as saved */
-        p.favorites.factory[15][1] = p.favorites.factory[15][5] = 0x55;
+        p.favorites.factory[16][12] = 3; p.favorites.factory[16][0] = p.favorites.factory[16][4] = 0x55;   /* hard to read: kept as saved */
+        p.favorites.factory[16][1] = p.favorites.factory[16][5] = 0x55;
         ok = settings_import(&p, sizeof p) == 1 && ui_cpal_flags == 3u && ui_cpal[0] == 0x55 && palette_n() == NPALETTES + 1u;
         bad += check("settings: colours that are hard to read are kept as saved (the user's choice)", ok);
-        p.favorites.factory[15][12] = 0xFE;
+        p.favorites.factory[16][12] = 0xFE;
         ok = settings_import(&p, sizeof p) == 1 && ui_cpal_flags == 0u && ui_cpal[0] == 0;
         bad += check("settings: a flags byte without the stored bit: none, the colours zero; the bits past the two dropped", ok);
     }

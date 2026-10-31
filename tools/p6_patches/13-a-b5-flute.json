@@ -1,0 +1,25 @@
+{
+  "name": "A B5 Flute",
+  "values": {
+    "attack": 0.028949,
+    "attenuator": 10.0,
+    "cutoff": 76.146158,
+    "decay": 0.518155,
+    "eg_intensity": 0.0,
+    "fx_mode": 0,
+    "key_tracking": 1.02,
+    "mg_delay": 2.4,
+    "mg_dest": 2,
+    "mg_freq": 2.671699,
+    "mg_level": 0.55,
+    "octave": 2,
+    "pw_pwm": 0.5,
+    "pwm_speed": 6.08,
+    "release": 0.017899,
+    "resonance": 0.65,
+    "sub_osc": 1,
+    "sustain": 0.65,
+    "vca_mode": 0,
+    "wave": 0
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "B A8 Koto",
+  "values": {
+    "attack": 0.001,
+    "cutoff": 565.685425,
+    "decay": 0.320372,
+    "eg_intensity": 0.2,
+    "fx_mode": 0,
+    "key_tracking": 0.6,
+    "mg_delay": 0.0,
+    "mg_dest": 0,
+    "mg_freq": 1.284523,
+    "mg_level": 0.2,
+    "octave": 1,
+    "pw_pwm": 0.5,
+    "pwm_speed": 10.565,
+    "release": 0.838038,
+    "resonance": 0.2,
+    "sub_osc": 0,
+    "sustain": 0.0,
+    "vca_mode": 0,
+    "wave": 2
+  }
+}

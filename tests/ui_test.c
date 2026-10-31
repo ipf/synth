@@ -1407,7 +1407,7 @@ static int test_favorites(void)
 
 /* 1.2 (Discussion #90): sound categories. The factory table covers every preset; PRESETS > LIST (KNOB 4) steps ALL FAV
  * BASS .. OTHER without a wrap and browses only that category (factory and user presets), kept with the settings in
- * favorites.factory[15][11] with favorites.filter 0 / 1 as before; the NAME screen's KNOB 3 sets a user preset's
+ * favorites.factory[16][11] with favorites.filter 0 / 1 as before; the NAME screen's KNOB 3 sets a user preset's
  * category (from the sound's own), written with the name and kept by a rename; a record of before (version 2) gets
  * one by a rename, its sound unchanged; PROJECT's KNOB 3 a random name */
 static int test_categories(void)
@@ -1461,10 +1461,10 @@ static int test_categories(void)
         persist_t p;
         list_set(1u + CAT_PAD);
         settings_export(&p);
-        ok = p.favorites.factory[15][11] == CAT_PAD && p.favorites.filter == 0u;
-        p.favorites.factory[15][11] = 9;
+        ok = p.favorites.factory[16][11] == CAT_PAD && p.favorites.filter == 0u;
+        p.favorites.factory[16][11] = 9;
         ok &= settings_import(&p, sizeof p) == 1 && list_mode() == 0u;
-        p.favorites.factory[15][11] = CAT_FX;
+        p.favorites.factory[16][11] = CAT_FX;
         ok &= settings_import(&p, sizeof p) == 1 && list_mode() == 1u + CAT_FX;
         turn(EN_K4, -20);
         turn(EN_K4, 1);
@@ -4100,14 +4100,16 @@ static int test_quick_layers(void)
     }
     song.playing = 0;
     lay_combo(B_EDIT, white(LY_INIT));
-    ok = ui.confirm == CF_INIT_SOUND;
-    frame();
+    ok = !ui.confirm && ui.layer == LAYER_EDIT;         /* INIT acts on release now (its hold is CLEAN INIT) */
+    key_up(white(LY_INIT)); frame();
+    ok &= ui.confirm == CF_INIT_SOUND;
+    frame();                                            /* (the dialog closes the layer on the next pass) */
     ok &= !ui.layer;
-    key_up(white(LY_INIT)); btn_up(B_EDIT); frame();
+    btn_up(B_EDIT); frame();
     ok &= ui.home && ui.confirm == CF_INIT_SOUND;
     TSEL->p[P_E0] = (int16_t)(TSEL->p[P_E0] + 5);
     press(B_OCTUP);
-    bad += check("EDIT + the key after the engines: INITIALIZE SOUND? dialog (closes the layer, no tap); OCT+ inits", ok && !ui.confirm &&
+    bad += check("EDIT + the INIT key (the last white key): INITIALIZE SOUND? on release (closes the layer); OCT+ inits", ok && !ui.confirm &&
                  msg_is("SOUND INIT") && TSEL->p[P_E0] == ENGINES[eng_step(0, 1)]->presets[0].e[0]);
 
     /* no layer in the menu or a dialog: GLO + a key plays */
@@ -4893,14 +4895,16 @@ static int test_bughunt_ui2(void)
         }
         bad += check("piano roll: the C-1 label stays inside the panel (every palette)", !out);
     }
-    {   /* 7. EDIT: INIT is drawn in the cell after the engines, and that cell's white key is the one that inits */
-        uint32_t p, ok = LY_INIT == NENG_SHOWN && LY_INIT < 16u;      /* (layer_edit: INIT in cell NENG_SHOWN) */
-        for (p = NENG_SHOWN; p < 16u; p++) {
-            ui_power_on(); go_home(); frame();
-            btn_down(B_EDIT); key_down(white(p)); frame(); frames(50);
-            ok &= (ui.confirm == CF_INIT_SOUND) == (p == LY_INIT);
-            key_up(white(p)); btn_up(B_EDIT); frame();
-        }
+    {   /* 7. EDIT: INIT is the last white key's cell (after the engines), its tap inits on release, its hold is CLEAN */
+        uint32_t ok = LY_INIT == NENG_SHOWN && LY_INIT < 16u;      /* (layer_edit: INIT in cell NENG_SHOWN) */
+        ui_power_on(); go_home(); frame();
+        btn_down(B_EDIT); key_down(white(LY_INIT)); frame(); frames(50);
+        ok &= !ui.confirm && ui.layer == LAYER_EDIT;               /* (neither yet: the tap fires on release) */
+        key_up(white(LY_INIT)); frame();
+        ok &= ui.confirm == CF_INIT_SOUND;
+        frame();                                                   /* (the layer closes on the next pass) */
+        ok &= !ui.layer;
+        btn_up(B_EDIT); frame();
         bad += check("EDIT: INIT's map cell (after the engines) and its key agree", ok);
     }
     return bad;
@@ -5048,7 +5052,7 @@ static int test_fm4_retired(void)
                  eng_step(ENGI_FM6, -1) == 0u && eng_step(0, -1) == ENGI_DRUM);
     {   /* the display order (engines.c ENGINE_ORDER): every engine one can pick once; the PRESETS list follows it */
         static const char *const ORDER[] = {"ANALOG", "FM6", "PHASE", "LOFI", "SAMPLE", "VOICE", "TRIO", "WHEEL", "GRAIN",
-                                            "PHYS", "NOISE", "SLICE", "DRUM"};
+                                            "PHYS", "NOISE", "SLICE", "POLYSIX", "JUNO106", "DRUM"};
         uint32_t last = 0xFFu, r = 0, n = 0;
         ok = NENG_SHOWN == NELEM(ORDER);
         for (i = 0; ok && i < NENG_SHOWN; i++)
@@ -5948,8 +5952,8 @@ static int test_idle_leds(void)
     menu_put(MI_ANIM, 2); settings_leds = LEDS_OFF; ui_leds();
     bad += check("  ANIM ON / OFF: none; LEDS OFF: no glow", ok && host_idle && !host_idle_glow);
     settings_export(&p);
-    ok = p.favorites.factory[15][10] == 1u && !(p.favorites.factory[15][30] & PREF_ANIM_OFF);
-    p.favorites.factory[15][10] = 0;
+    ok = p.favorites.factory[16][10] == 1u && !(p.favorites.factory[16][30] & PREF_ANIM_OFF);
+    p.favorites.factory[16][10] = 0;
     ok &= settings_import(&p, sizeof p) == 1 && menu_get(MI_ANIM) == 0u;
     bad += check("  kept with the settings ([15][10] bit 0; 0, every older setting: ANIM ON)", ok);
     host_idle = 0;
@@ -6078,21 +6082,21 @@ static int test_screen_off(void)
     ok &= host_pw_n == n + 1u && host_pw[n] == 3u && host_bl && scrn.st == SCR_ON;
     bad += check("SCREEN OFF: a dialog, the count-in, UPDATE MODE keep it on and wake it; the crash screen at once", ok);
 
-    {   /* the setting with the settings: SCR_CODE in favorites.factory[15][27]; 1.1.5's codes: 0 (its 30 MIN, its
+    {   /* the setting with the settings: SCR_CODE in favorites.factory[16][27]; 1.1.5's codes: 0 (its 30 MIN, its
          * default) now NEVER, 3 (its NEVER) NEVER, 2 1 7 as they were; 30 MIN is 4 now; unknown NEVER */
         persist_t p = {0};
         p.magic = PERSIST_MAGIC; p.panel = panel;
         menu_put(MI_SCROFF, 4u);
         settings_export(&p); ui_scr = 0;
-        ok = p.favorites.factory[15][27] == 7u && settings_import(&p, sizeof p) && scr_get() == 4u;
-        p.favorites.factory[15][27] = 0;
+        ok = p.favorites.factory[16][27] == 7u && settings_import(&p, sizeof p) && scr_get() == 4u;
+        p.favorites.factory[16][27] = 0;
         ok &= settings_import(&p, sizeof p) && scr_get() == 0u;
-        p.favorites.factory[15][27] = 3;              /* 1.1.5's NEVER */
+        p.favorites.factory[16][27] = 3;              /* 1.1.5's NEVER */
         ok &= settings_import(&p, sizeof p) && scr_get() == 0u;
-        p.favorites.factory[15][27] = 2;              /* 5 MIN, as on 1.1.5 */
+        p.favorites.factory[16][27] = 2;              /* 5 MIN, as on 1.1.5 */
         ok &= settings_import(&p, sizeof p) && scr_get() == 1u;
         menu_put(MI_SCROFF, 3u); ok &= ui_scr == 4u && scr_get() == 3u;
-        p.favorites.factory[15][27] = 6;              /* unknown: NEVER */
+        p.favorites.factory[16][27] = 6;              /* unknown: NEVER */
         ok &= settings_import(&p, sizeof p) && scr_get() == 0u;
         ui_scr = 0x55; ok &= scr_get() == 0u;
         bad += check("SCREEN OFF: saved with the settings (0, 1.1.5's 30 MIN, and unknown = NEVER)", ok);
@@ -6178,10 +6182,10 @@ static int test_screen_wake(void)
         p.magic = PERSIST_MAGIC; p.panel = panel;
         menu_put(MI_SCRWAKE, 1u);
         settings_export(&p);
-        ok = p.favorites.factory[15][24] == 0x20u;
+        ok = p.favorites.factory[16][24] == 0x20u;
         ui_prefs2 = 0;
         ok &= settings_import(&p, sizeof p) && menu_get(MI_SCRWAKE) == 1u;
-        p.favorites.factory[15][24] = 0x1Fu;          /* 1.5.5 before SCREEN WAKE: every other flag of the byte set */
+        p.favorites.factory[16][24] = 0x1Fu;          /* 1.5.5 before SCREEN WAKE: every other flag of the byte set */
         ok &= settings_import(&p, sizeof p) && menu_get(MI_SCRWAKE) == 0u && (ui_prefs2 & 0x10u);
         memset(&p.favorites, 0, sizeof p.favorites);   /* 1.0 .. 1.5.1: the byte 0 */
         ok &= settings_import(&p, sizeof p) && menu_get(MI_SCRWAKE) == 0u;
@@ -7123,7 +7127,9 @@ static int test_layer_lock(void)
     ok = TSEL->eng_req != trk[1].eng_req || TSEL->eng_req != TRK_DEF[0][0];
     ok &= str_eq(cur_page()->title, "ENV") && ui.lock == LAYER_EDIT;
     key_down(white(LY_INIT)); frame(); key_up(white(LY_INIT)); frame();   /* INIT: the dialog closes it */
-    ok &= ui.confirm == CF_INIT_SOUND && !ui.lock && !ui.layer;
+    ok &= ui.confirm == CF_INIT_SOUND;
+    frame();                                            /* (the layer closes on the next pass) */
+    ok &= !ui.lock && !ui.layer;
     press(B_OCTDN);
     bad += check("  EDIT locked: KNOB 1 the engine; INIT's dialog closes the lock", ok);
     /* closing: another page button opens its page, HOME goes home, another layer's tap its page, the menu */
@@ -7981,8 +7987,8 @@ static int test_click_menu(void)
         settings_export(&p);
         ui_rec_prefs = 0; frame();
         ok = settings_import(&p, (int)sizeof p) == 1 && (frame(), click_mode == CLICK_ON && click_lvl == 2u && cin_bars == 2u);
-        p.favorites.factory[15][28] = 3u | 3u << 2 | 1u << 4;   /* CLICK and LEVEL no value, COUNT-IN 1 BAR */
-        ok &= settings_import(&p, (int)sizeof p) == 1 && p.favorites.factory[15][28] == 1u << 4;
+        p.favorites.factory[16][28] = 3u | 3u << 2 | 1u << 4;   /* CLICK and LEVEL no value, COUNT-IN 1 BAR */
+        ok &= settings_import(&p, (int)sizeof p) == 1 && p.favorites.factory[16][28] == 1u << 4;
         frame();
         ok &= click_mode == CLICK_OFF && click_lvl == 1u && cin_bars == 1u;
         memset(&p.favorites, 0, sizeof p.favorites);   /* settings from before the favorites (PER3): the defaults */
@@ -8445,12 +8451,12 @@ static int test_style(void)
         ok = settings_import(&p, (int)sizeof p) == 1 && ui_style == ST_LINE;
         frame();
         ok &= ux.style == ST_LINE;
-        p.favorites.factory[15][29] = 7;                /* unknown: FLAT, and so again */
-        ok &= settings_import(&p, (int)sizeof p) == 1 && ui_style == ST_FLAT && !p.favorites.factory[15][29];
+        p.favorites.factory[16][29] = 7;                /* unknown: FLAT, and so again */
+        ok &= settings_import(&p, (int)sizeof p) == 1 && ui_style == ST_FLAT && !p.favorites.factory[16][29];
         q = p;
         ok &= settings_import(&q, (int)sizeof q) == 1 && ui_style == ST_FLAT && !memcmp(&p, &q, sizeof p);
-        p.favorites.factory[15][29] = 2;                /* the retired PIXEL: LINE, and so again */
-        ok &= settings_import(&p, (int)sizeof p) == 1 && ui_style == ST_LINE && p.favorites.factory[15][29] == ST_LINE;
+        p.favorites.factory[16][29] = 2;                /* the retired PIXEL: LINE, and so again */
+        ok &= settings_import(&p, (int)sizeof p) == 1 && ui_style == ST_LINE && p.favorites.factory[16][29] == ST_LINE;
         q = p;
         ok &= settings_import(&q, (int)sizeof q) == 1 && ui_style == ST_LINE && !memcmp(&p, &q, sizeof p);
         frame();
@@ -9295,13 +9301,13 @@ static int test_help(void)
     uint8_t before[32];
     uint32_t i, l;
     ui_power_on();
-    memcpy(before, favorites.factory[15], 32);
+    memcpy(before, favorites.factory[16], 32);
     ok = !help_on() && menu_get(MI_HELP) == 0u && str_eq(MI_NAME[MI_HELP], "HELP") && MI_TAB[MI_HELP] == MTAB_SYSTEM &&
          MI_HELP < MI_VALUES && str_eq(menu_vname(MI_HELP, 1), "ON");
     menu_put(MI_HELP, 1);
-    ok &= help_on() && menu_get(MI_HELP) == 1u && favorites.factory[15][24] == (uint8_t)(before[24] | 8u);
+    ok &= help_on() && menu_get(MI_HELP) == 1u && favorites.factory[16][24] == (uint8_t)(before[24] | 8u);
     for (i = 0; i < 32u; i++)
-        ok &= i == 24u || favorites.factory[15][i] == before[i];
+        ok &= i == 24u || favorites.factory[16][i] == before[i];
     bad += check("1.5 MENU > SYSTEM > HELP: OFF by default, ON a bit of its own (ui_prefs2 bit 3)", ok);
 
     ok = 1;
@@ -9348,7 +9354,7 @@ static int test_home_tracks(void)
     uint32_t i, id;
     int16_t v0;
     ui_power_on();
-    memcpy(before, favorites.factory[15], 32);
+    memcpy(before, favorites.factory[16], 32);
     ok = ui_home_view == 0u && !home_tracks() && menu_get(MI_HOME) == 0u && menu_n(MI_HOME) == 3u &&
          str_eq(MI_NAME[MI_HOME], "HOME") && str_eq(menu_vname(MI_HOME, 0), "SCOPE") &&
          str_eq(menu_vname(MI_HOME, 1), "TRACKS") && str_eq(menu_vname(MI_HOME, 2), "LEVELS") &&   /* (1.5: LEVELS) */
@@ -9356,10 +9362,10 @@ static int test_home_tracks(void)
     menu_put(MI_HOME, 1);
     ok &= ui_home_view == 1u && home_tracks() && menu_get(MI_HOME) == 1u;
     for (i = 0; i < 32u; i++)                           /* (byte 26 only: SCREEN OFF, the 1.2 flags, the FX keys kept) */
-        ok &= i == 26u || favorites.factory[15][i] == before[i];
+        ok &= i == 26u || favorites.factory[16][i] == before[i];
     memset(&p, 0, sizeof p);
     settings_export(&p);
-    ok &= p.favorites.factory[15][26] == 1u;
+    ok &= p.favorites.factory[16][26] == 1u;
     menu_put(MI_HOME, 0);
     ok &= settings_import(&p, (int)sizeof p) == 1 && ui_home_view == 1u;   /* (back from the record) */
     ui_home_view = 9;                                   /* a later firmware's view: SCOPE here, kept as saved */

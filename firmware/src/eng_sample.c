@@ -58,6 +58,10 @@ typedef struct {
 } smp_user_hdr_t;                                   /* 32 + 16 x 28 = 480 B, data at +512 */
 static smp_zone_t usr_zone[SMP_USER_SLOTS][16];     /* RAM copy, off rebased onto SMP_DATA */
 static uint8_t usr_nz[SMP_USER_SLOTS];
+static uint8_t usr_span;                            /* USR1's header rsv bit 0: its keyboard tiles USR1..3 (a
+                                                     * span set, more than one slot's 16 zones; tools/fm1_sample_upload.py) */
+static uint8_t usr_kit[27], usr_kit_n;              /* a span set's kit keys: the cuts in note order, keyboard key
+                                                     * k = the k-th (sample_keys; built like the drum kits' keymaps) */
 static const char *const SMP_ALL_NAMES[SMP_NALL] = {SMP_SET_NAMES_INIT, "USR1", "USR2", "USR3"};
 
 #ifndef SMP_USER_XIP                                /* host tests: a RAM image of the slots */
@@ -78,7 +82,7 @@ static void smp_user_scan(uint32_t k)
 {
     const smp_user_hdr_t *h = (const smp_user_hdr_t *)smp_user_xip(k);
     smp_zone_t zt[16];
-    uint32_t i, base, nz = 0;
+    uint32_t i, j, base, nz = 0;
     smp_user_gen++;
     usr_nz[k] = 0;
     slc_user_scan(k, 0);
@@ -98,10 +102,33 @@ static void smp_user_scan(uint32_t k)
     }
     for (i = 0; i < 16u; i++)
         usr_zone[k][i] = i < nz ? zt[i] : (smp_zone_t){0};
-    if (!nz)
-        return;
     usr_nz[k] = (uint8_t)nz;
-    slc_user_scan(k, 1);
+    if (!k)                                             /* slot 0's rsv bit 0: the set spans (one cut per key) */
+        usr_span = (uint8_t)(!!nz && (h->rsv & 1u));
+    usr_kit_n = 0;                                      /* the kit's keys: a span set's cuts in note order, keyboard
+                                                         * key k = the k-th (DRUM-kit style: cut 1 on the floor, no octaves) */
+    if (usr_span)
+        for (i = 0; i < SMP_USER_SLOTS; i++)
+            for (j = 0; j < usr_nz[i]; j++) {
+                uint8_t n = usr_zone[i][j].lo, p = usr_kit_n;
+                if (usr_zone[i][j].hi != n || usr_kit_n == 27u)
+                    continue;                           /* (one-note zones are the kit cuts; wide zones stay melodic) */
+                while (p && usr_kit[p - 1u] > n)
+                    usr_kit[p] = usr_kit[p - 1u], p--;
+                if (p < usr_kit_n && usr_kit[p] == n)
+                    continue;                           /* (the same cut twice: a kit uploaded over another) */
+                usr_kit[p] = n;
+                usr_kit_n++;
+            }
+    if (nz)
+        slc_user_scan(k, 1);
+}
+
+/* span set: the kit's cut for keyboard key k (like DRUM's GM map), -1 = melodic (built-ins, plain slots) */
+static int32_t sample_keys(const track_t *t, uint32_t k)
+{
+    (void)t;
+    return usr_span && k < usr_kit_n ? (int32_t)usr_kit[k] : -1;
 }
 
 /* A missing sample (SAMPLE, GRAIN, SLICE: an empty or invalid user slot, a set this build has no data for) plays
@@ -125,13 +152,27 @@ static int smp_set_missing(uint32_t si)
 {
     if (si < SMP_NSETS)
         return !SMP_ZONES[SMP_SETS[si].z0].n;
-    return !usr_nz[(si - SMP_NSETS) % SMP_USER_SLOTS];
+    return !usr_span && !usr_nz[(si - SMP_NSETS) % SMP_USER_SLOTS];
 }
 
 /* zone index in a voice: < 0x8000 built-in, else 0x8000 | slot << 5 | zone */
 static inline const smp_zone_t *smp_zone(uint32_t zi)
 {
     return zi < 0x8000u ? &SMP_ZONES[zi] : &usr_zone[(zi >> 5) & 3u][zi & 31u];
+}
+
+/* user slots: the narrowest zone of the note, 0xFFFF if none. A span set (USR1's rsv bit 0) is USR1..3 as one
+ * keyboard: the uploader split its cuts over the slots (tools/sampleio.py span_slots) */
+static uint32_t smp_usr_zone(uint32_t k, uint32_t note)
+{
+    uint32_t i, zi = 0xFFFFu, w = 128u, k1 = usr_span ? SMP_USER_SLOTS : k + 1u;
+    for (k = usr_span ? 0u : k; k < k1; k++)
+        for (i = 0; i < usr_nz[k]; i++)
+            if (note >= usr_zone[k][i].lo && note <= usr_zone[k][i].hi && usr_zone[k][i].hi - usr_zone[k][i].lo <= w) {
+                zi = 0x8000u | k << 5 | i;
+                w = usr_zone[k][i].hi - usr_zone[k][i].lo;
+            }
+    return zi;
 }
 
 /* voice: ph[0] position (samples), ph[1] fraction Q16, s[0] predictor, s[1] step
@@ -161,7 +202,7 @@ static inline int32_t sample_next(const smp_zone_t *z, voice_t *v, int loop)
 
 static void sample_note_on(track_t *t, voice_t *v)
 {
-    uint32_t si = (uint32_t)t->p[P_E0] % SMP_NALL, i, zi = 0xFFFFu, width = 128u;
+    uint32_t si = (uint32_t)t->p[P_E0] % SMP_NALL, i, zi = 0xFFFFu;
     if (si < SMP_NSETS) {                           /* a built-in set: its zones split the keyboard */
         const smp_set_t *set = &SMP_SETS[si];
         for (i = 0; i < set->nz; i++)
@@ -171,14 +212,7 @@ static void sample_note_on(track_t *t, voice_t *v)
             }
         v->s[4] = (int32_t)(zi == 0xFFFFu ? set->z0 : zi);
     } else {                                        /* user slot: silent if empty; the narrowest zone plays */
-        uint32_t k = si - SMP_NSETS;
-        for (i = 0; i < usr_nz[k]; i++) {
-            const smp_zone_t *z = &usr_zone[k][i];
-            if (v->note >= z->lo && v->note <= z->hi && z->hi - z->lo <= width) {
-                zi = 0x8000u | k << 5 | i;
-                width = z->hi - z->lo;
-            }
-        }
+        zi = smp_usr_zone(si - SMP_NSETS, v->note);
         v->s[4] = (int32_t)(zi == 0xFFFFu ? 0 : zi);
     }
     v->ph[0] = 0;
@@ -258,6 +292,8 @@ static const engine_t ENG_SAMPLE = {
     .npresets = SMP_NPRESETS,
     .note_on = sample_note_on,
     .render = sample_render,
+    .keys = sample_keys,                               /* span sets: the amen kit etc. like the drum kits, cut 1 on
+                                                        * the keyboard floor; built-ins and plain slots melodic (-1) */
     .knob = {P_E0, P_E4, P_ATK, P_REL},
     .sampled = 1,
 };

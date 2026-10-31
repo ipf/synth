@@ -1,0 +1,26 @@
+{
+  "name": "B D2 Sound Effect 1",
+  "values": {
+    "octave": 1,
+    "wave": 0,
+    "pw_pwm": 1,
+    "pwm_speed": 0.1,
+    "sub_osc": 0,
+    "cutoff": 76.146158,
+    "resonance": 1,
+    "eg_intensity": 0,
+    "key_tracking": 1.5,
+    "vca_mode": 0,
+    "attenuator": 0,
+    "mg_freq": 50,
+    "mg_delay": 0,
+    "mg_level": 0.3,
+    "mg_dest": 2,
+    "attack": 0.001,
+    "decay": 0.001,
+    "sustain": 1,
+    "release": 0.320372,
+    "fx_mode": 3,
+    "fx_speed": 0.4
+  }
+}

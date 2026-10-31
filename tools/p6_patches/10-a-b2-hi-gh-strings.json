@@ -1,0 +1,24 @@
+{
+  "name": "A B2 Hi(gh) Strings",
+  "values": {
+    "attack": 0.122474,
+    "attenuator": 0.0,
+    "cutoff": 404.967797,
+    "decay": 0.838038,
+    "eg_intensity": 0.0,
+    "fx_mode": 3,
+    "fx_speed": 1.0,
+    "key_tracking": 0.78,
+    "mg_delay": 0.0,
+    "mg_dest": 2,
+    "mg_freq": 2.671699,
+    "mg_level": 0.0,
+    "octave": 1,
+    "release": 0.320372,
+    "resonance": 0.2,
+    "sub_osc": 0,
+    "sustain": 0.7,
+    "vca_mode": 0,
+    "wave": 1
+  }
+}

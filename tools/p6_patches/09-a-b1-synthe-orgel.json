@@ -1,0 +1,24 @@
+{
+  "name": "A B1 Synthe Orgel",
+  "values": {
+    "attack": 0.001,
+    "attenuator": -4.0,
+    "cutoff": 16000.0,
+    "decay": 15.0,
+    "eg_intensity": 0.0,
+    "fx_mode": 2,
+    "fx_speed": 0.0,
+    "key_tracking": 1.5,
+    "mg_delay": 0.0,
+    "mg_dest": 2,
+    "mg_freq": 2.671699,
+    "mg_level": 0.0,
+    "octave": 2,
+    "release": 0.001,
+    "resonance": 0.1,
+    "sub_osc": 2,
+    "sustain": 1.0,
+    "vca_mode": 0,
+    "wave": 1
+  }
+}

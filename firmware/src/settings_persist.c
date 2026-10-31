@@ -5,7 +5,7 @@
  * palette: UI_PAL_TAG + index; an old id (below 20, earlier firmware) is migrated on import.
  * bold: no longer used (one font weight); kept as it was saved, unless it holds the HOLD setting (panel.c).
  * zoom: no longer used (the large readout); kept as it was saved, unless it holds the LEDS setting (panel.c).
- * favorites.factory[15][28..31]: CLICK / CLICK LEVEL / COUNT-IN (1.1), STYLE, MENU's flags, the layers seen (bytes no
+ * favorites.factory[16][28..31]: CLICK / CLICK LEVEL / COUNT-IN (1.1), STYLE, MENU's flags, the layers seen (bytes no
  * engine uses; 0 in older settings = every one's default); [15][27]: SCREEN OFF (1.1.5; 0 = 30 MIN, the default);
  * [15][26]: MENU > DISPLAY > HOME (1.3; 0 = SCOPE, 1 TRACKS, 2 LEVELS (1.5), ui.c ui_home_view);
  * [15][24]: MENU's 1.2 flags SCOPE MIX, STEP PREVIEW ON, CHORD ENTRY ADD (bits 0-2, ui.c ui_prefs2; 0 = the defaults),
@@ -17,13 +17,15 @@
  * firmware keeps the bytes as saved and shows the built-in palette in persist_t.palette.
  * [15][14..23]: the FX layer's key map (1.2, ui_layer.c fx_keys: 16 white keys x 5 bits, perform.c perf_map_of; 0 = the
  * key's default, an unknown code too: kept as saved, a later firmware's effect survives a round trip here).
+ * favorites.factory[17]: MIDI LEARN's CC map (midi_learn.c; a 1.1.x PER4 stored 16 rows: this struct has one more, and
+ * the import below takes it unzeroed as nothing learned).
  * MENU's flags (ui.c PREF_*) are append-only bits whose 0 is the default: BPM LOCK (16) is clear in every older setting
  * = unlocked, LARGE (32) = OFF, RESTORE LAST OFF (128, 1.2) = ON, read as saved (nothing to migrate, so importing twice changes nothing). */
 typedef struct {
     uint32_t magic, palette, lowcut, zoom;
     panel_t panel;
     uint32_t bold;
-    struct { uint8_t factory[16][32]; uint32_t user, filter; } favorites;
+    struct { uint8_t factory[18][32]; uint32_t user, filter; } favorites;
 } persist_t;
 #define PERSIST_MAGIC 0x50455234u
 
@@ -31,10 +33,11 @@ typedef struct {
 static int settings_import(persist_t *p, int n)
 {
     int current = n == (int)sizeof *p && p->magic == PERSIST_MAGIC;
+    int old4 = n == (int)(sizeof *p - sizeof p->favorites.factory[0]) && p->magic == PERSIST_MAGIC;
     int old3 = n == (int)(sizeof *p - sizeof p->favorites) && p->magic == 0x50455233u;
     int old2 = n == (int)(sizeof *p - sizeof p->favorites - sizeof p->bold) && p->magic == 0x50455232u;
     int old1 = n == (int)(8u + sizeof(panel_t)) && p->magic == 0x50455231u;
-    if (!(current || old3 || old2 || old1)) return 0;
+    if (!(current || old3 || old2 || old1 || old4)) return 0;
     if (old1) {
         panel_t old;
         memcpy(&old, (uint8_t *)p + 8, sizeof old);
@@ -42,24 +45,33 @@ static int settings_import(persist_t *p, int n)
         p->lowcut = p->zoom = 0;
     }
     if (old1 || old2) p->bold = 0;
-    if (!current) memset(&p->favorites, 0, sizeof p->favorites);
-    if (p->favorites.factory[15][29] > 1u)        /* STYLE (ui.c ui_style): 2, the retired PIXEL = LINE; unknown = FLAT */
-        p->favorites.factory[15][29] = p->favorites.factory[15][29] == 2u ? 1u : 0u;
+    if (old4) {   /* a 1.6's 17 rows: its 15 (the UI's) and 16 (MIDI LEARN's) move down one; engine row 15
+                   * JUNO106's own row comes fresh (all 0: nothing was ever favorited in it). LEARN first:
+                   * it is the one row a forward copy would overwrite */
+        uint8_t *f = &p->favorites.factory[0][0];
+        memcpy(&f[17u * 32u], &f[16u * 32u], 32u);
+        memcpy(&f[16u * 32u], &f[15u * 32u], 32u);
+        memset(&f[15u * 32u], 0, 32u);
+    }
+    else if (!current)
+        memset(&p->favorites, 0, sizeof p->favorites);
+    if (p->favorites.factory[16][29] > 1u)        /* STYLE (ui.c ui_style): 2, the retired PIXEL = LINE; unknown = FLAT */
+        p->favorites.factory[16][29] = p->favorites.factory[16][29] == 2u ? 1u : 0u;
     {   /* CLICK, CLICK LEVEL, COUNT-IN (ui.c ui_rec_prefs): two bits each, 3 is no value: the default (0) */
-        uint32_t b = p->favorites.factory[15][28], f;
+        uint32_t b = p->favorites.factory[16][28], f;
         for (f = 0; f < 3u; f++)
             if (((b >> (2u * f)) & 3u) == 3u)
                 b &= ~(3u << (2u * f));
-        p->favorites.factory[15][28] = (uint8_t)b;
+        p->favorites.factory[16][28] = (uint8_t)b;
     }
-    if (p->favorites.factory[15][27] > 7u)         /* SCREEN OFF (1.1.5, ui.c SCR_CODE): unknown = 0 (NEVER since 1.1.5.1) */
-        p->favorites.factory[15][27] = 0;
-    if (p->favorites.factory[15][11] > 8u)         /* PRESETS LIST's category (1.2, ui.c ui_lcat, CAT_*): unknown = none */
-        p->favorites.factory[15][11] = 0;
+    if (p->favorites.factory[16][27] > 7u)         /* SCREEN OFF (1.1.5, ui.c SCR_CODE): unknown = 0 (NEVER since 1.1.5.1) */
+        p->favorites.factory[16][27] = 0;
+    if (p->favorites.factory[16][11] > 8u)         /* PRESETS LIST's category (1.2, ui.c ui_lcat, CAT_*): unknown = none */
+        p->favorites.factory[16][11] = 0;
     /* [15][26] HOME (1.3, ui.c ui_home_view): kept as saved; a value this firmware does not know draws SCOPE */
     {   /* CUSTOM (1.6, #244, favorites.c ui_cpal): [15][0..9] five RGB565 colours, [12] bit 0 stored, bit 1 in use. Anything else
          * in [12], or colours without the stored flag: none (zero). The colours themselves are whatever the user chose */
-        uint8_t *f = p->favorites.factory[15];
+        uint8_t *f = p->favorites.factory[16];
         f[12] &= 3u;
         if (!(f[12] & 1u)) {
             memset(f, 0, 10);

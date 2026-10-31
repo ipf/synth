@@ -33,6 +33,8 @@ static uint8_t eng_mem_owner[NPART];       /* engine index + 1 whose state is in
 #include "eng_drum.c"           /* DRUM: the 8-lane kit (drum_voice.c) */
 #include "../engines/src/eng_noise.c"
 #include "eng_fm6.c"            /* FM6: 6-operator FM, msfa ported (fm6_core.c, Apache-2.0) */
+#include "eng_polysix.c"        /* POLYSIX: the Korg Polysix, polyp ported (GPL-3) */
+#include "eng_juno.c"           /* JUNO106: the Juno-106, a GPL-3 port */
 #include "fm4_convert.c"        /* DIGITAL's tables, and its sounds -> FM6 */
 #if FELUCCA_FM4
 #include "eng_digital.c"        /* DIGITAL: four-operator FM (retired; FELUCCA_FM4=1 builds it) */
@@ -63,6 +65,8 @@ static const engine_t *const ENGINES[NENGINES] = {
 #if FELUCCA_SLICE
     &ENG_SLICE,                  /* 13 (FELUCCA_SLICE=0 builds without it) */
 #endif
+    &ENG_POLYSIX,                /* 14 (ENGI_POLYSIX, appended 1.5: never reorder these) */
+    &ENG_JUNO,                   /* 15 (ENGI_JUNO, appended) */
 };
 
 /* a track's engine number as an index (the audio paths: a compare, cheaper than % NENGINES; a bad number: 0) */
@@ -109,8 +113,8 @@ static const char *snd_missing(const track_t *t, uint32_t *code)
 }
 
 /* the order the engines are shown in (PRESETS browsing and its ENG knob, the EDIT layer's keys, the editor's list):
- * engine indices, never DIGITAL's reserved 1 (with FELUCCA_FM4 it follows FM6). The indices stay as they are (the
- * stores and the protocol hold them); only this table orders them */
+ * the indices stay as they are (the stores and the protocol hold them); only this table orders them. POLYSIX is
+ * back in every build (its 16th key went to INIT, whose hold is CLEAN INIT) */
 static const uint8_t ENGINE_ORDER[NENG_SHOWN] = {
     0,                           /* ANALOG */
     12,                          /* FM6 */
@@ -122,12 +126,22 @@ static const uint8_t ENGINE_ORDER[NENG_SHOWN] = {
 #if FELUCCA_SLICE
     13,                          /* SLICE */
 #endif
+    13u + FELUCCA_SLICE,         /* POLYSIX (back: INIT's hold is CLEAN INIT, ui_layer.c) */
+#if !FELUCCA_FM4
+    14u + FELUCCA_SLICE,         /* JUNO106 (under FM4 DIGITAL is in its show: eng_ok) */
+#endif
     10,                          /* DRUM */
 };
 
 /* the engines one can pick (engine 1 only with FELUCCA_FM4), in ENGINE_ORDER: eng_ok(e), the n-th of them
  * eng_vis(n), e's place among them eng_rank(e), the next / previous one eng_step(e, dir) (wraps) */
-static int eng_ok(uint32_t e) { return e < NENGINES && (FELUCCA_FM4 || e != ENGI_DIGITAL); }
+static int eng_ok(uint32_t e)
+{
+    return e < NENGINES && (FELUCCA_FM4 || e != ENGI_DIGITAL) && (!FELUCCA_FM4 || e != ENGI_JUNO);
+    /* POLYSIX shows beside JUNO106 now (the layer's INIT key took CLEAN's); with
+     * FELUCCA_FM4, JUNO106 yields as it did. Yielded engines' own sounds still
+     * play (a project that carries one loads it) */
+}
 static uint32_t eng_vis(uint32_t n) { return ENGINE_ORDER[n % NENG_SHOWN]; }
 static uint32_t eng_rank(uint32_t e)
 {

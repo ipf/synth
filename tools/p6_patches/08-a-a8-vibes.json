@@ -1,0 +1,26 @@
+{
+  "name": "A A8 Vibes",
+  "values": {
+    "octave": 2,
+    "wave": 0,
+    "pw_pwm": 0,
+    "pwm_speed": 3.09,
+    "sub_osc": 0,
+    "cutoff": 39.024648,
+    "resonance": 0.1,
+    "eg_intensity": 0.1,
+    "key_tracking": 0.975,
+    "vca_mode": 0,
+    "attenuator": 0,
+    "mg_freq": 2.671699,
+    "mg_delay": 0,
+    "mg_level": 0.6,
+    "mg_dest": 1,
+    "attack": 0.002616,
+    "decay": 0.518155,
+    "sustain": 0.7,
+    "release": 2.192164,
+    "fx_mode": 0,
+    "fx_speed": 0
+  }
+}

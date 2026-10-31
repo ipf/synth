@@ -1,0 +1,25 @@
+{
+  "name": "A C6 Filtered Clavi",
+  "values": {
+    "attack": 0.001,
+    "attenuator": 10.0,
+    "cutoff": 148.57885,
+    "decay": 0.017899,
+    "eg_intensity": -0.5,
+    "fx_mode": 0,
+    "key_tracking": 0.525,
+    "mg_delay": 0.0,
+    "mg_dest": 2,
+    "mg_freq": 3.853101,
+    "mg_level": 0.0,
+    "octave": 0,
+    "pw_pwm": 0.7,
+    "pwm_speed": 0.1,
+    "release": 1.355403,
+    "resonance": 0.45,
+    "sub_osc": 0,
+    "sustain": 0.0,
+    "vca_mode": 1,
+    "wave": 0
+  }
+}

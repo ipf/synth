@@ -465,7 +465,7 @@ static void graph_insert(const track_t *t, uint16_t c)
         int32_t y, w;
         if (ty >= IT_PHASER) {                       /* the sweep, two cycles */
             uint32_t ph = (uint32_t)x * (0xFFFFFFFFu / (PANEL_W / 2u)), tr = pf_tri(ph);
-            w = ty == IT_CHORUS ? osc_sine(ph) * 2 : ty == IT_FLANGER ? (int32_t)((tr * tr) >> 16) * 2 - 65536 : (int32_t)tr * 2 - 65536;
+            w = ty >= IT_P6CHO || ty == IT_CHORUS ? osc_sine(ph) * 2 : ty == IT_FLANGER ? (int32_t)((tr * tr) >> 16) * 2 - 65536 : (int32_t)tr * 2 - 65536;
             y = cy - (w >> 1) * a / 32768 * t->p[P_IB] / 127;
         } else {                                     /* the curve: v in, dry v, wet shaped */
             int32_t v = (x - PANEL_W / 2) * 49152 / (PANEL_W / 2), o;
@@ -575,8 +575,7 @@ static uint32_t sample_wave_zone(const track_t *t)
         if (zi == 0xFFFFu && set->nz) zi = set->z0;
     } else {
         uint32_t k = si - SMP_NSETS;
-        for (i = 0; i < usr_nz[k]; i++)
-            if (last_note >= usr_zone[k][i].lo && last_note <= usr_zone[k][i].hi) zi = 0x8000u | k << 5 | i;
+        zi = smp_usr_zone(k, last_note);
         if (zi == 0xFFFFu && usr_nz[k]) zi = 0x8000u | k << 5;
     }
     return zi;
@@ -1269,7 +1268,8 @@ static const char *eng_abbr(const char *name)
                                        {"PHASE", "PHAS"}, {"LOFI", "LOFI"},
                                        {"SAMPLE", "SMPL"}, {"VOICE", "VOCL"}, {"TRIO", "TRIO"}, {"WHEEL", "WHEL"},
                                        {"GRAIN", "GRAN"}, {"PHYS", "PHYS"}, {"DRUM", "DRUM"},
-                                       {"NOISE", "NOIS"}, {"FM6", "FM6"}, {"SLICE", "SLCE"}};
+                                       {"NOISE", "NOIS"}, {"FM6", "FM6"}, {"SLICE", "SLCE"},
+                                       {"POLYSIX", "P6SIX"}, {"JUNO106", "JUNO"}};
     uint32_t i;
     for (i = 0; i < sizeof A / sizeof A[0]; i++)
         if (str_eq(name, A[i][0]))

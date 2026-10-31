@@ -39,7 +39,7 @@ APP_SLOT = fm1pkg_make.APP_SLOT
 LOADER_LOAD = 0x01C0A800
 LOADER_NAME = b"usb_hid_ota.bin"    # the file name the SPL looks for
 DOCKER_IMAGE = os.environ.get("JIELI_DOCKER_IMAGE", "debian:bookworm-slim")
-CFLAGS = ["-Os", "-ffunction-sections", "-fno-builtin", "-Wall", "-Wno-unused-function"]
+CFLAGS = ["-mcpu=r3", "-mfprev1", "-Os", "-ffunction-sections", "-fno-builtin", "-Wall", "-Wno-unused-function"]
 LINE = re.compile(r"^\s*([0-9a-f]+):\s+((?:[0-9a-f]{2} )+)\s*\t(.*)$")
 
 # SDK files of AC79NN_SDK_V1.2.1_2023-12-13 (the tested version)
@@ -116,6 +116,15 @@ def generate():
             failed.append(c[0].name)
     if failed:
         raise SystemExit(f"build: {', '.join(failed)} failed")
+    # after the batch: it reads felucca_tables.h (CUTOFF_HZ) that gen_tables.py writes
+    r = subprocess.run([sys.executable, *map(str, [tools / "gen_p6_presets.py", GEN / "felucca_p6.h"])],
+                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    if r.returncode:
+        raise SystemExit("build: gen_p6_presets failed:\n" + r.stdout)
+    r = subprocess.run([sys.executable, *map(str, [tools / "gen_juno_presets.py", GEN / "felucca_juno.h"])],
+                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    if r.returncode:
+        raise SystemExit("build: gen_juno_presets failed:\n" + r.stdout)
 
 
 # ---- update loader

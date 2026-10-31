@@ -1,9 +1,11 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  * Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments */
 #define FELUCCA_FAVORITES 1
-/* Stable engine/preset references; fixed capacity independent of optional engines. */
+/* Stable engine/preset references; fixed capacity independent of optional engines.
+ * Rows 0..14: the engines' favourites (the row is the engine number: append-only),
+ * row 15: the UI (palette, prefs, the FX map), row 16: MIDI LEARN (midi_learn.c). */
 typedef struct {
-    uint8_t factory[16][32]; /* engine 0..15, preset 0..255 */
+    uint8_t factory[18][32]; /* row 0..17: see below (0..15 the engines by their number, 16 the UI's, 17 MIDI LEARN's) */
     uint32_t user, filter;
 } favorites_t;
 static favorites_t favorites __attribute__((section(".pool")));
@@ -11,12 +13,12 @@ static int favorite_has(uint32_t engine, uint32_t preset)
 {
     if (engine == NENGINES)
         return preset < UP_SLOTS && ((favorites.user >> preset) & 1u);
-    return engine < NENGINES && engine < 16u && preset < 256u &&
+    return engine < NENGINES && engine < 17u && preset < 256u &&
         ((favorites.factory[engine][preset / 8u] >> (preset % 8u)) & 1u);
 }
 static int favorite_set(uint32_t engine, uint32_t preset, int on)
 {
-    if (engine > NENGINES || (engine == NENGINES ? preset >= UP_SLOTS : engine >= 16u || preset >= 256u))
+    if (engine > NENGINES || (engine == NENGINES ? preset >= UP_SLOTS : engine >= 17u || preset >= 256u))
         return 0;
     if (favorite_has(engine, preset) == !!on) return 0;
     if (engine == NENGINES) {
@@ -31,12 +33,12 @@ static int favorite_set(uint32_t engine, uint32_t preset, int on)
 }
 
 /* MENU > DISPLAY > COLOR's 11th value, CUSTOM (1.6, #244, Discussion #239): a palette of the user's, five RGB565 colours (BG
- * SURF TEXT THEME ACCENT, 16 bits little endian) in favorites.factory[15][0..9], flags in [12] (bit 0: one is stored, bit 1:
+ * SURF TEXT THEME ACCENT, 16 bits little endian) in favorites.factory[16][0..9], flags in [12] (bit 0: one is stored, bit 1:
  * it is the palette in use), set from the editor (PALETTE_SET, editor_palette.c) and saved with the settings. settings.palette
  * stays a built-in palette (the one in use before, or after): firmware before 1.6 shows that and keeps the bytes. The value
  * is in COLOR only while one is stored. Zero (every older setting) = none */
-#define ui_cpal (&favorites.factory[15][0])
-#define ui_cpal_flags (favorites.factory[15][12])
+#define ui_cpal (&favorites.factory[16][0])
+#define ui_cpal_flags (favorites.factory[16][12])
 #define CPAL_STORED 1u
 #define CPAL_ACTIVE 2u
 static uint32_t cpal_on(void) { return (ui_cpal_flags & (CPAL_STORED | CPAL_ACTIVE)) == (CPAL_STORED | CPAL_ACTIVE); }

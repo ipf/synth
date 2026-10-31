@@ -1,0 +1,22 @@
+{
+  "name": "B C5 Synthe Bass",
+  "values": {
+    "attack": 0.001,
+    "cutoff": 148.57885,
+    "decay": 0.320372,
+    "eg_intensity": 0.2,
+    "fx_mode": 0,
+    "key_tracking": 0.45,
+    "mg_delay": 0.0,
+    "mg_dest": 1,
+    "mg_freq": 2.671699,
+    "mg_level": 0.0,
+    "octave": 0,
+    "release": 0.320372,
+    "resonance": 0.55,
+    "sub_osc": 1,
+    "sustain": 0.6,
+    "vca_mode": 0,
+    "wave": 1
+  }
+}

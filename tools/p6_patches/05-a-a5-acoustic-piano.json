@@ -1,0 +1,26 @@
+{
+  "name": "A A5 Acoustic Piano",
+  "values": {
+    "octave": 1,
+    "wave": 0,
+    "pw_pwm": 0.67,
+    "pwm_speed": 12.06,
+    "sub_osc": 0,
+    "cutoff": 253.632084,
+    "resonance": 0.2,
+    "eg_intensity": 0,
+    "key_tracking": 0.75,
+    "vca_mode": 0,
+    "attenuator": 0,
+    "mg_freq": 2.671699,
+    "mg_delay": 0,
+    "mg_level": 0,
+    "mg_dest": 1,
+    "attack": 0.004231,
+    "decay": 0.838038,
+    "sustain": 0,
+    "release": 0.122474,
+    "fx_mode": 0,
+    "fx_speed": 0
+  }
+}

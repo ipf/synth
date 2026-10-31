@@ -1,0 +1,26 @@
+{
+  "name": "B A3 Oboe",
+  "values": {
+    "octave": 1,
+    "wave": 0,
+    "pw_pwm": 0,
+    "pwm_speed": 0.1,
+    "sub_osc": 0,
+    "cutoff": 565.685425,
+    "resonance": 0.2,
+    "eg_intensity": 0,
+    "key_tracking": 0.6,
+    "vca_mode": 0,
+    "attenuator": 0,
+    "mg_freq": 2.671699,
+    "mg_delay": 0.8,
+    "mg_level": 0.2,
+    "mg_dest": 1,
+    "attack": 0.046821,
+    "decay": 0.046821,
+    "sustain": 0.4,
+    "release": 0.017899,
+    "fx_mode": 0,
+    "fx_speed": 0
+  }
+}

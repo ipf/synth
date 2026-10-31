@@ -1,0 +1,26 @@
+{
+  "name": "A A4 Clavi",
+  "values": {
+    "octave": 0,
+    "wave": 0,
+    "pw_pwm": 0.75,
+    "pwm_speed": 4.585,
+    "sub_osc": 0,
+    "cutoff": 148.57885,
+    "resonance": 0.24,
+    "eg_intensity": 0.5,
+    "key_tracking": 0,
+    "vca_mode": 0,
+    "attenuator": 0,
+    "mg_freq": 2.671699,
+    "mg_delay": 0,
+    "mg_level": 0,
+    "mg_dest": 1,
+    "attack": 0.001,
+    "decay": 0.006843,
+    "sustain": 0.75,
+    "release": 0.001,
+    "fx_mode": 0,
+    "fx_speed": 0
+  }
+}

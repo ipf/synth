@@ -1,0 +1,23 @@
+{
+  "name": "A B6 Trombone",
+  "values": {
+    "attack": 0.028949,
+    "attenuator": 10.0,
+    "cutoff": 20.0,
+    "decay": 0.320372,
+    "eg_intensity": 0.26,
+    "fx_mode": 0,
+    "key_tracking": 0.75,
+    "mg_delay": 0.0,
+    "mg_dest": 2,
+    "mg_freq": 50.0,
+    "mg_level": 0.0,
+    "octave": 0,
+    "release": 0.320372,
+    "resonance": 0.12,
+    "sub_osc": 0,
+    "sustain": 0.85,
+    "vca_mode": 0,
+    "wave": 1
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "B A5 Strings Orchestra",
+  "values": {
+    "attack": 0.838038,
+    "cutoff": 1103.783729,
+    "decay": 0.001,
+    "eg_intensity": 0.0,
+    "fx_mode": 3,
+    "fx_speed": 0.4,
+    "key_tracking": 0.6,
+    "mg_dest": 1,
+    "mg_level": 0.0,
+    "octave": 1,
+    "release": 0.838038,
+    "resonance": 0.0,
+    "sub_osc": 0,
+    "sustain": 1.0,
+    "vca_mode": 0,
+    "wave": 1
+  }
+}

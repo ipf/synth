@@ -272,7 +272,7 @@ static int custom_palette_ui(void)
         persist_t p;
         palette_choose(NPALETTES);
         settings_export(&p);
-        ok = p.palette == palette_to_stored(0u) && p.favorites.factory[15][12] == 3u && palette_from_stored(p.palette) == 0u;
+        ok = p.palette == palette_to_stored(0u) && p.favorites.factory[16][12] == 3u && palette_from_stored(p.palette) == 0u;
         bad += check("  saved: persist_t.palette is the built-in palette (the base), the colours and flags in favorites", ok);
     }
     ok = screens_lit("dark");

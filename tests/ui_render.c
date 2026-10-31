@@ -2529,5 +2529,8 @@ int main(int argc, char **argv)
            mono_bad, path);
     printf("ui_render: alignment: %u measurements of %u places, %u off by 1 px or more%s\n", al_count, al_nst - 1u, al_fail,
            al_fail ? " (see align.txt)" : "");
+    if (nfind || nink || mono_bad || al_fail)
+        fprintf(stderr, "ui_render: exit on: %u lint findings, %u inks, %u GREY/MONO px, %u align\n",
+                nfind, nink, mono_bad, al_fail);
     return nfind || nink || mono_bad || al_fail ? 1 : 0;
 }

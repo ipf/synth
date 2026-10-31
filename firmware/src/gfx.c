@@ -133,7 +133,7 @@ static uint32_t ux_luma(uint16_t c)        /* 0..255 */
 }
 
 /* 1.6 (#244): a palette of the user's, the 11th (index NPALETTES, "CUSTOM"): the same five stored colours, the rest
- * derived as for every palette, set from the editor (ui.c cpal_*; settings: favorites.factory[15][0..9, 12]). Not GREY
+ * derived as for every palette, set from the editor (ui.c cpal_*; settings: favorites.factory[16][0..9, 12]). Not GREY
  * (no gray ramps) and not MONO: the channels blend as they are */
 static ui_pal_t ux_cust = {"CUSTOM", 0x0841, 0xCE59, 0xEF5D, 0xFFDF, 0xFD20};
 /* the five colours as stored (RGB565, 16 bits little endian each: BG SURF TEXT THEME ACCENT) */

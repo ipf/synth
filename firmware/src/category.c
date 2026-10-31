@@ -35,6 +35,12 @@ static const char *const PRESET_CAT[16] = {
     "FFFF",                      /* 11 NOISE: WIND, RAIN, ARCADE, METAL */
     "KUBLPUKU",                  /* 12 FM6: TINE EP, BELL, FM BASS, BRASS, PAD, MARIMBA, ORGAN, PLUCK */
     "DD",                        /* 13 SLICE: CHOP, STUTTER */
+    /* the Korg factory set (tools/gen_p6_presets.py: polyp patches/02-factory), browsed as the
+     * real Polysix is: the real instruments KEYS or PLUCK, the synth sounds LEAD / PAD / BASS,
+     * the four sound effects and the set-two productions FX; 14 POLYSIX 1..64 (set one A1..D8,
+     * set two plate B) */
+    "BPKKKKLKKPLLLBUKLBKUKKKULLKUFLKLLLLLPLPUKKKKKFFKLLLPBLUULFKFFFFF",
+    "PBLPLBKF",                    /* 15 JUNO106: INIT, BASS, BRASS, STRINGS, POLY PAD, ACID, BELL, FX */
 };
 static uint32_t preset_cat(uint32_t e, uint32_t k)    /* factory preset k of engine e */
 {

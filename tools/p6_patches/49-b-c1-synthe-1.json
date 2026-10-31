@@ -1,0 +1,23 @@
+{
+  "name": "B C1 Synthe 1",
+  "values": {
+    "octave": 1,
+    "wave": 2,
+    "pw_pwm": 0.5,
+    "pwm_speed": 3.09,
+    "sub_osc": 0,
+    "cutoff": 20,
+    "resonance": 0.65,
+    "eg_intensity": 0.4,
+    "key_tracking": 0.75,
+    "vca_mode": 0,
+    "mg_level": 0,
+    "mg_dest": 2,
+    "attack": 0.001,
+    "decay": 0.838038,
+    "sustain": 0.5,
+    "release": 0.001,
+    "fx_mode": 1,
+    "fx_speed": 0.3
+  }
+}

@@ -478,7 +478,7 @@ int main(void)
         ok &= ed_rep[0] == 0 && settings_hold == 3u;
         ed_repn = 0; ed_menu_handle(ED_MENU_SET, eq_bass, 3);
         ok &= ed_rep[0] == 0 && st_load(OBJ_SETTINGS, &q, sizeof q) == (int)sizeof q && q.lowcut == 2u &&
-              hold_from_stored(q.bold) == 3u && (q.favorites.factory[15][30] & PREF_LARGE) && leds_from_stored(q.zoom) == LEDS_OFF;
+              hold_from_stored(q.bold) == 3u && (q.favorites.factory[16][30] & PREF_LARGE) && leds_from_stored(q.zoom) == LEDS_OFF;
         bad += check("MENU_SET stopped: rc 0, saved at once (LARGE, HOLD, SPEAKER EQ), the others kept", ok);
         before = erases;
         ed_repn = 0; ed_menu_handle(ED_MENU_SET, hold_06, 3);

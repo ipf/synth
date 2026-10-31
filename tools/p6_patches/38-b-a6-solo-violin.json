@@ -1,0 +1,22 @@
+{
+  "name": "B A6 Solo Violin",
+  "values": {
+    "attack": 0.320372,
+    "cutoff": 565.685425,
+    "decay": 0.838038,
+    "eg_intensity": 0.0,
+    "fx_mode": 0,
+    "key_tracking": 0.75,
+    "mg_delay": 0.8,
+    "mg_dest": 2,
+    "mg_freq": 2.671699,
+    "mg_level": 0.1,
+    "octave": 2,
+    "release": 0.320372,
+    "resonance": 0.0,
+    "sub_osc": 0,
+    "sustain": 0.4,
+    "vca_mode": 0,
+    "wave": 1
+  }
+}

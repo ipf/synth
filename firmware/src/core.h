@@ -28,10 +28,14 @@
                                             * second core (mod.c, voice.c SPREAD, eng_formant.c): one each with two cores,
                                             * one for all with one, as up to 1.6 */
 #define C1_PI(t) ((uint32_t)((t) - trk) % C1_NP)   /* a part's copy */
-#define NENGINES (13 + FELUCCA_SLICE)   /* SLICE (13) comes last: the other engines keep their numbers */
+#define NENGINES (15 + FELUCCA_SLICE)   /* SLICE (13) comes last, then 14 POLYSIX, 15 JUNO106 (appended,
+                                          * never reorder) */
 #define ENGI_DIGITAL 1u          /* reserved without FELUCCA_FM4: never selectable (eng_ok), its sounds load as FM6 */
-#define NENG_SHOWN (NENGINES - !FELUCCA_FM4)   /* the engines one can pick: PRESETS, the EDIT layer, the editor,
-                                                * in the display order of engines.c ENGINE_ORDER */
+#define ENGI_POLYSIX (13u + FELUCCA_SLICE)   /* after SLICE: 14 with it, 13 without */
+#define ENGI_JUNO (14u + FELUCCA_SLICE)      /* after POLYSIX: 15 with it, 14 without */
+/* 15 white-key columns + INIT, its hold is CLEAN INIT (LAYER EDIT: ui_layer.c) — everything
+ * fits: without FM4 only DIGITAL yields; with FM4 JUNO106 does */
+#define NENG_SHOWN (NENGINES - 1u)   /* the engines one can pick, in the display order of engines.c ENGINE_ORDER */
 #define UP_SLOTS 32u             /* user presets (upreset.c) */
 
 /* ------------------------------------------------------- parameters --- */
