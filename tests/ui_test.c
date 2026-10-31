@@ -4969,7 +4969,6 @@ static int test_bughunt_ui2(void)
         }
         bad += check("piano roll: the C-1 label stays inside the panel (every palette)", !out);
     }
-<<<<<<< HEAD
     {   /* 7. EDIT: INIT is drawn in the cell after the engines, and that cell's white key is the one that inits */
         uint32_t p, ok = LY_INIT == 13u + FELUCCA_FM4 && LY_CLEAN < 16u;   /* (layer_edit: INIT where it was before 1.8) */
         for (p = LY_INIT; p < 16u; p++) {
@@ -4978,16 +4977,6 @@ static int test_bughunt_ui2(void)
             ok &= (ui.confirm == CF_INIT_SOUND) == (p == LY_INIT);
             key_up(white(p)); btn_up(B_EDIT); frame();
         }
-=======
-    {   /* 7. EDIT: INIT is drawn in the cell after the engines, and that cell's white key is the one that inits */
-        uint32_t p, ok = LY_INIT == 13u + FELUCCA_FM4 && LY_CLEAN < 16u;   /* (layer_edit: INIT where it was before 1.8) */
-        for (p = LY_INIT; p < 16u; p++) {
-            ui_power_on(); go_home(); frame();
-            btn_down(B_EDIT); key_down(white(p)); frame(); frames(50);
-            ok &= (ui.confirm == CF_INIT_SOUND) == (p == LY_INIT);
-            key_up(white(p)); btn_up(B_EDIT); frame();
-        }
->>>>>>> origin/main
         bad += check("EDIT: INIT's map cell (after the engines) and its key agree", ok);
     }
     return bad;
