@@ -1377,17 +1377,23 @@ static void apply_preset_to(track_t *t, uint32_t pi)
     t->p[P_REL] = e->presets[pi].env[3];
     t->p[P_ED_FLT] = e->presets[pi].fenv;
     t->p[P_VOICE] = e->presets[pi].mono ? V_LEGATO : V_POLY;   /* mono presets keep the legato feel */
-    {   /* the sends */
-        static const uint8_t FX_DEF[4] = {0, 24, 28, 36};
+    {   /* the sends; SAMPLE plays dry (its presets carry no FX, and the INSERT goes off: a break with the
+         * last sound's reverb, delay, crush would follow it) */
+        static const uint8_t FX_DEF[4] = {0, 24, 28, 36}, FX_DRY[4] = {0, 0, 0, 0};
+        int dry = t->eng_req % NENGINES == ENGI_SAMPLE;
+        const uint8_t *def = dry ? FX_DRY : FX_DEF;
         const preset_t *pr = &e->presets[pi];
         for (i = 0; i < 4u; i++)
-            t->p[P_DIST + i] = (int16_t)(pr->fx[i] ? pr->fx[i] - 1 : FX_DEF[i]);
+            t->p[P_DIST + i] = (int16_t)(pr->fx[i] ? pr->fx[i] - 1 : def[i]);
         if (pr->ins[0]) {       /* a sound's own built-in effect (POLYSIX's factory patches, polymorphic) */
             t->p[P_ITYPE] = (int16_t)(pr->ins[0] - 1);
             t->p[P_IA] = (int16_t)(pr->ins[1] - 1);
             t->p[P_IB] = (int16_t)(pr->ins[2] - 1);
             t->p[P_IC] = (int16_t)(pr->ins[3] - 1);
             t->p[P_IMIX] = 127; /* the section blends its own dry against its wet (fx.c ins_p6fx) */
+        } else if (dry) {
+            t->p[P_ITYPE] = 0;                  /* the INSERT off (N_ITYPE: OFF) */
+            t->p[P_IMIX] = TP[P_IMIX].def;
         }
     }
     fm6_track_loaded(t);                              /* FM6: the preset's patch (its SLOT) */

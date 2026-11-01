@@ -516,6 +516,20 @@ static int test_sound_loads(void)
                      str_eq(sd->names[7], "USR3") && sd->max == 7 &&
                      enum_orig(&ENGINES[8]->edit[0], SMP_SET_PERC) == 0 && SMP_SETS[SMP_SET_PERC].z0 == SMP_SETS[0].z0);
     }
+    {   /* a SAMPLE load plays dry: its presets carry no FX and the INSERT goes off (the amen with the last
+         * sound's reverb, delay, crush: never; ui.c apply_preset_to) */
+        set_engine_of(TSEL, 0);                   /* ANALOG: its first preset's sends, INSERT */
+        TSEL->p[P_DIST] = 100; TSEL->p[P_CHOR] = 100; TSEL->p[P_DLY] = 100; TSEL->p[P_REV] = 100;
+        TSEL->p[P_ITYPE] = 5;                     /* CRUSH */
+        set_engine_of(TSEL, 4);                   /* SAMPLE: PIANO */
+        bad += check("a SAMPLE load plays dry: no sends, the INSERT off (the amen with reverb: never)",
+                     TSEL->p[P_DIST] == 0 && TSEL->p[P_CHOR] == 0 && TSEL->p[P_DLY] == 0 && TSEL->p[P_REV] == 0 &&
+                     TSEL->p[P_ITYPE] == 0 && TSEL->p[P_IMIX] == TP[P_IMIX].def &&
+                     TSEL->p[P_ATK] == 0 && TSEL->p[P_DEC] == 127 && TSEL->p[P_SUS] == 127 && TSEL->p[P_REL] == 70);
+        set_engine_of(TSEL, 0);                   /* an ANALOG load keeps its preset's own sends (as before) */
+        bad += check("an ANALOG load keeps the preset's sends (as before)",
+                     TSEL->p[P_DIST] == 0 && TSEL->p[P_CHOR] == 10 && TSEL->p[P_DLY] == 45 && TSEL->p[P_REV] == 30);
+    }
     host_legacy_sample_perc(t);                /* SAMPLE PERC (SET 4, retired after 1.0.2): every load gives DRUM */
     t->preset = 4;                             /* a project written before the factory removal */
     my_steps(t);
