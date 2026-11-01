@@ -136,13 +136,13 @@ static const uint8_t ENGINE_ORDER[NENG_SHOWN] = {
 #if FELUCCA_SLICE
     13,                          /* SLICE */
 #endif
-    ENGI_POLYSIX,                /* POLYSIX (back: INIT's hold is CLEAN INIT, ui_layer.c) */
-#if !FELUCCA_FM4
-    ENGI_JUNO,                   /* JUNO106 (under FM4 DIGITAL is in its show: eng_ok) */
-#endif
     10,                          /* DRUM */
 #if FELUCCA_ADPCM
     14,                          /* ADPCM (1.8): last, so the EDIT layer's white keys keep the 13 above (ui_layer.c LY_ENG_KEYS) */
+#endif
+    ENGI_POLYSIX,                /* POLYSIX (ours: with the PRESETS' ENG knob, after ADPCM so the EDIT row's 13 stay) */
+#if !FELUCCA_FM4
+    ENGI_JUNO,                   /* JUNO106 (ours: the ENG knob; under FM4 DIGITAL is in its show: eng_ok) */
 #endif
 };
 

@@ -151,7 +151,10 @@ static p6_part_t *p6_of(track_t *t) { return (p6_part_t *)ENG_MEM((uint32_t)(t -
 
 /* -------------------------------------------------------- parameters --- */
 
-static const char *const N_P6_WAVE[] = {"PW", "SAW+PW", "PWM", "SAW+PWM"};
+/* value labels fit their EDIT card's 48 px column (the S face: "SAW+PW" is 50 px, "SAW+PWM" 60): the sweeps
+ * ellipsis them and ui_render counts every ellipsised value a failing finding. The polyp plugin's full names
+ * ("PW", "Saw+PW", "PWM", "Saw+PWM") stay documented here. */
+static const char *const N_P6_WAVE[] = {"PW", "SAW+P", "PWM", "S+PWM"};
 static const char *const N_P6_OCT[] = {"16'", "8'", "4'"};
 static const char *const N_P6_SUB[] = {"OFF", "1 OCT", "2 OCT"};
 

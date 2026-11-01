@@ -158,16 +158,16 @@ async function editorMock() {
   ok(!prefs.favorites[info.nengines][31] && !E.devicePresetRows(info, names, prefs).some((r) => r.user), "editor: erased slot disappears and loses star");
   {   /* the lists in the device's order (engines.c ENGINE_ORDER): FM6 second, DRUM last, "-" never; the numbers stay */
     const shown = E.engineOrder(info.engines).map((i) => info.engines[i]);
-    ok(shown.join() === "ANALOG,FM6,PHASE,LOFI,SAMPLE,VOICE,TRIO,WHEEL,GRAIN,PHYS,NOISE,SLICE,POLYSIX,JUNO106,DRUM" &&
-       E.engineOrder(info.engines)[1] === 12 && E.engineOrder(info.engines)[12] === 14 && E.engineOrder(info.engines)[13] === 15 &&
-       E.engineOrder(info.engines)[14] === 10,
-       "editor: engines listed FM6 second, DRUM last (indices kept)");
+    ok(shown.join() === "ANALOG,FM6,PHASE,LOFI,SAMPLE,VOICE,TRIO,WHEEL,GRAIN,PHYS,NOISE,SLICE,DRUM,POLYSIX,JUNO106" &&
+       E.engineOrder(info.engines)[1] === 12 && E.engineOrder(info.engines)[12] === 10 && E.engineOrder(info.engines)[13] === 14 &&
+       E.engineOrder(info.engines)[14] === 15,
+       "editor: engines listed FM6 second, POLYSIX then JUNO106 last (DRUM before them; indices kept)");
     ok(E.engineOrder(["ANALOG", "X", "-", "DRUM", "FM6"]).join() === "0,4,3,1", "editor: an unknown engine follows the known ones");
     m.state.favorites[10][0] = m.state.favorites[12][0] = true;
     await rq(E.req.uiSet(3, 0));
     prefs = await E.readDevicePreferences(rq, info, names, prefs);
     const rows = E.devicePresetRows(info, names, prefs).filter((r) => !r.user), eng = [...new Set(rows.map((r) => r.engine))];
-    ok(eng[0] === 0 && eng[1] === 12 && eng[eng.length - 1] === 10, "editor: device presets in the device's engine order");
+    ok(eng[0] === 0 && eng[1] === 12 && eng[eng.length - 1] === 15, "editor: device presets in the device's engine order");
   }
   const none = await E.readDevicePreferences(() => { throw new Error("unexpected request"); }, { uiCaps: 0 }, []);
   ok(none === null, "editor: old firmware receives no unsupported preference requests");

@@ -1774,7 +1774,7 @@ function makeMockDevice(opt = {}) {
         E("DIV", ["4", "8", "16", "32", "AUTO", "MAN"], 2), D("START", F.INT, 0, 31, 0), D("PTCH", F.SEMI, -24, 24, 0),
         E("MODE", ["ONE", "GATE", "LOOP"], 0), E("REV", ["OFF", "ON"], 0), D("DCAY", F.TIME, 0, 127, 127), D("TONE", F.INT, 0, 127, 127)],
       presets: [P("CHOP", [0, 2, 0, 0, 0, 0, 127, 127], [0, 127, 127, 30], 0, 9), P("STUTTER", [0, 1, 0, 0, 1, 0, 90, 110], [0, 127, 127, 12], 0, 10)] },
-    { name: "POLYSIX", titles: ["VCO", "VCF"], edit: [E("WAVE", ["PW", "SAW+PW", "PWM", "SAW+PWM"], 3), E("OCT", ["16'", "8'", "4'"], 1),
+    { name: "POLYSIX", titles: ["VCO", "VCF"], edit: [E("WAVE", ["PW", "SAW+P", "PWM", "S+PWM"], 3), E("OCT", ["16'", "8'", "4'"], 1),
         D("WIDTH", F.PCT, 0, 127, 32), D("PWM", F.LFOHZ, 0, 127, 91), E("SUB", ["OFF", "1 OCT", "2 OCT"], 2),
         D("CUTOFF", F.CUTOFF, 0, 127, 74), D("RES", F.PCT, 0, 127, 32), D("EG INT", F.BIPCT, -64, 63, 22)],
       presets: [P("BRASS", [1, 0, 0, 76, 0, 46, 25, 8], [53, 87, 89, 127], 0, 0),
@@ -2510,7 +2510,7 @@ function enumShown(d) {
    the list does not know (another firmware) follows in index order. POLYSIX is back everywhere (its 16th key went to
    INIT, whose hold is CLEAN INIT) */
 const ENGINE_ORDER = ["ANALOG", "FM6", "DIGITAL", "PHASE", "LOFI", "SAMPLE", "VOICE", "TRIO", "WHEEL", "GRAIN", "PHYS", "NOISE",
-  "SLICE", "POLYSIX", "JUNO106", "DRUM"];
+  "SLICE", "DRUM", "POLYSIX", "JUNO106"];
 function engineOrder(names) {
   const rank = (n) => {
     const k = ENGINE_ORDER.indexOf(n); return k < 0 ? ENGINE_ORDER.length : k;
