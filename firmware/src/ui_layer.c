@@ -1070,7 +1070,8 @@ static void eqa_row(uint32_t n)
 static void layer_edit(void)                            /* the engines from F3, INIT the last white key: its tap
                                                          * inits the sound, its hold is CLEAN INIT */
 {
-    uint32_t n = NENG_SHOWN, cells = n + 1u, i, h = cells > 12u ? 20u : 28u;   /* 4 rows of 20: 8 px clear above the sound row */
+    uint32_t n = NENG_SHOWN, cells = n + 1u, i, h = cells > 16u ? 16u : (cells > 12u ? 20u : 28u);
+    /* 4 rows of 20, 5 of 16 (POLIVOKS): 8 / 4 px clear above the sound row */
     uint32_t na = eqa_count(TSEL);
     for (i = 0; i < cells; i++) {
         int32_t x = LC_X(i % 4u), y = 4 + (int32_t)(h + 4u) * (int32_t)(i / 4u);

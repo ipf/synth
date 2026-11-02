@@ -4140,8 +4140,8 @@ static int test_quick_layers(void)
         ok &= eng_ok(TSEL->eng_req);
     }
     btn_up(B_EDIT); frame();
-    bad += check("  the first 13 engines in PRESETS order have their white keys from F3 (ADPCM and our POLYSIX, JUNO106, only with ENG; never DIGITAL)",
-                 ok && a == LY_INIT && LY_INIT == NENG_SHOWN - FELUCCA_ADPCM - 2u + FELUCCA_FM4);
+    bad += check("  the first 13 engines in PRESETS order have their white keys from F3 (ADPCM and our POLYSIX, JUNO106, POLIVOKS, only with ENG; never DIGITAL)",
+                 ok && a == LY_INIT && LY_INIT == NENG_SHOWN - FELUCCA_ADPCM - 3u + FELUCCA_FM4);
     set_engine_of(TSEL, 0);
     lay_combo(B_EDIT, white(eng_rank(3))); key_up(white(eng_rank(3))); frame();
     turn(EN_K2, 1);
@@ -5136,7 +5136,7 @@ static int test_fm4_retired(void)
     }
     bad += check("PRESETS KNOB 2: the engines in order, DIGITAL skipped, back to the first",
                  seen == all && TSEL->eng_req == 0u && eng_step(0, 1) == ENGI_FM6 && eng_step(ENGI_FM6, 1) == 2u &&
-                 eng_step(ENGI_FM6, -1) == 0u && eng_step(0, -1) == (!FELUCCA_FM4 ? ENGI_JUNO : ENGI_POLYSIX));
+                 eng_step(ENGI_FM6, -1) == 0u && eng_step(0, -1) == ENGI_POLIVOKS);
     {   /* the display order (engines.c ENGINE_ORDER): every engine one can pick once; the PRESETS list follows it */
         static const char *const ORDER[] = {"ANALOG", "FM6",
 #if FELUCCA_FM4
@@ -5151,6 +5151,7 @@ static int test_fm4_retired(void)
 #if !FELUCCA_FM4
                                             "JUNO106",
 #endif
+                                            "POLIVOKS",
                                            };
         uint32_t last = 0xFFu, r = 0, n = 0;
         ok = NENG_SHOWN == NELEM(ORDER);
