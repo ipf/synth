@@ -39,6 +39,7 @@ static uint8_t eng_mem_owner[NPART];       /* engine index + 1 whose state is in
 #include "eng_fm6.c"            /* FM6: 6-operator FM, msfa ported (fm6_core.c, Apache-2.0) */
 #include "eng_polysix.c"        /* POLYSIX: the Korg Polysix, polyp ported (GPL-3) */
 #include "eng_juno.c"           /* JUNO106: the Juno-106, a GPL-3 port */
+#include "eng_polivoks.c"       /* POLIVOKS: the Formanta Polivoks, the JUCE plugin ported (GPL-3) */
 #include "fm4_convert.c"        /* DIGITAL's tables, and its sounds -> FM6 */
 #if FELUCCA_FM4
 #include "eng_digital.c"        /* DIGITAL: four-operator FM (retired; FELUCCA_FM4=1 builds it) */
@@ -77,6 +78,7 @@ static const engine_t *const ENGINES[NENGINES] = {
 #endif
     &ENG_POLYSIX,                /* 15 (ENGI_POLYSIX, appended: never reorder these) */
     &ENG_JUNO,                   /* 16 (ENGI_JUNO, appended) */
+    &ENG_POLIVOKS,               /* 17 (ENGI_POLIVOKS, appended) */
 };
 
 /* a track's engine number as an index (the audio paths: a compare, cheaper than % NENGINES; a bad number: 0) */
@@ -144,6 +146,7 @@ static const uint8_t ENGINE_ORDER[NENG_SHOWN] = {
 #if !FELUCCA_FM4
     ENGI_JUNO,                   /* JUNO106 (ours: the ENG knob; under FM4 DIGITAL is in its show: eng_ok) */
 #endif
+    ENGI_POLIVOKS,               /* POLIVOKS (ours: the ENG knob, last: the EDIT row's 13 stay) */
 };
 
 /* the engines one can pick (engine 1 only with FELUCCA_FM4), in ENGINE_ORDER: eng_ok(e), the n-th of them

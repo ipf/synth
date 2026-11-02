@@ -57,7 +57,8 @@ def functions(path):
     """{name: [(addr, text)]}: a function runs to the next label not starting with '.' (the compiler's
     jump-table labels are inside functions); jump-table data ('< n : 0x.. >') is left out
     shortcut: the decode stops at the first unknown instruction, so the float-only POLYSIX (p6_render,
-    and ins_p6fx under track_insert) and every pure-float loop measure as no budget at all — when the
+    and ins_p6fx under track_insert), POLIVOKS (pvlk_render, pvlk_block) and every pure-float loop
+    measure as no budget at all — when the
     disassembler learns the FPU opcodes (3f e5), add them to FUNCS (device budget rows are still owed)."""
     out, cur = {}, None
     with open(path) as f:

@@ -30,6 +30,12 @@ static uint8_t *fav_bit(uint32_t engine, uint32_t preset, uint8_t *mask)   /* th
         return &favorites.factory[15][22u];
     }
 #endif
+#ifdef ENGI_POLIVOKS
+    if (engine == ENGI_POLIVOKS && preset < 6u) {       /* POLIVOKS (ours, 6 presets): [15][23] */
+        *mask = (uint8_t)(1u << preset);
+        return &favorites.factory[15][23u];
+    }
+#endif
 #ifdef ENGI_POLYSIX
     if (engine == ENGI_POLYSIX && preset < 64u) {       /* POLYSIX (ours, 64 presets): [15][14..21] */
         *mask = (uint8_t)(1u << (preset % 8u));

@@ -91,6 +91,7 @@ static const char *const N_ENGNAME[] = {"ANALOG", FELUCCA_FM4 ? "DIGITAL" : "-",
                                              "-",                  /* 15 POLYSIX: hidden under FM4 (eng_ok) */
 #endif
                                              "JUNO106",            /* appended: the Juno-106 (JUNO, eng_juno.c) */
+                                             "POLIVOKS",           /* appended: the Formanta Polivoks (eng_polivoks.c) */
 };
 
 static const char *const N_SLOT[] = {"A", "B", "C", "D", 0};   /* G_SLOT 1..4 (F_INT: the names split its range) */

@@ -35,13 +35,14 @@
 #if FELUCCA_ADPCM && !FELUCCA_SLICE
 #error "FELUCCA_ADPCM needs FELUCCA_SLICE (ADPCM is engine 14, after SLICE)"
 #endif
-#define NENGINES (15 + FELUCCA_SLICE + FELUCCA_ADPCM)   /* SLICE (13), then ADPCM, POLYSIX, JUNO106 (appended,
-                                                         * never reorder) */
+#define NENGINES (16 + FELUCCA_SLICE + FELUCCA_ADPCM)   /* SLICE (13), then ADPCM, POLYSIX, JUNO106, POLIVOKS
+                                                         * (appended, never reorder) */
 #define ENGI_ADPCM 14u
 #define ENGI_DIGITAL 1u          /* reserved without FELUCCA_FM4: never selectable (eng_ok), its sounds load as FM6 */
 #define ENGI_POLYSIX (14u + FELUCCA_ADPCM)   /* after ADPCM: 15 with it, 14 without */
 #define ENGI_JUNO (15u + FELUCCA_ADPCM)      /* after POLYSIX: 16 with it, 15 without */
-/* 15 white-key columns + INIT, its hold is CLEAN INIT (LAYER EDIT: ui_layer.c) — everything
+#define ENGI_POLIVOKS (16u + FELUCCA_ADPCM)  /* after JUNO106: 17 with it, 16 without */
+/* 14 white-key columns + INIT, its hold is CLEAN INIT (LAYER EDIT: ui_layer.c) — everything
  * fits: without FM4 only DIGITAL yields; with FM4 JUNO106 does */
 #define NENG_SHOWN (NENGINES - 1u)   /* the engines one can pick, in the display order of engines.c ENGINE_ORDER */
 #define UP_SLOTS 32u             /* user presets (upreset.c) */
