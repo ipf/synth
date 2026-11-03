@@ -141,8 +141,11 @@ typedef struct {                         /* one voice's fp32 body: the plugin's 
     float f;                             /* the glided pitch, cycles per sample (0 = fresh: snap) */
     float cap1, prev1, out1;             /* op-amp 1: the compensation cap, its last error, the output */
     float cap2, prev2, out2;             /* op-amp 2 */
-    float lp, bp;                        /* the SVF's carried states (the plugin re-zeros them per
-                                          * sample and leans on 16x to converge; 4x carries them) */
+    float lp, bp, dc;                    /* the SVF's carried states (the plugin re-zeros them per
+                                          * sample and leans on 16x to converge; 4x carries them), dc
+                                          * the one-pole DC leak (~10 Hz) on lp: the plugin's per-sample
+                                          * zeroing keeps its summing-node offset out of the output, the
+                                          * carry would settle it at (mixed + 6 mV) / damp at high RES */
     float env;                           /* the engine's own envelope 0..1, linear as the plugin's Adsr */
     uint8_t stage;                       /* 1 attack, 2 decay / sustain, 3 release */
     int32_t nz;                          /* the LCG (POLYSIX's pattern), a fresh stream per note */
@@ -395,6 +398,8 @@ static void pl_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const vm
         }
         S->lp = lp;
         S->bp = bp;
+        S->dc += 1.4e-3f * (lp - S->dc);           /* the DC leak before the VCA */
+        lp -= S->dc;
         /* ---- the VCA: the plugin's, linear (LFO -> MASTER comes in through amp_at) */
         out_f = lp * env * 0.5f;
         if (out_f > 4.0f)                              /* POLYSIX's headroom clamp */
