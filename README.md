@@ -2,6 +2,8 @@
 
 [![License: GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue.svg)](LICENSE)
 
+![Felucca screens: HOME, tracks, WHEEL, FM6, slices, piano roll, drum grid and song](docs/screens.png)
+
 ## Overview
 
 Felucca is an open-source synthesizer firmware project that began as custom firmware for the M-VAVE FM-1.
@@ -10,7 +12,7 @@ Originally developed for a single instrument, Felucca is evolving toward a multi
 
 ### M-VAVE FM-1
 
-The FM-1 firmware is currently at version 1.8.0. Connect the FM-1 to a computer by USB, open the
+The FM-1 firmware is currently at version 1.8.1 (1.9.0, with plugin engines, is in beta). Connect the FM-1 to a computer by USB, open the
 [web installer](https://hugelton.github.io/Felucca/) in Chrome or Edge and press Install; no extra hardware is needed.
 Installing is at your own risk: M-VAVE's updater or the installer's **Return to official V15** takes you back.
 [Try it in your browser](https://hugelton.github.io/Felucca/webapp/try/), no FM-1 needed.
@@ -19,10 +21,13 @@ Installing is at your own risk: M-VAVE's updater or the installer's **Return to 
 - Edit: [web editor](https://hugelton.github.io/Felucca/webapp/editor/) ([Felucca-WebApp](https://github.com/hugelton/Felucca-WebApp))
 - Read: the manual and the release notes are in the [wiki](https://github.com/hugelton/Felucca/wiki/Home)
 - Build: [BUILDING.md](BUILDING.md)
-- Platforms: the FM-1 (the reference; every release is tested on it) · the browser (`web/emu`) · a desktop with SDL2
-  (beta, run on macOS so far; Linux next: [platforms/linux](platforms/linux/README.md)). The same sources on each: what a platform does not
-  have (the FM-1's panel, USB, its flash) is given by its own files under `platforms/`.
-- Related: [Felucca-Engines](https://github.com/hugelton/Felucca-Engines) (the ANALOG, LOFI, TRIO, WHEEL, NOISE and PHASE engines, MIT; still maintained) ·
+- Platforms: the FM-1 (the reference; every release is tested on it) · the browser · a desktop with SDL2 (beta) · a
+  libretro core (beta). The same sources on each, with a simulated FM-1 for the platforms that are not one:
+  [platforms/](platforms/README.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/PORTING.md](docs/PORTING.md).
+- Plugins (from 1.9): sound engines that anyone can make and install without building a firmware:
+  [docs/PLUGINS.md](docs/PLUGINS.md).
+- Compatibility: what an update keeps (saved work, the controls, the plugin interface): [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md).
+- Related: [Felucca-Engines](https://github.com/hugelton/Felucca-Engines) (the ANALOG, LOFI, TRIO, WHEEL, NOISE and PHASE engines and the plugin interface, MIT; still maintained) ·
   [felucca-bsp](https://github.com/hugelton/felucca-bsp) (the FM-1 hardware layer, MPL-2.0; Felucca builds on it from 1.7.0)
 
 ## Platform Support
@@ -31,7 +36,9 @@ Installing is at your own risk: M-VAVE's updater or the installer's **Return to 
 | --- | --- | --- |
 | M-VAVE FM-1 | Supported | The original platform; firmware and web installer available. |
 | Browser | Supported | [Try it](https://hugelton.github.io/Felucca/webapp/try/), no FM-1 needed. |
-| Desktop (SDL2) | Beta | Source only, in [platforms/linux](platforms/linux/README.md); run on macOS so far, Linux next. |
+| Desktop (SDL2) | Beta | Source only, in [platforms/sdl](platforms/sdl/README.md); run on macOS so far, Linux next. |
+| libretro (RetroArch) | Beta | Source only, in [platforms/libretro](platforms/libretro/README.md); run in RetroArch on macOS so far. |
+| devkitPro (libctru) | Studied | Research only; nothing published. |
 | M5Stack CoreS3 | In progress | Runs on the device; not published yet. |
 | M-VAVE SMK-37 | Proposed | A board in [felucca-bsp#13](https://github.com/hugelton/felucca-bsp/issues/13); untested. |
 | Other hardware | Not yet supported | Ports are welcome! Linux-based devices: see the [FAQ](https://github.com/hugelton/Felucca/wiki/FAQ). |

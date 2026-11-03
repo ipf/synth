@@ -804,14 +804,32 @@ static uint32_t foot_rename(void)
     return 0;
 }
 
-/* the sound's name on the track: a user preset or the engine's preset (b holds 16) */
+/* the sound's name on the track: a user preset or the engine's preset (b holds 16). FM6 (#309): on a bank slot
+ * (B1..B32) the name of the bank voice it plays; on OWN the patch's own name when it is not the name of the factory
+ * patch of the track's preset (an edited factory patch keeps the preset's name) */
 static void sound_name(const track_t *t, char *b)
 {
     const engine_t *e = ENGINES[t->eng_req % NENGINES];
     b[0] = 0;
-    if (user_of(t) < UP_SLOTS)
+    if (user_of(t) < UP_SLOTS) {
         up_name(user_of(t), b);
-    else if (e->npresets)
+        return;
+    }
+    if (t->eng_req == ENGI_FM6) {
+        uint32_t tr = (uint32_t)(t - trk) % NTRK, k;
+        int32_t s = fm6_slot[tr];
+        const uint8_t *nm = fm6_patch[tr] + FP_NAME;
+        if (fm6_bank_slot(s) >= 0 ||
+            (s == (int32_t)FM6_OWN && memcmp(nm, FM6_FACTORY[t->preset % FM6_NFACTORY] + 118, 10))) {
+            for (k = 0; k < 10u; k++)                    /* upper case, as a user preset's (up_name) */
+                b[k] = (char)(nm[k] >= 'a' && nm[k] <= 'z' ? nm[k] - 32u : nm[k]);
+            for (b[10] = 0; k && b[k - 1] == ' '; k--)
+                b[k - 1] = 0;
+            if (b[0])
+                return;
+        }
+    }
+    if (e->npresets)
         str_cpy(b, e->presets[t->preset % e->npresets].name, 16);
 }
 
@@ -949,7 +967,7 @@ static void engine_columns(void)
     str_cpy(u, "/", 8);
     fmt_int(u + 1, (int32_t)total);
     const char *en = ENGINES[e]->name, *ev = text_w(&AF_S, en) + 3 > COL_W - 8 ? eng_abbr(en) : en;   /* JUNO106 not on the card: its 4-letter tag */
-    draw_column(0, "ENG", ev, "", VAL(0u), (int32_t)eng_rank(e) * 1000 / (NENG_SHOWN > 1 ? NENG_SHOWN - 1 : 1),
+    draw_column(0, "ENG", ev, "", VAL(0u), (int32_t)eng_rank(e) * 1000 / (eng_nshown() > 1 ? eng_nshown() - 1 : 1),
                 engine_icon(en));
     draw_column(1, "No.", val, u, VAL(1u), total > 1u ? (int32_t)(cur * 1000u / (total - 1u)) : 0, ICON_NONE);
     draw_column(2, "FAV", preset_favorite() ? "ON" : "OFF", "", VAL(2u), -1, ICON_X_STAR);
@@ -1333,7 +1351,7 @@ static void draw_columns(void)
 }
 
 
-/* The power-on splash (main.c fm1_main, web/emu felucca_web.c; 1.1.5): a RAISE square centred on the screen, square
+/* The power-on splash (main.c fm1_main, platforms/host/felucca_host.c; 1.1.5): a RAISE square centred on the screen, square
  * corners (in every style; LINE too: RAISE from the palette's SURF), in it in AF_M, the ink SPL_PAD in from the left:
  * at the top the name and the version, the first line's capitals' top SPL_PAD down; at the bottom the maker and
  * "with community", the last line's capitals' bottom (its baseline) SPL_PAD up from the square's bottom. Both

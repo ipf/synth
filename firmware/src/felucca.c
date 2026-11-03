@@ -32,6 +32,10 @@
 #ifndef FELUCCA_UART
 #define FELUCCA_UART 1           /* TRS MIDI IN on UART1 / PH8 */
 #endif
+#ifndef FELUCCA_PLUGINS
+#define FELUCCA_PLUGINS 1        /* 1.9: plugin engines from the flash's two slots (plugin.c, plugin_fm1.c; the editor's
+                                  * PLUGIN commands, editor_plugin.c); 0: none, the engines and RAM of 1.8 */
+#endif
 #ifndef FELUCCA_ID
 #define FELUCCA_ID "FM-1_900"    /* package identity (build.py: the .fwsc marker string) */
 #endif
@@ -48,7 +52,7 @@
 #define FM1_CRASH_CTX_N 1u         /* chip/fm1_irq.h: the registers of the last crash only (80 B of .noinit; four would
                                     * not fit beside the project slots) */
 #ifndef FELUCCA_VERSION
-#define FELUCCA_VERSION "v1.8.0" /* shown in the menu, the console and the editor; build.py --release X.Y */
+#define FELUCCA_VERSION "v1.9.0" /* shown in the menu, the console and the editor; build.py --release X.Y */
 #endif
 #if FELUCCA_OTA && !FELUCCA_FLASH
 #error "FELUCCA_OTA needs FELUCCA_FLASH"
@@ -115,6 +119,9 @@ static __attribute__((noinline)) int c1_wait(void) { return fm1_cpu1_wait(); }  
 #include "fm1_flash.h"
 #include "storage_hw.c"
 #include "storage.c"
+#endif
+#if FELUCCA_PLUGINS_FM1 && FELUCCA_FLASH
+#include "plugin_fm1.c"          /* the plugin engines in the flash after the app (plugin.c takes them) */
 #endif
 #include "upreset.c"             /* user presets (RAM mirror; flash with FELUCCA_FLASH) */
 #include "project.c"
