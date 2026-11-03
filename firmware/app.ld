@@ -5,10 +5,11 @@
  * 0x01C00000..0x01C06000 holds .ram_text (code that must run while the flash
  * is busy: the flash driver), then .c1_text in it (the second core's waiting loop, bsp/chip/fm1_cpu1.h: an idle core 1 never
  * fetches from the flash); 0x01C06000..0x01C08000 stays for RAM-run debug.
- * RAM  : .data/.bss (72 KiB): what the audio and key-scan interrupts touch, small variables
+ * RAM  : .data/.bss (67 KiB here): what the audio and key-scan interrupts touch, small variables
  * POOL : big zero-initialised buffers (FX lines, canvases, the parts' engine memory, the main loop's work
  *        buffers), section .pool. The same SRAM: the RAM / POOL boundary only splits the budget (1.5: 96 / 336
- *        KiB -> 72 / 360 KiB); tools/build.py reads both lengths from here
+ *        KiB -> 72 / 360 -> 1.9 with PLUGRAM 72 / 352; ours 67 / 357: our engines need ~4.4 KiB of pool more
+ *        than upstream's baseline under 1.9's PLUGRAM); tools/build.py reads both lengths from here
  * PLUGRAM: the plugin engines' .data / .bss (src/plugin_fm1.c; Felucca-Engines felucca_plugin.h FE_FM1_SLOT_RAM: a
  *        4 KiB block a slot, at these fixed addresses), the top of what was POOL's (1.9: 360 -> 352 KiB)
  * STACKS with 256-byte guard bands; NOINIT survives resets and UBOOT entry.
@@ -17,8 +18,8 @@ MEMORY
 {
     XIP    (rx)  : ORIGIN = 0x02000120, LENGTH = 0x8DFBC
     RAMTEXT (rwx): ORIGIN = 0x01C00000, LENGTH = 0x6000
-    RAM    (rwx) : ORIGIN = 0x01C08000, LENGTH = 72K
-    POOL   (rw)  : ORIGIN = 0x01C1A000, LENGTH = 0x58000
+    RAM    (rwx) : ORIGIN = 0x01C08000, LENGTH = 67K
+    POOL   (rw)  : ORIGIN = 0x01C18C00, LENGTH = 0x59400
     PLUGRAM (rw) : ORIGIN = 0x01C72000, LENGTH = 0x2000
     NOINIT (rw)  : ORIGIN = 0x01C7C000, LENGTH = 0x3D50
 }
