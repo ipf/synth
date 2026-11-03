@@ -196,7 +196,6 @@ static const uint8_t ENGINE_ORDER[NENG_SHOWN] = {
 static uint8_t eng_order[NENG_SHOWN + NPLUG];
 static uint32_t eng_nvis;                    /* 0: not made yet */
 static uint32_t eng_nshown(void)
->>>>>>> origin/main
 {
     uint32_t n;
     if (!eng_nvis) {
