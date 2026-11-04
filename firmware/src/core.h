@@ -44,9 +44,9 @@
 #if FELUCCA_ADPCM && !FELUCCA_SLICE
 #error "FELUCCA_ADPCM needs FELUCCA_SLICE (ADPCM is engine 14, after SLICE)"
 #endif
-#define NENG_BUILTIN (16 + FELUCCA_SLICE + FELUCCA_ADPCM)   /* SLICE (13), then ADPCM (14), POLYSIX, JUNO106,
-                                                             * POLIVOKS (ours, appended, never reorder): the other
-                                                             * engines keep their numbers */
+#define NENG_BUILTIN 18   /* numbers 0..17: SLICE (13) and ADPCM (14) keep theirs whether built or not, POLYSIX,
+                           * JUNO106, POLIVOKS (ours) sit at 15..17. A number no engine has here is a hole:
+                           * ENGINES fills it with ENG_MISSING */
 #if FELUCCA_PLUGINS
 #define ENGI_PLUG0 32u           /* the numbers of plugin engines of their own (plugin.c): 32 .. NENGINES - 2; 15 .. 31 stay
                                   * Felucca's. A number no plugin plays here is ENG_MISSING (a sine) */
@@ -66,9 +66,11 @@
 #define ENGI_POLYSIX 15u         /* ours: after ADPCM, its number kept whether built or not */
 #define ENGI_JUNO 16u            /* ours: after POLYSIX */
 #define ENGI_POLIVOKS 17u        /* ours: after JUNO106 */
-#define NENG_SHOWN (NENG_BUILTIN - !FELUCCA_FM4)   /* Felucca's engines one can pick: PRESETS, the EDIT layer, the
-                                                    * editor, in the display order of engines.c ENGINE_ORDER (with
-                                                    * plugins: eng_nshown, those and the plugins of their own) */
+#define NENG_SHOWN (NENG_BUILTIN - 1u - !FELUCCA_SLICE - !FELUCCA_ADPCM)   /* the engines one can pick, ENGINE_ORDER's
+                                                    * count: one always yields (DIGITAL without FELUCCA_FM4,
+                                                    * JUNO106 (ours) with it) and the unbuilt SLICE/ADPCM numbers
+                                                    * are holes. PRESETS, the EDIT layer, the editor (with plugins:
+                                                    * eng_nshown, those and the plugins of their own) */
 #define UP_SLOTS 32u             /* user presets (upreset.c) */
 
 /* ------------------------------------------------------- parameters --- */

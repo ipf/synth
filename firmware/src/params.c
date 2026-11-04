@@ -80,18 +80,20 @@ static const char *const N_ATSNS[] = {"OFF", "1", "2", "3", "4", "5", "6", "7", 
 static const char *const N_ENGNAME[] = {"ANALOG", FELUCCA_FM4 ? "DIGITAL" : "-", "PHASE", "LOFI", "SAMPLE", "VOICE", "TRIO", "WHEEL", "GRAIN", "PHYS",
                                              "DRUM", "NOISE", "FM6",
 #if FELUCCA_SLICE
-                                             "SLICE",
+                                             [13] = "SLICE",
 #endif
 #if FELUCCA_ADPCM
-                                             "ADPCM",              /* 14 (eng_adpcm.c) */
+                                             [14] = "ADPCM",       /* 14 (eng_adpcm.c) */
+#else
+                                             [14] = "MISSING",     /* 14: the hole (engines.c ENG_MISSING) */
 #endif
 #if !FELUCCA_FM4
-                                             "POLYSIX",            /* (under FM4 its 16th white key would not fit: eng_ok) */
+                                             [15] = "POLYSIX",     /* (under FM4 its 16th white key would not fit: eng_ok) */
 #else
-                                             "-",                  /* 15 POLYSIX: hidden under FM4 (eng_ok) */
+                                             [15] = "-",           /* 15 POLYSIX: hidden under FM4 (eng_ok) */
 #endif
-                                             "JUNO106",            /* appended: the Juno-106 (JUNO, eng_juno.c) */
-                                             "POLIVOKS",           /* appended: the Formanta Polivoks (eng_polivoks.c) */
+                                             [16] = "JUNO106",     /* the Juno-106 (JUNO, eng_juno.c) */
+                                             [17] = "POLIVOKS",    /* the Formanta Polivoks (eng_polivoks.c) */
 };
 
 static const char *const N_SLOT[] = {"A", "B", "C", "D", 0};   /* G_SLOT 1..4 (F_INT: the names split its range) */

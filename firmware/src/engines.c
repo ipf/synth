@@ -51,9 +51,8 @@ static uint8_t eng_mem_owner[NPART];       /* engine index + 1 whose state is in
 #include "eng_adpcm.c"           /* ADPCM: BRR waves and an FIR echo, its DSP ported from snes_spc (adpcm_dsp.c, LGPL-2.1+) */
 #endif
 
-#if FELUCCA_PLUGINS
-/* a number no engine plays here (a plugin's, not loaded; a later Felucca's): a sine at the note, as a missing sample
- * (eng_sample.c smp_sine), and NO PLUGIN said (snd_missing) */
+/* a number no engine plays here (SLICE 13 / ADPCM 14 unbuilt: a hole; a plugin's, not loaded; a later
+ * Felucca's): a sine at the note, as a missing sample (eng_sample.c smp_sine), and NO PLUGIN said (snd_missing) */
 #define MISS_P {"-", F_INT, 0, 127, 0, 0, 0}
 static const preset_t MISS_PRESETS[] = {{.name = "MISSING", .env = {0, 0, 127, 20}}};
 static void miss_on(track_t *t, voice_t *v) { (void)t, (void)v; }
@@ -75,7 +74,6 @@ static const engine_t ENG_MISSING = {
     .note_on = miss_on,
     .render = miss_render,
 };
-#endif
 
 /* the editor protocol, user presets and projects store these indices: append, never reorder. With FELUCCA_PLUGINS
  * a plugin can take an engine's place (plugin.c plg_add), so the table is in RAM then, and the numbers past
@@ -103,14 +101,18 @@ static const engine_t *const ENGINES[NENGINES] = {
     &ENG_NOISE,                  /* 11 */
     &ENG_FM6,                    /* 12 (ENGI_FM6) */
 #if FELUCCA_SLICE
-    &ENG_SLICE,                  /* 13 (FELUCCA_SLICE=0 builds without it) */
+    [13] = &ENG_SLICE,           /* 13 (FELUCCA_SLICE=0 builds without it) */
+#else
+    [13] = &ENG_MISSING,         /* SLICE 13 unbuilt: a hole, a sine */
 #endif
 #if FELUCCA_ADPCM
-    &ENG_ADPCM,                  /* 14 (ENGI_ADPCM; FELUCCA_ADPCM=0 builds without it) */
+    [14] = &ENG_ADPCM,           /* 14 (ENGI_ADPCM; FELUCCA_ADPCM=0 builds without it) */
+#else
+    [14] = &ENG_MISSING,         /* ADPCM 14 unbuilt: a hole, a sine */
 #endif
-    &ENG_POLYSIX,                /* 15 (ENGI_POLYSIX, ours: appended, never reorder these) */
-    &ENG_JUNO,                   /* 16 (ENGI_JUNO, ours) */
-    &ENG_POLIVOKS,               /* 17 (ENGI_POLIVOKS, ours) */
+    [15] = &ENG_POLYSIX,         /* 15 (ENGI_POLYSIX, ours: the numbers are fixed, never reorder these) */
+    [16] = &ENG_JUNO,            /* 16 (ENGI_JUNO, ours) */
+    [17] = &ENG_POLIVOKS,        /* 17 (ENGI_POLIVOKS, ours) */
 #if FELUCCA_PLUGINS
     [NENG_BUILTIN ... NENGINES - 1] = &ENG_MISSING,
 #endif
@@ -214,20 +216,14 @@ static uint32_t eng_nshown(void)
 /* the engines one can pick (engine 1 only with FELUCCA_FM4; with plugins, a number past Felucca's when a plugin plays
  * it), in ENG_ORDER: eng_ok(e), the n-th of them eng_vis(n), e's place among them eng_rank(e), the next / previous one
  * eng_step(e, dir) (wraps) */
-#if FELUCCA_PLUGINS
 static int eng_ok(uint32_t e)
 {
-    return e < NENG_BUILTIN ? (FELUCCA_FM4 || e != ENGI_DIGITAL) && (!FELUCCA_FM4 || e != ENGI_JUNO)
-                            : e < NENGINES && ENGINES[e] != &ENG_MISSING;
+    return e < NENGINES && ENGINES[e] != &ENG_MISSING
+        && (FELUCCA_FM4 || e != ENGI_DIGITAL) && (!FELUCCA_FM4 || e != ENGI_JUNO);
+    /* a hole (SLICE 13 / ADPCM 14 unbuilt, a plugin number no plugin plays) is ENG_MISSING: not
+     * selectable. DIGITAL yields without FELUCCA_FM4, JUNO106 (ours) with it; their own sounds
+     * still play (a project that carries one loads it) */
 }
-#else
-static int eng_ok(uint32_t e)
-{
-    return e < NENGINES && (FELUCCA_FM4 || e != ENGI_DIGITAL) && (!FELUCCA_FM4 || e != ENGI_JUNO);
-    /* POLYSIX, JUNO106, POLIVOKS (ours) show beside JUNO106 now (the layer's INIT key took CLEAN's);
-     * with FELUCCA_FM4, JUNO106 yields as it did. Yielded engines' own sounds still play */
-}
-#endif
 static uint32_t eng_vis(uint32_t n) { uint32_t c = eng_nshown(); return ENG_ORDER[n % c]; }
 static uint32_t eng_rank(uint32_t e)
 {

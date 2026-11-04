@@ -1687,7 +1687,7 @@ function makeMockDevice(opt = {}) {
     E("MIDI", ["USB", "TRS"], 0), E("SYNC", NDASH, 0), E("ROUT", ["CH1-4", "SEL", "CH5-8", "CH9-12", "CH13-16", "TRACK"], 0), D("CPU", F.INT, 0, 0, 0),
     D("SLOT", F.INT, 1, 4, 1), E("NAME", NDASH, 0), E("LOAD", NGO, 0), E("SAVE", NGO, 0),
     E("ENG", ["ANALOG", "-", "PHASE", "LOFI", "SAMPLE", "VOICE", "TRIO", "WHEEL",
-      "GRAIN", "PHYS", "DRUM", "NOISE", "FM6", "SLICE", "POLYSIX", "JUNO106", "POLIVOKS"], 0), E("SET", NGO, 0),
+      "GRAIN", "PHYS", "DRUM", "NOISE", "FM6", "SLICE", "MISSING", "POLYSIX", "JUNO106", "POLIVOKS"], 0), E("SET", NGO, 0),
     E("CLRSQ", NGO, 0), E("INIT", NGO, 0),
     E("TYPE", ["ROOM", "SPRING", "HALL"], 2),       /* G_RTYPE (id 24, was G_DRCH): the reverb's model (HALL: 1.2) */
     D("-", F.INT, 0, 0, 0), D("-", F.INT, 0, 0, 0),   /* G_DRLVL, G_DRREV: inert since 1.0 */
@@ -1774,6 +1774,10 @@ function makeMockDevice(opt = {}) {
         E("DIV", ["4", "8", "16", "32", "AUTO", "MAN"], 2), D("START", F.INT, 0, 31, 0), D("PTCH", F.SEMI, -24, 24, 0),
         E("MODE", ["ONE", "GATE", "LOOP"], 0), E("REV", ["OFF", "ON"], 0), D("DCAY", F.TIME, 0, 127, 127), D("TONE", F.INT, 0, 127, 127)],
       presets: [P("CHOP", [0, 2, 0, 0, 0, 0, 127, 127], [0, 127, 127, 30], 0, 9), P("STUTTER", [0, 1, 0, 0, 1, 0, 90, 110], [0, 127, 127, 12], 0, 10)] },
+    { name: "MISSING", titles: ["MISSING", "MISSING"], edit: [D("-", F.INT, 0, 127, 0), D("-", F.INT, 0, 127, 0),
+        D("-", F.INT, 0, 127, 0), D("-", F.INT, 0, 127, 0), D("-", F.INT, 0, 127, 0), D("-", F.INT, 0, 127, 0),
+        D("-", F.INT, 0, 127, 0), D("-", F.INT, 0, 127, 0)],   /* a number no engine has here (engines.c ENG_MISSING) */
+      presets: [P("MISSING", [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 127, 20], 0, 0)] },
     { name: "POLYSIX", titles: ["VCO", "VCF"], edit: [E("WAVE", ["PW", "SAW+P", "PWM", "S+PWM"], 3), E("OCT", ["16'", "8'", "4'"], 1),
         D("WIDTH", F.PCT, 0, 127, 32), D("PWM", F.LFOHZ, 0, 127, 91), E("SUB", ["OFF", "1 OCT", "2 OCT"], 2),
         D("CUTOFF", F.CUTOFF, 0, 127, 74), D("RES", F.PCT, 0, 127, 32), D("EG INT", F.BIPCT, -64, 63, 22)],
@@ -2532,7 +2536,7 @@ function engineOrder(names) {
 
 function devicePresetRows(info, names, preferences) {
   if (!preferences || !(preferences.state.caps & 8)) return [];
-  const rows = engineOrder(info.engines).filter((engine) => names[engine]).flatMap((engine) => names[engine]
+  const rows = engineOrder(info.engines).filter((engine) => names[engine] && info.engines[engine] !== "MISSING").flatMap((engine) => names[engine]
     .map((name, preset) => ({ engine, preset, name, user: false })).filter((row) => aliasOf(names[engine], row.preset) === row.preset));
   for (const slot of preferences.slots.slots) if (slot.used)
     rows.push({ engine: info.nengines, preset: slot.slot, name: slot.name, user: true });

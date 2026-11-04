@@ -36,16 +36,16 @@ static const char *const PRESET_CAT[18] = {
     "KUBLPUKU",                  /* 12 FM6: TINE EP, BELL, FM BASS, BRASS, PAD, MARIMBA, ORGAN, PLUCK */
     "DD",                        /* 13 SLICE: CHOP, STUTTER */
 #if FELUCCA_ADPCM
-    "LLBBKKPD",                  /* 14 ADPCM: SQUARE LEAD, PULSE LEAD, SAW BASS, SUB BASS, SOFT SINE, ORGAN, ECHO PAD,
+    [14] = "LLBBKKPD",           /* 14 ADPCM: SQUARE LEAD, PULSE LEAD, SAW BASS, SUB BASS, SOFT SINE, ORGAN, ECHO PAD,
                                   * NOISE HAT */
 #endif
     /* the Korg factory set (tools/gen_p6_presets.py: polyp patches/02-factory), browsed as the
      * real Polysix is: the real instruments KEYS or PLUCK, the synth sounds LEAD / PAD / BASS,
      * the four sound effects and the set-two productions FX; 15 POLYSIX 1..64 (set one A1..D8,
      * set two plate B) */
-    "BPKKKKLKKPLLLBUKLBKUKKKULLKUFLKLLLLLPLPUKKKKKFFKLLLPBLUULFKFFFFF",
-    "PBLPLBKF",                    /* 16 JUNO106: INIT, BASS, BRASS, STRINGS, POLY PAD, ACID, BELL, FX */
-    "BLLPKU",                      /* 17 POLIVOKS: BASS, ACID, LEAD, PAD, PLUCK, GRIT */
+    [15] = "BPKKKKLKKPLLLBUKLBKUKKKULLKUFLKLLLLLPLPUKKKKKFFKLLLPBLUULFKFFFFF",
+    [16] = "PBLPLBKF",           /* 16 JUNO106: INIT, BASS, BRASS, STRINGS, POLY PAD, ACID, BELL, FX */
+    [17] = "BLLPKU",             /* 17 POLIVOKS: BASS, ACID, LEAD, PAD, PLUCK, GRIT */
 };
 static uint32_t preset_cat(uint32_t e, uint32_t k)    /* factory preset k of engine e */
 {
