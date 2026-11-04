@@ -390,8 +390,33 @@ int main(void)
         r.p[7] = 200;                                   /* a value a byte cannot hold: stays version 3, no category */
         got = r;
         up_set_cat(&got, CAT_FX);
-        bad += check("category: a version 3 grid -> 5 with it, values kept; one that cannot be packed keeps none",
+        bad += check("category: a version 3 grid -> a grid version with it, values kept; one that cannot be packed keeps none",
                      ok && got.ver == 3u && up_cat_of(&got) == CAT_DRUM && !memcmp(&got, &r, sizeof r));
+    }
+    {   /* 1.9's engine numbering (up_migrate): a packed record of before (its POLYSIX, JUNO106 and POLIVOKS at
+         * 14, 15, 16; ADPCM, 14, never shipped) shifts one up and becomes today's version; a grid's (5) only the
+         * version moves; this firmware's records (6) stay */
+        memset(&r, 0, sizeof r);
+        r.used = UP_USED; r.np = P_COUNT; memcpy(r.name, "P6SIX", 5);
+        for (i = 0; i < P_COUNT; i++) up_set_value(&r, i, 0);
+        ok = 1;
+        r.ver = 4u;
+        for (i = ENGI_POLYSIX - 1u; i <= ENGI_POLIVOKS - 1u; i++) {
+            r.engine = (uint8_t)i;
+            got = r;
+            up_migrate(&got);
+            up_migrate(&got);                /* today's version now: no second shift */
+            ok &= got.engine == (uint8_t)(i + 1u) && got.ver == UP_VER && up_valid(&got);
+        }
+        r.ver = 5u;                          /* a grid of before: only its version moves */
+        got = r;
+        up_migrate(&got);
+        ok &= got.engine == r.engine && got.ver == UP_VER_GRID && up_grid(&got) && up_valid(&got);
+        r.ver = UP_VER;
+        got = r;
+        up_migrate(&got);
+        ok &= got.engine == r.engine && got.ver == UP_VER && up_valid(&got);
+        bad += check("the 1.9 numbering: records of before shift 14..16 to 15..17, this firmware's stay", ok);
     }
     printf("%s\n", bad ? "USER PRESET TEST FAILED" : "user preset test passed");
     return bad != 0;

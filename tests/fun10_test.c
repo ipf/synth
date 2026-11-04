@@ -497,6 +497,30 @@ static int formats(void)
     ok &= !(st.raw[68u + P_COUNT + 2u] & 0x80u) && (st.raw[68u + P_COUNT + 2u + 3u] & 0x80u) &&   /* -8: bit 3 only */
           (st.raw[68u + P_COUNT + 2u + 9u] & 0x80u) && !(st.raw[68u + P_COUNT + 2u + 12u] & 0x80u);   /* +7: bits 0..2 */
     bad += check("FUN10 round trip: 3840 bytes, nudges (bit 7 of the note bytes), 128 records, LFO 2, QUANTIZE", ok);
+    {   /* 1.9's numbering: the record's byte 65 (rsv, always 0 before) 0 = the fork's 1.8 numbering: its POLYSIX,
+         * JUNO106 and POLIVOKS (14, 15, 16) shift one up on import (ADPCM, 14, never shipped before 1.9); 1 = fixed,
+         * as this firmware's proj_pack writes: kept (so an old save re-saved stops shifting) */
+        static project_store_t sl;
+        ok = 1;
+        for (uint32_t eng = 13u; eng <= 17u; eng++)
+            for (uint32_t s65 = 0; s65 < 2u; s65++) {
+                uint32_t sum;
+                memcpy(sl.raw, st.raw, PROJ_STORE_SIZE);
+                sl.raw[68u + P_COUNT] = (uint8_t)eng;           /* track 0's engine */
+                sl.raw[65] = (uint8_t)s65;
+                sum = proj_hash(sl.raw, PROJ_STORE_SIZE - 4u);
+                memcpy(sl.raw + PROJ_STORE_SIZE - 4u, &sum, 4);
+                ok &= proj_import(&b, &sl, (int)PROJ_STORE_SIZE) &&
+                      b.t[0].engine == (eng >= 14u && eng <= 16u ? eng + (s65 ? 0u : 1u) : eng);
+                ok &= proj_pack(&sl, &b) && sl.raw[65] == 1u;    /* re-saved: stamped, the shift is done */
+            }
+        {   /* the moved-up engines too far: not a project */
+            memcpy(sl.raw, st.raw, PROJ_STORE_SIZE);
+            sl.raw[68u + P_COUNT] = 18u;
+            ok &= !proj_import(&b, &sl, (int)PROJ_STORE_SIZE);
+        }
+        bad += check("the 1.9 numbering: old saves' 14..16 shift to 15..17, stamped ones kept, byte 65 stamped on save", ok);
+    }
     /* a FUN10 of a 1.2 build before SPREAD (#148): 103 parameters (no P_SPRD, nor 1.5's); one of 1.2 .. 1.4: 104 (no
      * INSERT, filter TYPE, ENV SYNC: 1.5). Their engine values and their motion (the lock on E3) as many ids lower. They
      * load by count: SPREAD 0, the INSERT OFF (its defaults), TYPE LP, ENV SYNC OFF, the rest as written */

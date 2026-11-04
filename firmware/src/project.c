@@ -484,7 +484,7 @@ static void proj_fm6_init(project_t *q)
     q->sum = proj_sum(q);
 }
 static int proj_import_old(project_t *q, const void *b, int n);
-static int proj_import_any(project_t *q, const void *b, int n);
+static int proj_import_any(project_t *q, const void *b, int n, int *legacy);
 /* every track's engine one this firmware has (DIGITAL, 1, is one: it converts): a project of another number
  * is not one (it never was: no engine number past the last was ever stored) */
 static int proj_engines_ok(const project_t *q)
@@ -497,21 +497,41 @@ static int proj_engines_ok(const project_t *q)
 }
 /* n bytes of a stored project (any format) -> q as today's, DIGITAL and SAMPLE PERC tracks converted; 0 = not a
  * project */
+/* 1.9's fixed numbers made room for ADPCM at 14 and moved ours up one: a save of before (the fork's POLYSIX,
+ * JUNO106 and POLIVOKS at 14, 15, 16) shifts each track +1. ADPCM never shipped below 1.9, so 14 in an old save can
+ * only be POLYSIX (and no fork before ADPCM ever stored an engine past 13). Which record holds which numbering: its
+ * byte 65 (rsv, always 0 before 1.9) 1 = fixed, as this firmware's proj_pack writes. The runtime project keeps no
+ * stamp: a load re-reads the record's byte (the saved one until it is saved again), as proj_fm4 does */
+static void proj_eng_legacy(project_t *q)
+{
+    uint32_t t;
+    for (t = 0; t < NTRK; t++) {
+        proj_trk_t *d = &q->t[t];
+        if (d->engine >= ENGI_POLYSIX - 1u && d->engine <= ENGI_POLIVOKS - 1u)
+            d->engine = (uint8_t)(d->engine + 1u);
+    }
+}
 static int proj_import(project_t *q, const void *b, int n)
 {
-    if (!proj_import_any(q, b, n) || !proj_engines_ok(q))
+    int legacy;
+    if (!proj_import_any(q, b, n, &legacy) || !proj_engines_ok(q))
         return 0;
+    if (legacy)
+        proj_eng_legacy(q);
     proj_fm4(q);
     proj_perc(q);
     return 1;
 }
-static int proj_import_any(project_t *q, const void *b, int n)
+static int proj_import_any(project_t *q, const void *b, int n, int *legacy)
 {
-    if (n == PROJ_STORE_SIZE && ((const uint32_t *)b)[0] == PROJ_MAGIC)
+    if (n == PROJ_STORE_SIZE && ((const uint32_t *)b)[0] == PROJ_MAGIC) {
+        *legacy = !((const uint8_t *)b)[65];    /* (an old format's byte too: it kept the byte 0) */
         return proj_unpack(q, b, PROJ_STORE_SIZE);
+    }
     if (n == PROJ_STORE_SIZE && ((const uint32_t *)b)[1] >= 8u && ((const uint32_t *)b)[1] < PROJ_STORE_SIZE)
         n = (int)((const uint32_t *)b)[1];      /* a retained slot holding an older, shorter record: its own size
                                                  * (every format checks its magic and hash) */
+    *legacy = 1;                                /* FUN9 / FUN8 / FUN7 and older: our engines did not exist yet */
     if (n == (int)PROJ_STORE_V9 && ((const uint32_t *)b)[0] == PROJ_MAGIC_V9)
         return proj_unpack(q, b, PROJ_STORE_V9);
     if (n == (int)PROJ_STORE_V8 && ((const uint32_t *)b)[0] == PROJ_MAGIC_V8)
@@ -519,6 +539,7 @@ static int proj_import_any(project_t *q, const void *b, int n)
     if (n == (int)PROJ_STORE_V7 && ((const uint32_t *)b)[0] == PROJ_MAGIC_V7)
         return proj_unpack(q, b, PROJ_STORE_V7);
     if (n == (int)sizeof *q && proj_ok((const project_t *)b)) {
+        *legacy = !((const project_t *)b)->rsv;   /* a retained RAM copy: its byte decides, as a record's does */
         memcpy(q, b, sizeof *q);
         proj_drums_to_part(q);
         proj_phys(q);
@@ -625,7 +646,8 @@ static int proj_pack(project_store_t *out, const project_t *q)
             if (q->fm6[t][i] > 127u) return 0;
     if (!chain_valid(&q->chain) || !motion_valid(&q->motion) || P_COUNT > 127u) return 0;
     memset(out, 0, sizeof *out); memcpy(b, &magic, 4); memcpy(b + 4, &size, 4);
-    memcpy(b + 8, q->g, sizeof q->g); b[62] = q->sel; b[63] = q->parts; b[64] = q->phys; b[66] = P_COUNT;
+    memcpy(b + 8, q->g, sizeof q->g); b[62] = q->sel; b[63] = q->parts; b[64] = q->phys; b[65] = 1u; b[66] = P_COUNT;
+                                        /* b[65] (rsv): the 1.9 fixed engine numbering (proj_eng_legacy) */
     for (t = 0; t < NTRK; t++) {
         for (i = 0; i < P_COUNT; i++) {
             if (q->t[t].p[i] < -64 || q->t[t].p[i] > 127) return 0;

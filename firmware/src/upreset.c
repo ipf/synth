@@ -48,8 +48,11 @@
 #define UP_PER_BANK 16u
 #define UP_PMAX 72u                              /* room for P_COUNT to grow */
 #define UP_USED 0xA5u
-#define UP_VER 4u                                /* 2 since 1.0; 1 is read too (PHYS MODEL 2 was DUST) */
-#define UP_VER_GRID 5u                           /* 2 with a drum grid as the pattern (see the top) */
+#define UP_VER 6u                                /* 2 since 1.0; 1 is read too (PHYS MODEL 2 was DUST). 6 (the 1.9
+                                                  * engine numbering): a record of 5 and below is one of the fork
+                                                  * before it, whose POLYSIX, JUNO106 and POLIVOKS were one lower
+                                                  * (up_migrate) */
+#define UP_VER_GRID 7u                           /* a drum grid as the pattern (3; 5 before 1.9) */
 #define UP_BANK_MAGIC 0x31425055u                /* "UPB1" */
 typedef struct {
     uint8_t used, ver, engine, np;               /* UP_USED, UP_VER, engine, P_COUNT when stored */
@@ -82,7 +85,7 @@ static uint32_t up_cat_of(const up_rec_t *r)
     uint32_t c = r->ver >= 4u && r->np <= UP_CAT_AT ? r->packed[UP_CAT_AT] : 0u;
     return c && c < CAT_N ? c : cat_of_engine(r->engine);
 }
-static int up_to_v4(up_rec_t *r)                 /* 1 = r is version 4 / 5 (now) */
+static int up_to_v4(up_rec_t *r)                 /* 1 = r is a packed record now (version 4 or later) */
 {
     int16_t v[UP_PMAX];
     uint32_t i;
@@ -115,7 +118,8 @@ static int up_valid(const up_rec_t *r)
 
 static int up_used(uint32_t k) { return k < UP_SLOTS && up_valid(up_rec(k)); }
 
-static int up_grid(const up_rec_t *r) { return r->ver == 3u || r->ver == UP_VER_GRID; }
+static int up_grid(const up_rec_t *r) { return r->ver == 3u || r->ver == 5u || r->ver == UP_VER_GRID; }
+                                                  /* (5: a grid record of before 1.9, whose fixed numbering made 6) */
 static int16_t up_value(const up_rec_t *r, uint32_t k) { return r->ver >= 4u ? (int16_t)r->packed[k] - 64 : r->p[k]; }
 static void up_set_value(up_rec_t *r, uint32_t k, int16_t v)
 {
@@ -126,6 +130,15 @@ static void up_migrate(up_rec_t *r)
 {
     int16_t e[8]; uint32_t k;
     if (!up_valid(r)) return;
+    if (r->ver == 4u) {                          /* a note record of the fork before 1.9: its POLYSIX, JUNO106 and
+                                                  * POLIVOKS were one lower (ENGI_POLYSIX is 15 now; ADPCM, 14,
+                                                  * never shipped before 1.9). +1 and the record becomes today's */
+        if (r->engine >= ENGI_POLYSIX - 1u && r->engine <= ENGI_POLIVOKS - 1u)
+            r->engine = (uint8_t)(r->engine + 1u);
+        r->ver = UP_VER;
+    }
+    else if (r->ver == 5u)                       /* one of before's grids (a DRUM's: its engine never moved) */
+        r->ver = UP_VER_GRID;
     for (k = 0; k < 8u; k++) e[k] = up_value(r, r->np - 8u + k);
     if (drum_from_phys(r->engine, e) || drum_from_perc(r->engine, e)) {   /* (SAMPLE PERC: see the top) */
         r->engine = ENGI_DRUM;
