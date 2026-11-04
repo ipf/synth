@@ -38,7 +38,7 @@ static uint8_t eng_mem_owner[NPART];       /* engine index + 1 whose state is in
 #include "../engines/src/eng_noise.c"
 #include "eng_fm6.c"            /* FM6: 6-operator FM, msfa ported (fm6_core.c, Apache-2.0) */
 #include "eng_polysix.c"        /* POLYSIX: the Korg Polysix, polyp ported (GPL-3) */
-#include "eng_juno.c"           /* JUNO106: the Juno-106, a GPL-3 port */
+#include "eng_juno.c"           /* JUNO106: the Juno-106 (a GPL-3 port) */
 #include "eng_polivoks.c"       /* POLIVOKS: the Formanta Polivoks, the JUCE plugin ported (GPL-3) */
 #include "fm4_convert.c"        /* DIGITAL's tables, and its sounds -> FM6 */
 #if FELUCCA_FM4

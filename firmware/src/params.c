@@ -92,7 +92,7 @@ static const char *const N_ENGNAME[] = {"ANALOG", FELUCCA_FM4 ? "DIGITAL" : "-",
 #else
                                              [15] = "-",           /* 15 POLYSIX: hidden under FM4 (eng_ok) */
 #endif
-                                             [16] = "JUNO106",     /* the Juno-106 (JUNO, eng_juno.c) */
+                                             [16] = "JUNO106",     /* the Juno-106 (eng_juno.c) */
                                              [17] = "POLIVOKS",    /* the Formanta Polivoks (eng_polivoks.c) */
 };
 

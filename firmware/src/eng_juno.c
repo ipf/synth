@@ -1,9 +1,9 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  * Copyright (C) 2026 Ingop Vasilj */
 
-/* JUNO106: the Juno-106 as one engine, ported from the JUNO CLAP
- * plugin (../juno-port: the src .rs files ground truth, juno/dsp.h proven
- * bit-identical C++ mirror; the voice below is that, not a revisit).
+/* JUNO106: the Juno-106 as one engine, ported from a GPL-3 Juno-106 DSP
+ * port (its sources the ground truth, juno/dsp.h a proven bit-identical C++
+ * mirror; the voice below is that, not a revisit).
  *
  * Six voices (the Juno's own count) per part, every state fp32: the DSP is
  * fp64 upstream and the FM-1's FPU is float-only (-mfprev1), so the f64 comes
@@ -52,7 +52,7 @@
  * KEY ASSIGN (POLY / MONO / UNISON). Not ported: the LFO CLOCK SYNC (no
  * host tempo source upstream either), DUST's own pan / pressure / MPE.
  *
- * The chorus is the JUNO stereo BBD chorus (src/chorus.rs), mono here
+ * The chorus is the port's stereo BBD chorus (chorus.rs), mono here
  * as a track INSERT (IT_JCHO, the P6 section's precedent: fx.c). The eight
  * presets are the port's hand-made ones, compressed onto the eight knobs by
  * tools/gen_juno_presets.py. */

@@ -2,11 +2,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 # Copyright (C) 2026 Ingop Vasilj
 
-"""the port's hand-made presets (juno/presets.cpp) -> the JUNO106 engine's rows.
+"""The GPL-3 port's hand-made presets (juno/presets.cpp) -> the JUNO106 engine's rows.
 
   tools/gen_juno_presets.py OUT.h
 
-The eight patches, each a full set of 47 VST2 values (only the overrides
+The eight patches, each a full set of 47 VST2 parameter values (only the overrides
 are listed; a blank knob sits at its default). The mapping onto the engine's
 own knobs (eng_juno.c):
 
