@@ -1484,8 +1484,27 @@ static void autosave_poll(void)
 #endif
 }
 
+/* every track on a hole (SLICE 13 / ADPCM 14 unbuilt, a plugin's number no plugin plays): a record this firmware
+ * cannot sound — restore none rather than a silent boot (autosave_boot) */
+static int proj_unsound(const project_t *q)
+{
+    uint32_t k;
+    for (k = 0; k < NTRK; k++) {
+        uint32_t e = q->t[k].engine;
+#if FELUCCA_PLUGINS
+        uint32_t id = e >= ENGI_PLUG0 ? proj_plugin_get(q->fm6[k]) : 0u;
+        if (id && !(e = plg_no_of(id)))
+            e = ENGI_UNKNOWN;
+#endif
+        if (ENGINES[eng_idx(e)] != &ENG_MISSING)
+            return 0;
+    }
+    return 1;
+}
+
 /* power-on, after the defaults (main.c): the autosave becomes the music when `allowed` (no crash, hang or failed boot
- * before) and RESTORE LAST is ON; an autosave that does not load (none, torn, damaged, another format) is ignored.
+ * before) and RESTORE LAST is ON; an autosave that does not load (none, torn, damaged, another format, one this
+ * firmware cannot sound: proj_unsound) is ignored.
  * The music now (restored or not) is what is saved: nothing is written until it changes. 1 = restored */
 static int autosave_boot(int allowed)
 {
@@ -1497,7 +1516,7 @@ static int autosave_boot(int allowed)
         n = st_load(OBJ_AUTOSAVE, &proj_wire, sizeof proj_wire);
         if (n > 0 && proj_import(&proj_scratch, &proj_wire, n)) {
             proj_bound(&proj_scratch);
-            if (!project_restore_runtime(&proj_scratch)) {
+            if (!proj_unsound(&proj_scratch) && !project_restore_runtime(&proj_scratch)) {
                 ui_message("RESTORED");
                 rc = 1;
             }

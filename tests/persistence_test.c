@@ -373,6 +373,17 @@ static int autosave_test(void)
         as_power_on();
         bad += check("autosave: a record that is no project: ignored", autosave_boot(1) == 0 && song.g[G_BPM] != 97);
     }
+    {   /* every track on a hole (ADPCM 14, unbuilt here): a record this firmware cannot sound */
+        as_power_on();
+        autosave_boot(1);
+        for (k = 0; k < NTRK; k++)
+            trk[k].eng_req = trk[k].engine = (uint8_t)ENGI_ADPCM;
+        as_edit(9);
+        as_run(70000u);                                  /* the autosave writes it */
+        as_power_on();
+        ok = autosave_boot(1) == 0 && song.g[G_BPM] != 97;
+        bad += check("autosave: every track on a hole (nothing sounds): ignored, power-on as new", ok);
+    }
     /* a power cut in the middle of a write: the copy before stays in charge */
     memset(nor + 0xE5000u, 0xFF, 0x2000u);
     as_power_on();
