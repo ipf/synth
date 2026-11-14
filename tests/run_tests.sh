@@ -204,7 +204,8 @@ OUT=build/host
 mkdir -p "$OUT"
 # the hardware layer: firmware/hal, then felucca-bsp (firmware/bsp: chip/, boards/fm1/), as tools/build.py
 HALI="-Ifirmware/hal -Ifirmware/bsp/chip -Ifirmware/bsp/boards/fm1 -Ifirmware/src"   # (src: uac_fir.h, which bsp/chip/usb.c includes)
-CC="${CC:-cc} -O1 -Wall -Wno-unused-function $HALI"
+# -march=x86-64 pins the ISA: gcc on Ubuntu 26.04 defaults to x86-64-v3, whose FMA changes the float-exact golden renders
+CC="${CC:-cc} -march=x86-64 -O1 -Wall -Wno-unused-function $HALI"
 fail=0
 run() { local ok=1; echo "== $1"; shift; "$@" || ok=0; [ $ok = 1 ] || { echo "    RUN FAIL: $* (exit $?)"; fail=1; }; }
 
