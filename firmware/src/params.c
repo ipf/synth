@@ -94,6 +94,7 @@ static const char *const N_ENGNAME[] = {"ANALOG", FELUCCA_FM4 ? "DIGITAL" : "-",
 #endif
                                              [16] = "JUNO106",     /* the Juno-106 (eng_juno.c) */
                                              [17] = "POLIVOKS",    /* the Formanta Polivoks (eng_polivoks.c) */
+                                             [18] = "WAVTBL",      /* the Microwave I-style wavetable (eng_wt.c) */
 };
 
 static const char *const N_SLOT[] = {"A", "B", "C", "D", 0};   /* G_SLOT 1..4 (F_INT: the names split its range) */

@@ -483,6 +483,9 @@ if [ -f build/gen/felucca_tables.h ]; then
     $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/fm6_test" tests/fm6_test.c -lm
     mkdir -p build/fm6_demo
     run "FM6: algorithms, envelopes, retrigger, DC, clipping, macros, patch formats, voices, cost, demos" "$OUT/fm6_test" build/fm6_demo
+    # WAVTBL is in the standard build (ours, core.h): its test always runs
+    $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/wt_test" tests/wt_test.c -lm
+    run "WAVTBL: presets, params, tables and positions, the filter sweep and modes, key tracking, retrigger, OCT" "$OUT/wt_test"
     # SLICE is in the standard build (firmware/src/core.h): its test always runs (after #22 by andreahaku)
     if grep -q '^#define SLC_BREAK_BPM ' build/gen/felucca_samples.h; then
         mkdir -p build/slice_demo

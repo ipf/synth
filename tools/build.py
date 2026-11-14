@@ -107,7 +107,8 @@ def generate():
             [tools / "gen_tables.py", GEN / "felucca_tables.h"],
             [tools / "gen_fm6_patches.py", GEN / "felucca_fm6.h"],
             [tools / "gen_samples.py", GEN / "felucca_samples.h"],
-            [tools / "gen_adpcm.py", GEN / "felucca_adpcm.h"]]
+            [tools / "gen_adpcm.py", GEN / "felucca_adpcm.h"],
+            [tools / "gen_wt.py", GEN / "felucca_wt.h"]]
     procs = [subprocess.Popen([sys.executable, *map(str, c)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                               text=True) for c in cmds]
     failed = []

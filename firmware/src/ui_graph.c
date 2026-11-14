@@ -1270,7 +1270,7 @@ static const char *eng_abbr(const char *name)
                                        {"GRAIN", "GRAN"}, {"PHYS", "PHYS"}, {"DRUM", "DRUM"},
                                        {"NOISE", "NOIS"}, {"FM6", "FM6"}, {"SLICE", "SLCE"},
                                        {"ADPCM", "ADPC"}, {"POLYSIX", "P6SIX"}, {"JUNO106", "JUNO"},
-                                       {"POLIVOKS", "PVLKS"}};
+                                       {"POLIVOKS", "PVLKS"}, {"WAVTBL", "WTBL"}};
     uint32_t i;
     for (i = 0; i < sizeof A / sizeof A[0]; i++)
         if (str_eq(name, A[i][0]))

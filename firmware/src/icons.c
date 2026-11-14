@@ -257,6 +257,7 @@ static uint32_t engine_icon(const char *name)
         {"JUNO106", ICON_WAVE},               /* (the saw where the DCO is; the panel toggle's own wanted) */
         {"FM6", ICON_MOD},                    /* (symbol_modular: six operators patched; a glyph of its own wanted) */
         {"ADPCM", ICON_SAMPLE},               /* (short sampled waves) */
+        {"WAVTBL", ICON_WAVE},                /* (the wave stack the DCO morphs; the third taker) */
     };
     uint32_t i;
     for (i = 0; i < sizeof M / sizeof M[0]; i++)

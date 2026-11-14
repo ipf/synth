@@ -40,6 +40,7 @@ static uint8_t eng_mem_owner[NPART];       /* engine index + 1 whose state is in
 #include "eng_polysix.c"        /* POLYSIX: the Korg Polysix, polyp ported (GPL-3) */
 #include "eng_juno.c"           /* JUNO106: the Juno-106 (a GPL-3 port) */
 #include "eng_polivoks.c"       /* POLIVOKS: the Formanta Polivoks, the JUCE plugin ported (GPL-3) */
+#include "eng_wt.c"             /* WAVTBL: a Microwave I-style wavetable engine (ours) */
 #include "fm4_convert.c"        /* DIGITAL's tables, and its sounds -> FM6 */
 #if FELUCCA_FM4
 #include "eng_digital.c"        /* DIGITAL: four-operator FM (retired; FELUCCA_FM4=1 builds it) */
@@ -113,6 +114,7 @@ static const engine_t *const ENGINES[NENGINES] = {
     [15] = &ENG_POLYSIX,         /* 15 (ENGI_POLYSIX, ours: the numbers are fixed, never reorder these) */
     [16] = &ENG_JUNO,            /* 16 (ENGI_JUNO, ours) */
     [17] = &ENG_POLIVOKS,        /* 17 (ENGI_POLIVOKS, ours) */
+    [18] = &ENG_WT,              /* 18 (ENGI_WT, ours: the Microwave I-style wavetable engine) */
 #if FELUCCA_PLUGINS
     [NENG_BUILTIN ... NENGINES - 1] = &ENG_MISSING,
 #endif
@@ -191,6 +193,7 @@ static const uint8_t ENGINE_ORDER[NENG_SHOWN] = {
     ENGI_JUNO,                   /* JUNO106 (ours: the ENG knob; under FM4 DIGITAL is in its show: eng_ok) */
 #endif
     ENGI_POLIVOKS,               /* POLIVOKS (ours: the ENG knob, last: the EDIT row's 13 stay) */
+    ENGI_WT,                     /* WAVTBL (ours: last, after POLIVOKS so the EDIT row's 13 stay) */
 };
 
 /* with plugins: ENGINE_ORDER, then the plugins of their own as they came (plugin.c plg_add), eng_nshown of them */

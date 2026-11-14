@@ -5,7 +5,7 @@
  * favourites each (a bit per factory preset); row 14 holds the MIDI LEARN map (midi_learn.c), row 15 settings
  * (settings_persist.c), so an engine from 14 on keeps its favourites in a settings byte of its own: ADPCM (1.8, 8
  * presets) in factory[15][13], a byte no firmware before it used (kept there as saved); POLYSIX (64) in
- * [15][14..21], JUNO106 (8) in [15][22] */
+ * [15][14..21], JUNO106 (8) in [15][22], POLIVOKS (6) in [15][23], WAVTBL (12) in [15][24..25] */
 #define FAV_ENGINES 14u
 typedef struct {
     uint8_t factory[18][32]; /* row 0..17: see below (0..13 the engines' bits, 14 MIDI LEARN's, 15 settings, 16 the UI's) */
@@ -34,6 +34,12 @@ static uint8_t *fav_bit(uint32_t engine, uint32_t preset, uint8_t *mask)   /* th
     if (engine == ENGI_POLIVOKS && preset < 6u) {       /* POLIVOKS (ours, 6 presets): [15][23] */
         *mask = (uint8_t)(1u << preset);
         return &favorites.factory[15][23u];
+    }
+#endif
+#ifdef ENGI_WT
+    if (engine == ENGI_WT && preset < 12u) {            /* WAVTBL (ours, 12 presets): [15][24..25] */
+        *mask = (uint8_t)(1u << (preset % 8u));
+        return &favorites.factory[15][24u + preset / 8u];
     }
 #endif
 #ifdef ENGI_POLYSIX
