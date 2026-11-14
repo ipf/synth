@@ -2,7 +2,7 @@
 # felucca-bsp (MPL-2.0): the hardware layer (chip/, boards/fm1/).
 [submodule "firmware/engines"]
 	path = firmware/engines
-	url = https://github.com/hugelton/Felucca-Engines.git
+	url = https://github.com/ipf/Felucca-Engines.git
 [submodule "firmware/bsp"]
 	path = firmware/bsp
 	url = https://github.com/hugelton/felucca-bsp.git
